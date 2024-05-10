@@ -7,7 +7,8 @@ class EnergyDemand:
     """
     def __init__(self, data: pd.DataFrame, timestep: int, data_type: str = 'dataset', profile_id: int = 0):
         assert data_type in ['single', 'dataset'], "data_type of demand must be 'single' or 'dataset'"
-        assert str(profile_id) in data.columns, "profile_id of demand must be a label within the columns of the dataframe"
+        assert str(profile_id) in data.columns, ("profile_id of demand must be a label within the columns of the "
+                                                 "dataframe")
 
         self.timestep = timestep
         self._data_type = data_type
