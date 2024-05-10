@@ -26,13 +26,26 @@ battery:
             unit: 'V'
         temp_ambient:
             var: 'temperature'
-            value: 298.15.
+            value: 298.15
             unit: 'K'
     init:
-        voltage: 0.
-        current: 0.
-        temperature: 296.15
-        soc: 1.
-        soh: 1.
+        voltage:
+            low: 3.
+            high: 4.15
+        current:
+            low: -60.
+            high: 20.
+        temperature:
+            low: 273.15
+            high: 323.15
+        temp_ambient:
+            low: 273.15
+            high: 313.15
+        soc:
+            low: 0.
+            high: 1.
+        soh:
+            low: 0.8
+            high: 1.
 
       
