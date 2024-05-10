@@ -102,9 +102,14 @@ class MiniGridEnv(Env):
         init_info = {key: np.random.uniform(low=value['low'], high=value['high']) for key, value in
                      self._reset_params.items()}
 
-        demand_idx = np.random.randint(low=0, high=len(self.demand), size=1)
+        demand_idx = np.random.randint(low=0, high=len(self.demand))
         self.timeframe = demand_idx * self.demand.timestep
 
+        seconds_of_the_day = self.timeframe % (60*60*24)
+        day_of_the_year = self.timeframe & (60*60*24*365)
+
+        print(self.timeframe, seconds_of_the_day, day_of_the_year)
+        exit()
         # generation_idx = self.generation.get_idx_from_time(time=self.timeframe)
         # market_idx = self.market.get_idx_from_time(time=self.timeframe)
 
