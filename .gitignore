@@ -1,6 +1,10 @@
 .idea
-*.DS_STORE
-*/__py_cache__/
+.DS_Store
+__pycache__
+*.pyc
+*.egg-info
 *.ipynb_checkpoints
+
+
 examples/dataset
 ernestogym/ernesto/data/demand/dataset.csv
