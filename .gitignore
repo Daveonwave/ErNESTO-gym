@@ -1,2 +1,5 @@
 .idea
 .DS_STORE
+*.ipynb_checkpoints
+examples/dataset
+ernestogym/ernesto/data/demand/dataset.csv

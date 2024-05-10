@@ -1,0 +1,23 @@
+demand:
+    path: "ernestogym/ernesto/data/demand/demand_67.csv"
+    timestep: 60            # seconds
+    data_type: "single"     # (single/dataset): to distinguish between single profile or table of profiles
+    profile: 67             # column of the dataset to use in case of data_type set to 'single'
+
+generation:
+    path: "ernestogym/ernesto/data/generation/pv_dataset.csv"
+    timestep: 60            # seconds
+
+market:
+    path: "ernestogym/ernesto/data/market/ita2010.csv"
+    timestep: 3600          # seconds
+
+observations:
+    - demand
+    - temperature
+    - soc
+    # - day_sec_time
+    - rad_time
+    - soh
+    - generation
+    - market
