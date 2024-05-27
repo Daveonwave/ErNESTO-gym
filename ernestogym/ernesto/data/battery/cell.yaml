@@ -16,6 +16,18 @@ battery:
             var: 'capacity'
             value: 20.
             unit: 'F'
+        nominal_dod:
+            var: 'dod'
+            value: .5
+            unit: null
+        nominal_lifetime:
+            var: 'lifetime'
+            value: 1000
+            unit: null
+        polarization_constant:
+            var: 'k'
+            value: 0.0076
+            unit: null
         v_max:
             var: 'voltage'
             value: 4.15
@@ -28,13 +40,17 @@ battery:
             var: 'temperature'
             value: 298.15
             unit: 'K'
-    init:
+
+    bounds:
         voltage:
             low: 3.
             high: 4.15
         current:
             low: -60.
             high: 20.
+        power:
+            low: -249.
+            high: 83
         temperature:
             low: 273.15
             high: 323.15
@@ -47,5 +63,14 @@ battery:
         soh:
             low: 0.8
             high: 1.
+
+    init:
+        voltage: 3.
+        current: 0.
+        power: 0.
+        temperature: 293.15
+        temp_ambient: 293.15
+        soc: 1.
+        soh: 1.
 
       
