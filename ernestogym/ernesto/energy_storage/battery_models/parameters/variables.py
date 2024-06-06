@@ -39,7 +39,7 @@ class Scalar(GenericVariable):
     def get_value(self, input_vars: dict = None):
         return self._value
 
-    def set_value(self, new_value):
+    def set_value(self, new_value: float):
         self._value = new_value
 
 
@@ -103,15 +103,16 @@ class LookupTableFunction(GenericVariable):
 
         elif len(x_names) > 1:
             x_points = [[l[i] for l in self.x_values] for i in range(len(self.x_values[0]))]
-            self._function = LinearNDInterpolator(points=np.array(x_points), values=np.array(self.y_values))
-            self._backup_function = NearestNDInterpolator(x=np.array(x_points), y=np.array(self.y_values))
-
+            self._function = LinearNDInterpolator(points=np.array(x_points, dtype=np.float32),
+                                                  values=np.array(self.y_values, dtype=np.float32))
+            self._backup_function = NearestNDInterpolator(x=np.array(x_points, dtype=np.float32),
+                                                          y=np.array(self.y_values, dtype=np.float32))
         else:
             raise Exception("Too many variables to interpolate, not implemented yet!")
 
     def get_value(self, input_vars: dict):
         """
-
+        Retrieve the result of the interpolation function from the lookup table.
         """
         input_values = []
 
@@ -124,20 +125,30 @@ class LookupTableFunction(GenericVariable):
             input_values.append(input_vars[given_input])
 
         if isinstance(self._function, interp1d):
-            return float(self._function(*[input_val for input_val in input_values]))
+            return float(self._function(*input_values))
 
         elif isinstance(self._function, LinearNDInterpolator):
-            res = float(self._function(*[input_val for input_val in input_values]))
+            res = float(self._function(*input_values))
             if np.isnan(res):
-                res = float(self._backup_function(*[input_val for input_val in input_values]))
+                res = float(self._backup_function(*input_values))
             return res
 
         else:
             raise Exception("Given inputs list has a wrong dimension for the computation of {}".format(self.name))
 
-    def set_value(self, new_value):
-        raise AttributeError("Is impossible to modify the values within the lookup table of the parameter {}".
-                             format(self.name))
+    def get_y_values(self):
+        """
+        Get y_values from which is extracted the result of the interpolation function.
+        """
+        return self._function.values
+
+    def set_value(self, new_values: np.ndarray):
+        """
+        Set the values of the lookup table
+        """
+        self._function.values = new_values
+        # raise AttributeError("Is impossible to modify the values within the lookup table of the parameter {}".
+        #                      format(self.name))
 
     def render(self):
         data_list = self.x_values.copy()

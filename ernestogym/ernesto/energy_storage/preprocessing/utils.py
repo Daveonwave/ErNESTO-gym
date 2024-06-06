@@ -24,7 +24,11 @@ internal_units = dict(
     temperature=['kelvin', 'K', ureg.kelvin],
     time=['seconds', 's', ureg.s],
     soc=[None, None, None],
-    soh=[None, None, None]
+    soh=[None, None, None],
+    dod=[None, None, None],
+    lifetime=[None, None, None],
+    k=[None, None, None],
+    cost=[None, None, None],
 )
 
 

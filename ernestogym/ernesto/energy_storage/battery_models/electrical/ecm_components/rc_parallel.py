@@ -1,6 +1,7 @@
 from typing import Union
 from ernestogym.ernesto.energy_storage.battery_models.parameters import Scalar, LookupTableFunction
 from .generic_component import ECMComponent
+from copy import deepcopy
 
 
 class ResistorCapacitorParallel(ECMComponent):
@@ -24,6 +25,7 @@ class ResistorCapacitorParallel(ECMComponent):
         self._resistance = resistance
         self._capacity = capacity
         self._tau = 0
+        self._nominal_resistance = deepcopy(resistance)
         # TODO: capire tau se trattarla o meno e come trattarla + cambiare unit
 
         # self.n_r = n_r
@@ -35,6 +37,14 @@ class ResistorCapacitorParallel(ECMComponent):
         self._r1_series = []
         self._c_series = []
         self._tau_series = []
+
+    def __getattr__(self, item: str):
+        if item in "resistor":
+            return self._resistance
+        elif item in "capacitor":
+            return self._capacity
+        else:
+            raise AttributeError("No attribute {} in class ResistorCapacitorParallel.".format(item))
 
     @property
     def resistance(self):
@@ -53,6 +63,24 @@ class ResistorCapacitorParallel(ECMComponent):
                     "Cannot retrieve required input variables to compute resistance for {}!".format(self.name))
 
         return self._resistance.get_value(input_vars=input_vars)
+
+    @property
+    def nominal_resistance(self):
+        """
+        Getter of the R1 nominal value. Depending on the x_names (inputs of the function), we retrieve components attribute
+        among {SoC, SoH, Temp}.
+        If R1 is a scalar, we don't need to provide any input.
+        """
+        input_vars = {}
+
+        if not isinstance(self._nominal_resistance, Scalar):
+            try:
+                input_vars = {name: getattr(self, name) for name in self._nominal_resistance.x_names}
+            except:
+                raise Exception(
+                    "Cannot retrieve required input variables to compute resistance for {}!".format(self.name))
+
+        return self._nominal_resistance.get_value(input_vars=input_vars)
 
     @property
     def capacity(self):
@@ -75,7 +103,6 @@ class ResistorCapacitorParallel(ECMComponent):
     @resistance.setter
     def resistance(self, new_value):
         self._resistance.set_value(new_value)
-        print()
 
     @capacity.setter
     def capacity(self, new_value):
@@ -152,8 +179,6 @@ class ResistorCapacitorParallel(ECMComponent):
         r1 = self.resistance if r1 is None else r1
         c = self.capacity if c is None else c
         v_rc = 0 if v_rc is None else v_rc
-
-        print("resistor and capacity:", r1, c)
 
         super().init_component(v=v_rc)
         self._update_r1_series(r1)

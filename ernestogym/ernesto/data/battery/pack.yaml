@@ -1,0 +1,88 @@
+# ----------------------------
+# NMC battery pack parameters
+# ----------------------------
+
+# Battery options
+# ------------------------------------------------------------------------------- #
+# sign_convention:
+#   - active: (power sources) p<0 and current exiting => i>0 during discharge (default for Thevenin)
+#   - passive: (loads) with p>0 and current entering => i<0 during discharge
+# params:
+#   - 'var' has to be a variable among of the parameter.
+#   - 'value' is the float value of the parameter.
+#   - 'unit' specifies the unit of the parameter that will be transformed to
+#      Digital Twin internal default units.
+# bounds:
+#   - ranges within which sample during reset phase
+# init:
+#   - initial values if 'random_init_data' in world.yaml is set to False
+# ------------------------------------------------------------------------------- #
+battery:
+    sign_convention: 'passive'
+    params:
+        nominal_voltage:
+            var: 'voltage'
+            value: 350.4
+            unit: 'V'
+        nominal_capacity:
+            var: 'capacity'
+            value: 60.
+            unit: 'F'
+        nominal_dod:
+            var: 'dod'
+            value: .8
+            unit: null
+        nominal_lifetime:
+            var: 'lifetime'
+            value: 3000
+            unit: null
+        v_max:
+            var: 'voltage'
+            value: 398.4
+            unit: 'V'
+        v_min:
+            var: 'voltage'
+            value: 288.
+            unit: 'V'
+        temp_ambient:
+            var: 'temperature'
+            value: 298.15
+            unit: 'K'
+        nominal_cost:
+            var: 'cost'
+            value: 3000
+            unit: null
+
+    bounds:
+        voltage:
+            low: 288.
+            high: 398.4
+        current:
+            low: -180.
+            high: 60.
+        power:
+            low: -71712.
+            high: 23904.
+        temperature:
+            low: 273.15
+            high: 323.15
+        temp_ambient:
+            low: 273.15
+            high: 313.15
+        soc:
+            low: 0.2
+            high: .8
+        soh:
+            low: 0.8
+            high: 1.
+
+    init:
+        voltage: 288.
+        current: 0.
+        power: 0.
+        temperature: 293.15
+        temp_ambient: 293.15
+        soc: .5
+        soh: 1.
+
+      

@@ -39,9 +39,7 @@ class BolunModel(AgingModel):
 
         # Fatigue analysis method
         self._cycle_counting_mode = components_settings['cycle_counting_mode']
-
-        if self._cycle_counting_mode == 'streamflow':
-            self._streamflow = self.Streamflow(init_soc=init_soc)
+        self._streamflow = None
 
     def get_f_cal_series(self, k=None):
         """
@@ -77,11 +75,26 @@ class BolunModel(AgingModel):
     def _update_f_cyc_series(self, value: float):
         self._f_cyc_series.append(value)
 
+    def reset_model(self, **kwargs):
+        self._f_cal_series = []
+        self._f_cyc_series = []
+        self._k_iters = []
+        self._deg_series = []
+
     def init_model(self, **kwargs):
         self.update_deg(0)
         self._update_f_cyc_series(0)
         self._update_f_cal_series(0)
         self._k_iters.append(0)
+
+        if self._cycle_counting_mode == 'streamflow':
+            if self._streamflow is not None:
+                del self._streamflow
+            self._streamflow = self.Streamflow(init_soc=kwargs['soc'])
+
+        if 'soh' in kwargs:
+            if kwargs['soh'] < 0.91:
+                self._alpha_sei = 0
 
     def compute_degradation(self, soc_history, temp_history, elapsed_time, k):
         """
@@ -109,64 +122,33 @@ class BolunModel(AgingModel):
         self._k_iters.append(k)
         return deg
 
-    def _compute_calendar_aging(self, curr_time, avg_temp, avg_soc):
-        """
-        Compute the calendar aging of the battery from the start of the simulation.
-
-        Inputs:
-        :param curr_time: wrt the start of the simulation (TODO: what if the battery is not new at the start of the simulation?)
-        :param avg_temp:
-        :param avg_soc:
-        """
-        cal_aging = 1
-
-        # For each defined stress model we get the stress function with relative parameters
-        for factor in self._calendar_factors.keys():
-            stress_func = getattr(bolun_stress_functions, factor + '_stress')
-            sim_variables = {}
-
-            if factor == 'time':
-                sim_variables['t'] = curr_time
-
-            elif factor == 'temperature':
-                sim_variables['mean_temp'] = avg_temp
-
-            elif factor == 'soc':
-                sim_variables['soc'] = avg_soc
-
-            else:
-                raise KeyError("Stress factor {} shouldn't be used for computing calendar aging in Bolun model"
-                               .format(factor))
-
-            # Product of all calendar aging factors within the loop
-            stress_value = stress_func(**self._stress_models_params[factor], **sim_variables)
-            cal_aging = cal_aging * stress_value
-
-        return cal_aging
-
     def _aging_step(self, soc_history, temp_history, t):
         """
         Compute the battery aging due to a single step of simulation with Streamflow method.
 
         Args:
-            soc ():
-            temp ():
+            soc_history ():
+            temp_history ():
             t ():
 
         Returns: the sum of both cyclic and calendar aging  for the given period
         """
+        # Compute the calendar aging
         f_cal = self._compute_calendar_aging(curr_time=t,
                                              avg_soc=np.mean(soc_history),
                                              avg_temp=np.mean(temp_history))
         self._update_f_cal_series(f_cal)
 
+        # If the current soc is distant delta_soc from one of the soc limits, the expected end
+        # is expected to be in between
         is_charging = soc_history[-1] > soc_history[-2]
         if is_charging:
             expected_end = 0.5 * (1 - soc_history[-1])
         else:
             expected_end = 0.5 * soc_history[-1]
 
-        if len(soc_history) % self._streamflow._reset_every == 0:
+        # Every certain number of steps we reset the Streamflow algorithm
+        if len(soc_history) % self._streamflow.reset_every == 0:
             self._streamflow = self.Streamflow(init_soc=soc_history[-1])
 
         soc_means, ranges, n_samples_arr, is_valid, _, start_indexes, temp_means, to_invalid = \
@@ -174,6 +156,7 @@ class BolunModel(AgingModel):
                                   expected_end=expected_end,
                                   second_signal_value=temp_history[-1])
 
+        # Need to do this in order to avoid DividedByZero exception
         ranges[ranges == 0] += 1e-6
         cycle_types = 0.5
         valid_n_cycles = len(soc_means[is_valid])
@@ -234,6 +217,41 @@ class BolunModel(AgingModel):
 
         return f_cal + f_cyc
 
+    def _compute_calendar_aging(self, curr_time, avg_temp, avg_soc):
+        """
+        Compute the calendar aging of the battery from the start of the simulation.
+
+        Inputs:
+        :param curr_time: wrt the start of the simulation (TODO: what if the battery is not new at the start of the simulation?)
+        :param avg_temp:
+        :param avg_soc:
+        """
+        cal_aging = 1
+
+        # For each defined stress model we get the stress function with relative parameters
+        for factor in self._calendar_factors.keys():
+            stress_func = getattr(bolun_stress_functions, factor + '_stress')
+            sim_variables = {}
+
+            if factor == 'time':
+                sim_variables['t'] = curr_time
+
+            elif factor == 'temperature':
+                sim_variables['mean_temp'] = avg_temp
+
+            elif factor == 'soc':
+                sim_variables['soc'] = avg_soc
+
+            else:
+                raise KeyError("Stress factor {} shouldn't be used for computing calendar aging in Bolun model"
+                               .format(factor))
+
+            # Product of all calendar aging factors within the loop
+            stress_value = stress_func(**self._stress_models_params[factor], **sim_variables)
+            cal_aging = cal_aging * stress_value
+
+        return cal_aging
+
     def _compute_cyclic_aging(self, cycle_type, cycle_dod, avg_cycle_temp, avg_cycle_soc):
         """
         Compute the cyclic aging of the battery.
@@ -277,15 +295,17 @@ class BolunModel(AgingModel):
 
         return cyclic_aging
 
-    def get_final_results(self, **kwargs):
+    def get_results(self, **kwargs):
         """
         Returns a dictionary with all final results
         TODO: selection of results by label from config file?
         """
+        k = kwargs['k'] if 'kwargs' in kwargs else None
+
         return {'iteration': self._k_iters,
                 'cyclic_aging': self._f_cyc_series,
                 'calendar_aging': self._f_cal_series,
-                'degradation': self.get_deg_series()
+                'degradation': self.get_deg_series(k=k)
                 }
 
     class Streamflow:
@@ -301,8 +321,8 @@ class BolunModel(AgingModel):
                      init_soc=0,
                      subsample=False,
                      interpolate='linear',
-                     expected_cycle_num=500,
-                     cycle_num_increment=500):
+                     expected_cycle_num=3000,
+                     cycle_num_increment=2500):
             """
             Args:
                 init_soc (int):
@@ -325,12 +345,12 @@ class BolunModel(AgingModel):
             self._min_max_vals = np.zeros((expected_cycle_num, 2))
             self._range_size = np.zeros(expected_cycle_num)
 
-            # number of samples in the cycle
+            # Number of samples in the cycle
             self._number_of_samples = np.zeros(expected_cycle_num, dtype=int)
             self._start_cycles = np.zeros(expected_cycle_num, dtype=int)
             self._end_cycles = np.zeros(expected_cycle_num, dtype=int)
             # TODO: find the right value
-            self._reset_every = 50000
+            self.reset_every = 50000
 
             # Cycles that are waiting to be completed
             self._is_valid = np.zeros(expected_cycle_num, dtype=bool)
@@ -442,8 +462,8 @@ class BolunModel(AgingModel):
                 second_signal_value ():
             """
             # Get indices of cycles used, valid and with the same direction of current cycle
-            valid_used_correct_direction = (self._is_used and self._is_valid and
-                                            (self._directions == self._directions[self._cycle_k]))
+            valid_used_correct_direction = np.logical_and(self._is_used, self._is_valid,
+                                                          self._directions == self._directions[self._cycle_k])
 
             is_direction_up = self._directions[self._cycle_k] == 1
             min_max_index = 1 if is_direction_up else 0
@@ -536,20 +556,21 @@ class BolunModel(AgingModel):
             """
 
             """
+            print("EXPAND VALUES")
             # more cycles than the one pre-allocated, need to allocate new ones
             self._mean_values = np.concatenate(
                 (self._mean_values, np.zeros(self._cycle_num_increment)))
-            self.second_signal_means = np.concatenate(
+            self._second_signal_means = np.concatenate(
                 (self._second_signal_means, np.zeros(self._cycle_num_increment)))
-            self.range_size = np.concatenate(
+            self._range_size = np.concatenate(
                 (self._range_size, np.zeros(self._cycle_num_increment)))
-            self.min_max_vals = np.vstack(
+            self._min_max_vals = np.concatenate(
                 (self._min_max_vals, np.zeros((self._cycle_num_increment, 2))))
             self._number_of_samples = np.concatenate(
                 (self._number_of_samples, np.zeros(self._cycle_num_increment, dtype=int)))
-            self.start_cycles = np.concatenate(
+            self._start_cycles = np.concatenate(
                 (self._start_cycles, np.zeros(self._cycle_num_increment, dtype=int)))
-            self.end_cycles = np.concatenate(
+            self._end_cycles = np.concatenate(
                 (self._end_cycles, np.zeros(self._cycle_num_increment, dtype=int)))
             self._directions = np.concatenate(
                 (self._directions, np.zeros(self._cycle_num_increment, dtype=int)))

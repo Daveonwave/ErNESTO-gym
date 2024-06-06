@@ -1,32 +1,40 @@
+# --------------------
+# NMC cell parameters
+# --------------------
+
 # Battery options
 # ------------------------------------------------------------------------------- #
 # sign_convention:
 #   - active: (power sources) p<0 and current exiting => i>0 during discharge (default for Thevenin)
 #   - passive: (loads) with p>0 and current entering => i<0 during discharge
-# other params:
+# params:
 #   - 'var' has to be a variable among of the parameter.
 #   - 'value' is the float value of the parameter.
 #   - 'unit' specifies the unit of the parameter that will be transformed to
 #      Digital Twin internal default units.
+# bounds:
+#   - ranges within which sample during reset phase
+# init:
+#   - initial values if 'random_init_data' in world.yaml is set to False
 # ------------------------------------------------------------------------------- #
 battery:
     sign_convention: 'passive'
     params:
+        nominal_voltage:
+            var: 'voltage'
+            value: 3.65
+            unit: 'V'
         nominal_capacity:
             var: 'capacity'
             value: 20.
             unit: 'F'
         nominal_dod:
             var: 'dod'
-            value: .5
+            value: .8
             unit: null
         nominal_lifetime:
             var: 'lifetime'
-            value: 1000
-            unit: null
-        polarization_constant:
-            var: 'k'
-            value: 0.0076
+            value: 3000
             unit: null
         v_max:
             var: 'voltage'
@@ -58,7 +66,7 @@ battery:
             low: 273.15
             high: 313.15
         soc:
-            low: 0.
+            low: 0.1
             high: 1.
         soh:
             low: 0.8

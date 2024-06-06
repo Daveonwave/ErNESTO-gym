@@ -3,6 +3,7 @@ from typing import Union
 from ernestogym.ernesto.energy_storage.battery_models.parameters.units import Unit
 from ernestogym.ernesto.energy_storage.battery_models.parameters import Scalar, LookupTableFunction
 from .generic_component import ECMComponent
+from copy import deepcopy
 
 
 class Resistor(ECMComponent):
@@ -24,12 +25,19 @@ class Resistor(ECMComponent):
                  ):
         super().__init__(name)
         self._resistance = resistance
+        self._nominal_resistance = deepcopy(resistance)
 
         # TODO: fix the unit through a yaml file
         self._r0_unit = Unit.OHM
 
         # Collections
         self._r0_series = []
+
+    def __getattr__(self, item: str):
+        if item in "resistor":
+            return self._resistance
+        else:
+            raise AttributeError("No attribute {} in class Resistor.".format(item))
 
     @property
     def resistance(self):
@@ -47,6 +55,24 @@ class Resistor(ECMComponent):
                 raise Exception("Cannot retrieve required input variables to compute resistance for {}!".format(self.name))
 
         return self._resistance.get_value(input_vars=input_vars)
+
+    @property
+    def nominal_resistance(self):
+        """
+        Getter of the R0 nominal value. Depending on the x_names (inputs of the function), we retrieve components attribute
+        among {SoC, SoH, Temp}.
+        If R0 is a scalar, we don't need to provide any input.
+        """
+        input_vars = {}
+
+        if not isinstance(self._nominal_resistance, Scalar):
+            try:
+                input_vars = {name: getattr(self, name) for name in self._nominal_resistance.x_names}
+            except:
+                raise Exception(
+                    "Cannot retrieve required input variables to compute resistance for {}!".format(self.name))
+
+        return self._nominal_resistance.get_value(input_vars=input_vars)
 
     @resistance.setter
     def resistance(self, new_value):

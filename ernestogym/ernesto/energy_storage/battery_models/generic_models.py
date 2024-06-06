@@ -8,6 +8,7 @@ class GenericModel(metaclass=ABCMeta):
     """
 
     """
+
     @classmethod
     def __subclasshook__(cls, subclass):
         return (hasattr(subclass, 'reset_model') and
@@ -17,7 +18,7 @@ class GenericModel(metaclass=ABCMeta):
                 hasattr(subclass, 'load_battery_state') and
                 callable(subclass.load_battery_state) and
                 hasattr(subclass, 'get_final_results') and
-                callable(subclass.get_final_results) or
+                callable(subclass.get_results) or
                 NotImplemented)
 
     @abc.abstractmethod
@@ -33,7 +34,7 @@ class GenericModel(metaclass=ABCMeta):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def get_final_results(self, **kwargs):
+    def get_results(self, **kwargs):
         raise NotImplementedError
 
 
@@ -41,12 +42,13 @@ class ElectricalModel(GenericModel):
     """
 
     """
+
     def __init__(self, name: str):
         self._name = name
         self._v_load_series = []
         self._i_load_series = []
-        self._power_series = []
-        # self._times = []
+        self._p_series = []
+        self._q_moved_charge_series = []
 
     @property
     def name(self):
@@ -61,13 +63,16 @@ class ElectricalModel(GenericModel):
     def load_battery_state(self, temp: float, soc: float, soh: float):
         pass
 
-    def build_components(self, components:dict):
+    def build_components(self, components: dict):
         pass
 
-    def compute_generated_heat(self, k:int):
+    def compute_generated_heat(self, k: int):
         pass
 
-    def get_final_results(self, **kwargs):
+    def compute_parameter_fading(self, capacity, k=-1):
+        return capacity
+
+    def get_results(self, **kwargs):
         pass
 
     def get_v_series(self, k=None):
@@ -75,7 +80,7 @@ class ElectricalModel(GenericModel):
         Getter of the specific value at step K, if specified, otherwise of the entire collection
         """
         if k is not None:
-            assert type(k) == int, \
+            assert isinstance(k, int), \
                 "Cannot retrieve load voltage of the electrical model at step K, since it has to be an integer"
 
             if len(self._v_load_series) > k:
@@ -89,7 +94,7 @@ class ElectricalModel(GenericModel):
         Getter of the specific value at step K, if specified, otherwise of the entire collection
         """
         if k is not None:
-            assert type(k) == int, \
+            assert isinstance(k, int), \
                 "Cannot retrieve load current of the electrical model at step K, since it has to be an integer"
 
             if len(self._i_load_series) > k:
@@ -98,19 +103,42 @@ class ElectricalModel(GenericModel):
                 raise IndexError("Load Current I of the electrical model at step K not computed yet")
         return self._i_load_series
 
-    def get_power_series(self, k=None):
+    def get_p_series(self, k=None):
         """
         Getter of the specific value at step K, if specified, otherwise of the entire collection
         """
         if k is not None:
-            assert type(k) == int, \
+            assert isinstance(k, int), \
                 "Cannot retrieve power of the electrical model at step K, since it has to be an integer"
 
-            if len(self._power_series) > k:
-                return self._power_series[k]
+            if len(self._p_series) > k:
+                return self._p_series[k]
             else:
                 raise IndexError("Power P of the electrical model at step K not computed yet")
-        return self._power_series
+        return self._p_series
+
+    def get_q_moved_charge_series(self, k=None):
+        """
+        Getter of the specific value at step K, if specified, otherwise of the entire collection
+        """
+        if k is not None:
+            assert isinstance(k, int), \
+                "Cannot retrieve moved charge of the electrical model at step K, since it has to be an integer"
+
+            if len(self._q_moved_charge_series) > k:
+                return self._q_moved_charge_series[k]
+            else:
+                raise IndexError("Charge Q of the electrical model at step K not computed yet")
+        return self._q_moved_charge_series
+
+    def get_internal_resistance(self):
+        raise NotImplementedError
+
+    def get_polarization_resistance(self):
+        raise NotImplementedError
+
+    def get_internal_capacity(self):
+        raise NotImplementedError
 
     def update_v_load(self, value: float):
         self._v_load_series.append(value)
@@ -119,7 +147,10 @@ class ElectricalModel(GenericModel):
         self._i_load_series.append(value)
 
     def update_power(self, value: float):
-        self._power_series.append(value)
+        self._p_series.append(value)
+
+    def update_q_moved_charge(self, value: float):
+        self._q_moved_charge_series.append(value)
 
     # def update_times(self, value:int):
     #     if self.units_checker:
@@ -132,6 +163,7 @@ class ThermalModel(GenericModel):
     """
 
     """
+
     def __init__(self, name: str):
         self._name = name
         self._temp_series = []
@@ -154,12 +186,13 @@ class ThermalModel(GenericModel):
     def compute_temp(self, **kwargs):
         pass
 
-    def get_final_results(self, **kwargs):
+    def get_results(self, **kwargs):
         """
         Returns a dictionary with all final results
         """
-        return {'temperature': self._temp_series,
-                'heat': self._heat_series}
+        k = kwargs['k'] if 'k' in kwargs else None
+        return {'temperature': self.get_temp_series(k=k),
+                'heat': self.get_heat_series(k=k)}
 
     def get_temp_series(self, k=None):
         """
@@ -200,6 +233,7 @@ class AgingModel(GenericModel):
     """
 
     """
+
     def __init__(self, name: str):
         self._name = name
         self._deg_series = []
@@ -220,7 +254,7 @@ class AgingModel(GenericModel):
     def compute_degradation(self, **kwargs):
         pass
 
-    def get_final_results(self, **kwargs):
+    def get_results(self, **kwargs):
         pass
 
     def get_deg_series(self, k=None):
@@ -239,5 +273,3 @@ class AgingModel(GenericModel):
 
     def update_deg(self, value: float):
         self._deg_series.append(value)
-
-

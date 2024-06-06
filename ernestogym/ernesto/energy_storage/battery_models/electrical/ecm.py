@@ -7,7 +7,7 @@ from ernestogym.ernesto.energy_storage.battery_models.parameters import instanti
 
 class TheveninModel(ElectricalModel):
     """
-    CLass
+    Class
     """
     def __init__(self,
                  components_settings: dict,
@@ -15,12 +15,7 @@ class TheveninModel(ElectricalModel):
                  **kwargs
                  ):
         """
-        • 𝑁s𝑚: numero di celle in serie che compongono un singolo modulo;
-        • 𝑁𝑝𝑚: numero di celle in parallelo che compongono un singolo modulo;
-        • 𝑁s𝑏: numero di moduli in serie che compongono il pacco batteria;
-        • 𝑁𝑝𝑏: numero di moduli in parallelo che compongono il pacco batteria;
-        • 𝑁s =𝑁s𝑚 x 𝑁 𝑏 : numero di celle totali connesse in serie che compongono il pacco batteria;
-        • 𝑁𝑝=𝑁𝑝𝑚 x 𝑁𝑝𝑏 : numero di celle totali connesse in parallelo che compongono il pacco batteria;
+
         """
         super().__init__(name='Thevenin')
         self._sign_convention = sign_convention
@@ -194,15 +189,29 @@ class TheveninModel(ElectricalModel):
             self.rc.get_r1_series(k=k) * self.rc.get_i_r1_series(k=k)**2
         # return self.r0.get_r0_series(k=k) * self.get_i_series(k=k) ** 2
 
-    def get_final_results(self, **kwargs):
+    def get_internal_resistance(self):
+        return self.r0.resistance
+
+    def get_polarization_resistance(self):
+        return self.rc.resistance
+
+    def get_internal_capacity(self):
+        return self.rc.capacity
+
+    def get_results(self, **kwargs):
         """
         Returns a dictionary with all final results
         TODO: selection of results by label from config file?
         """
-        return {'voltage': self._v_load_series,
-                'current': self._i_load_series,
-                'power': self._power_series,
-                'Vocv': self.ocv_gen.get_v_series(),
-                'R0': self.r0.get_r0_series(),
-                'R1': self.rc.get_r1_series(),
-                'C': self.rc.get_c_series()}
+        k = kwargs['k'] if 'k' in kwargs else None
+
+        return {'voltage': self.get_v_series(k=k),
+                'current': self.get_i_series(k=k),
+                'power': self.get_p_series(k=k),
+                'v_oc': self.ocv_gen.get_v_series(k=k),
+                'r0': self.r0.get_r0_series(k=k),
+                'r1': self.rc.get_r1_series(k=k),
+                'c': self.rc.get_c_series(k=k),
+                'v_r0': self.r0.get_v_series(k=k),
+                'v_rc': self.rc.get_v_series(k=k)
+                }

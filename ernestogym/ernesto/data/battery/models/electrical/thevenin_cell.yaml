@@ -10,6 +10,7 @@
 
 type: electrical
 class_name: TheveninModel
+use_fading: False
 
 # ----------------------------------------------------------------------------
 # Components can be instantiated in 3 different ways:
@@ -25,7 +26,7 @@ components:
         scalar: 10.
         # function: To be implemented, maybe useless!
         lookup:
-            table: 'r0_table.csv'
+            table: 'r0_cell.csv'
             inputs:
                 - var: 'temperature'
                   label: 'temp'
@@ -44,7 +45,7 @@ components:
         scalar: 10.
         # function: To be implemented, maybe useless!
         lookup:
-            table: 'r1_table.csv'
+            table: 'r1_cell.csv'
             inputs:
                 -   var: 'temperature'
                     label: 'temp'
@@ -63,7 +64,7 @@ components:
         scalar: 10.
         # function: To be implemented, maybe useless!
         lookup:
-            table: 'c_table.csv'
+            table: 'c_cell.csv'
             inputs:
                 -   var: 'temperature'
                     label: 'temp'
@@ -83,7 +84,7 @@ components:
         scalar: 10.
         # function: To be implemented, maybe useless!
         lookup:
-            table: 'voc_table.csv'
+            table: 'voc_cell.csv'
             inputs:
                 -   var: 'temperature'
                     label: 'temp'
