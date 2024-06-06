@@ -1,0 +1,71 @@
+ernestogym.envs.single_agent.rewards
+====================================
+
+.. py:module:: ernestogym.envs.single_agent.rewards
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   ernestogym.envs.single_agent.rewards.operational_cost
+   ernestogym.envs.single_agent.rewards.soh_cost
+   ernestogym.envs.single_agent.rewards.linearized_degradation
+
+
+Module Contents
+---------------
+
+.. py:function:: operational_cost(replacement_cost: float, C_rated: float, DoD_rated: float, L_rated: float, v_rated: float, p: float, r: float, K_rated: float, soc: float, is_discharging: bool) -> float
+
+   Compute the operational cost of using the battery depending on the replacement cost of the battery, the power used
+   to charge and discharge the system and the power losses occurring within the process.
+
+   Parameters:
+   ----------------
+   replacement_cost (float): The replacement cost of the battery.
+   C_rated (float): The rated capacity of the battery.
+   DoD_n (float): The rated depth of discharge (DoD) of the battery.
+   L_rated (float): The rated lifetime of the battery.
+   v_rated (float): The rated voltage of the battery.
+   p (float): The charge/discharged power of the battery.
+   r (float): The internal resistance of the battery.
+   K_rated (float): The polarization constant of the battery that corresponds to the R1 of the ECM.
+   soc (float): The current state of charge (SoC) of the battery.
+   is_discharging (bool): Whether the battery is discharging or charging.
+
+
+   Reference paper:
+   ----------------
+   T. A. Nguyen and M. L. Crow, "Stochastic Optimization of Renewable-Based Microgrid Operation Incorporating Battery
+   Operating Cost," in IEEE Transactions on Power Systems, vol. 31, no. 3, pp. 2289-2296, May 2016,
+   doi: 10.1109/TPWRS.2015.2455491.
+
+
+.. py:function:: soh_cost(replacement_cost: float, delta_soh: float, soh_limit: float) -> float
+
+   Compute the cost associated to the variation of the state of health of the battery.
+
+   Parameters:
+   ----------------
+   replacement_cost (float): The replacement cost of the battery.
+   delta_soh (float): The variation in SoH of the battery.
+   soh_limit (float): The end of life of the battery in SoH percentage.
+
+   Reference: https://github.com/OscarPindaro/RLithium-0/tree/main
+
+
+.. py:function:: linearized_degradation(replacement_cost: float, delta_deg: float, deg_limit: float) -> float
+
+   Compute the cost associated to a linearized degradation of the battery.
+
+   Parameters:
+   ----------------
+   replacement_cost (float): The replacement cost of the battery.
+   delta_deg (float): The step degradation of the battery.
+   deg_limit (float): The maximum degradation of the battery.
+
+   Reference: https://github.com/OscarPindaro/RLithium-0/tree/main
+
+

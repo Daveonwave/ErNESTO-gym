@@ -1,0 +1,38 @@
+ernestogym.ernesto.energy_storage.battery_models.parameters.data_checker
+========================================================================
+
+.. py:module:: ernestogym.ernesto.energy_storage.battery_models.parameters.data_checker
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   ernestogym.ernesto.energy_storage.battery_models.parameters.data_checker.ureg
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   ernestogym.ernesto.energy_storage.battery_models.parameters.data_checker.check_data_unit
+   ernestogym.ernesto.energy_storage.battery_models.parameters.data_checker.craft_data_unit
+
+
+Module Contents
+---------------
+
+.. py:data:: ureg
+
+.. py:function:: check_data_unit(param, unit: ureg)
+
+   
+
+
+.. py:function:: craft_data_unit(param, unit: ureg)
+
+   
+
+

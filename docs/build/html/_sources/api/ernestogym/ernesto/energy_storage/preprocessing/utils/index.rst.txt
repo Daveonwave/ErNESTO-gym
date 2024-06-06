@@ -1,0 +1,67 @@
+ernestogym.ernesto.energy_storage.preprocessing.utils
+=====================================================
+
+.. py:module:: ernestogym.ernesto.energy_storage.preprocessing.utils
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   ernestogym.ernesto.energy_storage.preprocessing.utils.ureg
+   ernestogym.ernesto.energy_storage.preprocessing.utils.logger
+   ernestogym.ernesto.energy_storage.preprocessing.utils.internal_units
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   ernestogym.ernesto.energy_storage.preprocessing.utils.load_data_from_csv
+   ernestogym.ernesto.energy_storage.preprocessing.utils.sync_data_with_step
+   ernestogym.ernesto.energy_storage.preprocessing.utils.validate_yaml_parameters
+
+
+Module Contents
+---------------
+
+.. py:data:: ureg
+
+.. py:data:: logger
+
+.. py:data:: internal_units
+
+.. py:function:: load_data_from_csv(csv_file: pathlib.Path, vars_to_retrieve: [dict], **kwargs)
+
+   Function to preprocess preprocessing that need to be read from a csv table.
+
+   :param csv_file: file path of the csv which we want to retrieve preprocessing from
+   :type csv_file: pathlib.Path
+   :param vars_to_retrieve: variables to retrieve from csv file
+   :type vars_to_retrieve: list(dict)
+
+
+.. py:function:: sync_data_with_step(times: list, data: dict, sim_step: float, interp: bool = False)
+
+   # TODO: to be removed
+   Augmentation or reduction of the ground dataset in order to adapt it to the specified simulator timestep.
+   If the simulator timestamp is smaller than the time delta, we need to replicate the previous values or interpolate
+   data to coherently extend the dataset.
+   If the simulator timestamp is bigger, instead, we need to skip some input data and/or interpolate if necessary.
+
+   :param times ():
+   :param data ():
+   :param sim_step ():
+   :param interp ():
+
+
+.. py:function:: validate_yaml_parameters(param_dict) -> dict
+
+   Function to validate and adapt units of provided parameters to internal simulator units.
+
+   :param param_dict: dictionary of parameters (read by for example yaml config file)
+   :type param_dict: dict
+
+

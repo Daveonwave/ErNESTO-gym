@@ -1,0 +1,210 @@
+ernestogym.ernesto.energy_storage.battery_models.generic_models
+===============================================================
+
+.. py:module:: ernestogym.ernesto.energy_storage.battery_models.generic_models
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   ernestogym.ernesto.energy_storage.battery_models.generic_models.GenericModel
+   ernestogym.ernesto.energy_storage.battery_models.generic_models.ElectricalModel
+   ernestogym.ernesto.energy_storage.battery_models.generic_models.ThermalModel
+   ernestogym.ernesto.energy_storage.battery_models.generic_models.AgingModel
+
+
+Module Contents
+---------------
+
+.. py:class:: GenericModel
+
+   
+
+
+   .. py:method:: reset_model()
+      :abstractmethod:
+
+
+
+   .. py:method:: init_model(**kwargs)
+      :abstractmethod:
+
+
+
+   .. py:method:: load_battery_state(**kwargs)
+      :abstractmethod:
+
+
+
+   .. py:method:: get_results(**kwargs)
+      :abstractmethod:
+
+
+
+.. py:class:: ElectricalModel(name: str)
+
+   Bases: :py:obj:`GenericModel`
+
+
+   
+
+
+   .. py:property:: name
+
+
+   .. py:method:: reset_model(**kwargs)
+
+
+   .. py:method:: init_model(**kwargs)
+
+
+   .. py:method:: load_battery_state(temp: float, soc: float, soh: float)
+
+
+   .. py:method:: build_components(components: dict)
+
+
+   .. py:method:: compute_generated_heat(k: int)
+
+
+   .. py:method:: compute_parameter_fading(k: int = -1)
+
+
+   .. py:method:: get_results(**kwargs)
+
+
+   .. py:method:: get_v_series(k=None)
+
+      Getter of the specific value at step K, if specified, otherwise of the entire collection
+
+
+
+   .. py:method:: get_i_series(k=None)
+
+      Getter of the specific value at step K, if specified, otherwise of the entire collection
+
+
+
+   .. py:method:: get_p_series(k=None)
+
+      Getter of the specific value at step K, if specified, otherwise of the entire collection
+
+
+
+   .. py:method:: get_q_series(k=None)
+
+      Getter of the specific value at step K, if specified, otherwise of the entire collection
+
+
+
+   .. py:method:: get_internal_resistance()
+      :abstractmethod:
+
+
+
+   .. py:method:: get_polarization_resistance()
+      :abstractmethod:
+
+
+
+   .. py:method:: get_internal_capacity()
+      :abstractmethod:
+
+
+
+   .. py:method:: update_v_load(value: float)
+
+
+   .. py:method:: update_i_load(value: float)
+
+
+   .. py:method:: update_power(value: float)
+
+
+   .. py:method:: update_q(value: float)
+
+
+.. py:class:: ThermalModel(name: str)
+
+   Bases: :py:obj:`GenericModel`
+
+
+   
+
+
+   .. py:property:: name
+
+
+   .. py:method:: reset_model(**kwargs)
+
+
+   .. py:method:: init_model(**kwargs)
+
+
+   .. py:method:: load_battery_state(**kwargs)
+
+
+   .. py:method:: compute_temp(**kwargs)
+
+
+   .. py:method:: get_results(**kwargs)
+
+      Returns a dictionary with all final results
+
+
+
+   .. py:method:: get_temp_series(k=None)
+
+      Getter of the specific value at step K, if specified, otherwise of the entire collection
+
+
+
+   .. py:method:: get_heat_series(k=None)
+
+      Getter of the specific value at step K, if specified, otherwise of the entire collection
+
+
+
+   .. py:method:: update_temp(value: float)
+
+
+   .. py:method:: update_heat(value: float)
+
+
+.. py:class:: AgingModel(name: str)
+
+   Bases: :py:obj:`GenericModel`
+
+
+   
+
+
+   .. py:property:: name
+
+
+   .. py:method:: reset_model(**kwargs)
+
+
+   .. py:method:: init_model(**kwargs)
+
+
+   .. py:method:: load_battery_state(**kwargs)
+
+
+   .. py:method:: compute_degradation(**kwargs)
+
+
+   .. py:method:: get_results(**kwargs)
+
+
+   .. py:method:: get_deg_series(k=None)
+
+      Getter of the specific value at step K, if specified, otherwise of the entire collection
+
+
+
+   .. py:method:: update_deg(value: float)
+
+

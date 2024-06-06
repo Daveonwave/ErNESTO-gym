@@ -1,0 +1,111 @@
+ernestogym.envs
+===============
+
+.. py:module:: ernestogym.envs
+
+
+Subpackages
+-----------
+
+.. toctree::
+   :maxdepth: 1
+
+   /api/ernestogym/envs/multi_agent/index
+   /api/ernestogym/envs/single_agent/index
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   ernestogym.envs.MiniGridEnv
+
+
+Package Contents
+----------------
+
+.. py:class:: MiniGridEnv(settings: dict[str, Any])
+
+   Bases: :py:obj:`gymnasium.Env`
+
+
+   
+
+
+   .. py:attribute:: SECONDS_PER_MINUTE
+      :value: 60
+
+
+
+   .. py:attribute:: SECONDS_PER_HOUR
+
+
+   .. py:attribute:: SECONDS_PER_DAY
+
+
+   .. py:attribute:: DAYS_PER_YEAR
+      :value: 365.25
+
+
+
+   .. py:method:: reset(seed=None, options=None)
+
+      
+
+
+
+   .. py:method:: step(action: numpy.ndarray)
+
+      
+
+
+
+   .. py:method:: render()
+      :abstractmethod:
+
+
+      Compute the render frames as specified by :attr:`render_mode` during the initialization of the environment.
+
+      The environment's :attr:`metadata` render modes (`env.metadata["render_modes"]`) should contain the possible
+      ways to implement the render modes. In addition, list versions for most render modes is achieved through
+      `gymnasium.make` which automatically applies a wrapper to collect rendered frames.
+
+      .. note::
+
+         As the :attr:`render_mode` is known during ``__init__``, the objects used to render the environment state
+         should be initialised in ``__init__``.
+
+      By convention, if the :attr:`render_mode` is:
+
+      - None (default): no render is computed.
+      - "human": The environment is continuously rendered in the current display or terminal, usually for human consumption.
+        This rendering should occur during :meth:`step` and :meth:`render` doesn't need to be called. Returns ``None``.
+      - "rgb_array": Return a single frame representing the current state of the environment.
+        A frame is a ``np.ndarray`` with shape ``(x, y, 3)`` representing RGB values for an x-by-y pixel image.
+      - "ansi": Return a strings (``str``) or ``StringIO.StringIO`` containing a terminal-style text representation
+        for each time step. The text can include newlines and ANSI escape sequences (e.g. for colors).
+      - "rgb_array_list" and "ansi_list": List based version of render modes are possible (except Human) through the
+        wrapper, :py:class:`gymnasium.wrappers.RenderCollection` that is automatically applied during ``gymnasium.make(..., render_mode="rgb_array_list")``.
+        The frames collected are popped after :meth:`render` is called or :meth:`reset`.
+
+      .. note:: Make sure that your class's :attr:`metadata` ``"render_modes"`` key includes the list of supported modes.
+
+      .. versionchanged:: 0.25.0
+
+          The render function was changed to no longer accept parameters, rather these parameters should be specified
+          in the environment initialised, i.e., ``gymnasium.make("CartPole-v1", render_mode="human")``
+
+
+
+   .. py:method:: close()
+      :abstractmethod:
+
+
+      After the user has finished using the environment, close contains the code necessary to "clean up" the environment.
+
+      This is critical for closing rendering windows, database or HTTP connections.
+      Calling ``close`` on an already closed environment has no effect and won't raise an error.
+
+
+

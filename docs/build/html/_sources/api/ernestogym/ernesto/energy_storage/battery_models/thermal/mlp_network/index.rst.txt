@@ -1,0 +1,159 @@
+ernestogym.ernesto.energy_storage.battery_models.thermal.mlp_network
+====================================================================
+
+.. py:module:: ernestogym.ernesto.energy_storage.battery_models.thermal.mlp_network
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   ernestogym.ernesto.energy_storage.battery_models.thermal.mlp_network.ThermalModel
+   ernestogym.ernesto.energy_storage.battery_models.thermal.mlp_network.MLPThermal
+
+
+Module Contents
+---------------
+
+.. py:class:: ThermalModel(name: str)
+
+   Bases: :py:obj:`GenericModel`
+
+
+   
+
+
+   .. py:property:: name
+
+
+   .. py:method:: reset_model(**kwargs)
+
+
+   .. py:method:: init_model(**kwargs)
+
+
+   .. py:method:: load_battery_state(**kwargs)
+
+
+   .. py:method:: compute_temp(**kwargs)
+
+
+   .. py:method:: get_results(**kwargs)
+
+      Returns a dictionary with all final results
+
+
+
+   .. py:method:: get_temp_series(k=None)
+
+      Getter of the specific value at step K, if specified, otherwise of the entire collection
+
+
+
+   .. py:method:: get_heat_series(k=None)
+
+      Getter of the specific value at step K, if specified, otherwise of the entire collection
+
+
+
+   .. py:method:: update_temp(value: float)
+
+
+   .. py:method:: update_heat(value: float)
+
+
+.. py:class:: MLPThermal(components_settings: dict, **kwargs)
+
+   Bases: :py:obj:`ernestogym.ernesto.energy_storage.battery_models.generic_models.ThermalModel`
+
+
+   
+
+
+   .. py:class:: SimpleDataset(x, y)
+
+      Bases: :py:obj:`torch.utils.data.Dataset`
+
+
+      An abstract class representing a :class:`Dataset`.
+
+      All datasets that represent a map from keys to data samples should subclass
+      it. All subclasses should overwrite :meth:`__getitem__`, supporting fetching a
+      data sample for a given key. Subclasses could also optionally overwrite
+      :meth:`__len__`, which is expected to return the size of the dataset by many
+      :class:`~torch.utils.data.Sampler` implementations and the default options
+      of :class:`~torch.utils.data.DataLoader`. Subclasses could also
+      optionally implement :meth:`__getitems__`, for speedup batched samples
+      loading. This method accepts list of indices of samples of batch and returns
+      list of samples.
+
+      .. note::
+        :class:`~torch.utils.data.DataLoader` by default constructs an index
+        sampler that yields integral indices.  To make it work with a map-style
+        dataset with non-integral indices/keys, a custom sampler must be provided.
+
+
+
+   .. py:class:: RegressionModel(input_size, hidden_size, output_size)
+
+      Bases: :py:obj:`torch.nn.Module`
+
+
+      Base class for all neural network modules.
+
+      Your models should also subclass this class.
+
+      Modules can also contain other Modules, allowing to nest them in
+      a tree structure. You can assign the submodules as regular attributes::
+
+          import torch.nn as nn
+          import torch.nn.functional as F
+
+          class Model(nn.Module):
+              def __init__(self):
+                  super().__init__()
+                  self.conv1 = nn.Conv2d(1, 20, 5)
+                  self.conv2 = nn.Conv2d(20, 20, 5)
+
+              def forward(self, x):
+                  x = F.relu(self.conv1(x))
+                  return F.relu(self.conv2(x))
+
+      Submodules assigned in this way will be registered, and will have their
+      parameters converted too when you call :meth:`to`, etc.
+
+      .. note::
+          As per the example above, an ``__init__()`` call to the parent class
+          must be made before assignment on the child.
+
+      :ivar training: Boolean represents whether this module is in training or
+                      evaluation mode.
+      :vartype training: bool
+
+
+      .. py:method:: forward(x)
+
+
+
+   .. py:property:: soc
+
+
+   .. py:method:: reset_model(**kwargs)
+
+
+   .. py:method:: init_model(**kwargs)
+
+      Initialize the model at timestep t=0 with an initial temperature equal to 25 degC (ambient temperature)
+
+
+
+   .. py:method:: load_battery_state(**kwargs)
+
+
+   .. py:method:: compute_temp(**kwargs)
+
+      
+
+
+

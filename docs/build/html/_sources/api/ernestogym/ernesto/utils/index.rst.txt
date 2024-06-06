@@ -1,0 +1,25 @@
+ernestogym.ernesto.utils
+========================
+
+.. py:module:: ernestogym.ernesto.utils
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   ernestogym.ernesto.utils.read_csv
+   ernestogym.ernesto.utils.to_csv
+
+
+Module Contents
+---------------
+
+.. py:function:: read_csv(csv_file: str) -> pandas.DataFrame
+
+   Read data from csv files
+
+
+.. py:function:: to_csv(csv_file: str, results: dict)
+

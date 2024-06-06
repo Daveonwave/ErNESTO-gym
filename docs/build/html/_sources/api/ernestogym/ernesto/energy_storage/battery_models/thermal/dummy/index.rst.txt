@@ -1,0 +1,89 @@
+ernestogym.ernesto.energy_storage.battery_models.thermal.dummy
+==============================================================
+
+.. py:module:: ernestogym.ernesto.energy_storage.battery_models.thermal.dummy
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   ernestogym.ernesto.energy_storage.battery_models.thermal.dummy.ThermalModel
+   ernestogym.ernesto.energy_storage.battery_models.thermal.dummy.DummyThermal
+
+
+Module Contents
+---------------
+
+.. py:class:: ThermalModel(name: str)
+
+   Bases: :py:obj:`GenericModel`
+
+
+   
+
+
+   .. py:property:: name
+
+
+   .. py:method:: reset_model(**kwargs)
+
+
+   .. py:method:: init_model(**kwargs)
+
+
+   .. py:method:: load_battery_state(**kwargs)
+
+
+   .. py:method:: compute_temp(**kwargs)
+
+
+   .. py:method:: get_results(**kwargs)
+
+      Returns a dictionary with all final results
+
+
+
+   .. py:method:: get_temp_series(k=None)
+
+      Getter of the specific value at step K, if specified, otherwise of the entire collection
+
+
+
+   .. py:method:: get_heat_series(k=None)
+
+      Getter of the specific value at step K, if specified, otherwise of the entire collection
+
+
+
+   .. py:method:: update_temp(value: float)
+
+
+   .. py:method:: update_heat(value: float)
+
+
+.. py:class:: DummyThermal(**kwargs)
+
+   Bases: :py:obj:`ernestogym.ernesto.energy_storage.battery_models.generic_models.ThermalModel`
+
+
+   The Dummy Thermal model simply simulates the temperature of the battery by copying the ground temperature.
+   NOTE: this model cannot be employed to generate new data (what-if simulation)
+
+
+   .. py:property:: temps
+
+
+   .. py:method:: reset_model(**kwargs)
+
+
+   .. py:method:: init_model(**kwargs)
+
+      Initialize the model at timestep t=0 with an initial temperature equal to 25 degC (ambient temperature)
+
+
+
+   .. py:method:: compute_temp(**kwargs)
+
+

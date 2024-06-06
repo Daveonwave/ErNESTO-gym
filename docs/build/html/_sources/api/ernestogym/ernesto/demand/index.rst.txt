@@ -1,0 +1,51 @@
+ernestogym.ernesto.demand
+=========================
+
+.. py:module:: ernestogym.ernesto.demand
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   ernestogym.ernesto.demand.EnergyDemand
+
+
+Module Contents
+---------------
+
+.. py:class:: EnergyDemand(data: pandas.DataFrame, timestep: int, test_profiles: list[str], data_usage: str = 'end')
+
+   Energy demand
+
+
+   .. py:property:: history
+
+
+   .. py:property:: times
+
+
+   .. py:property:: labels
+
+
+   .. py:property:: profile
+
+
+   .. py:method:: get_idx_from_times(time: int) -> int
+
+      Get index of demand history for given time.
+      :param time: time of demand history
+      :return: index of demand history
+
+
+
+   .. py:method:: use_test_profile(test_profile: str = None)
+
+
+   .. py:method:: is_run_out_of_data()
+
+      Check if demand history is out-of-data.
+
+
+

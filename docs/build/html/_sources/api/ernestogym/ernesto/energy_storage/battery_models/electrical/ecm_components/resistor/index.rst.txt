@@ -1,0 +1,230 @@
+ernestogym.ernesto.energy_storage.battery_models.electrical.ecm_components.resistor
+===================================================================================
+
+.. py:module:: ernestogym.ernesto.energy_storage.battery_models.electrical.ecm_components.resistor
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   ernestogym.ernesto.energy_storage.battery_models.electrical.ecm_components.resistor.Unit
+   ernestogym.ernesto.energy_storage.battery_models.electrical.ecm_components.resistor.Scalar
+   ernestogym.ernesto.energy_storage.battery_models.electrical.ecm_components.resistor.LookupTableFunction
+   ernestogym.ernesto.energy_storage.battery_models.electrical.ecm_components.resistor.ECMComponent
+   ernestogym.ernesto.energy_storage.battery_models.electrical.ecm_components.resistor.Resistor
+
+
+Module Contents
+---------------
+
+.. py:class:: Unit(**kwargs)
+
+   .. py:attribute:: OHM
+
+
+   .. py:attribute:: AMPERE
+
+
+   .. py:attribute:: VOLT
+
+
+   .. py:attribute:: FARADAY
+
+
+   .. py:attribute:: WATT
+
+
+   .. py:attribute:: HOUR
+
+
+   .. py:attribute:: MINUTE
+
+
+   .. py:attribute:: SECOND
+
+
+   .. py:attribute:: CELSIUS
+
+
+   .. py:attribute:: KELVIN
+
+
+.. py:class:: Scalar(name: str, value: Union[int, float])
+
+   Bases: :py:obj:`GenericVariable`
+
+
+   
+
+
+   .. py:method:: get_value(input_vars: dict = None)
+
+
+   .. py:method:: set_value(new_value: float)
+
+
+.. py:class:: LookupTableFunction(name: str, y_values: list, x_names: list, x_values: list)
+
+   Bases: :py:obj:`GenericVariable`
+
+
+   
+
+
+   .. py:method:: get_value(input_vars: dict)
+
+      Retrieve the result of the interpolation function from the lookup table.
+
+
+
+   .. py:method:: get_y_values()
+
+      Get y_values from which is extracted the result of the interpolation function.
+
+
+
+   .. py:method:: set_value(new_values: numpy.ndarray)
+
+      Set the values of the lookup table
+
+
+
+   .. py:method:: render()
+
+
+.. py:class:: ECMComponent(name)
+
+   Generic component of Thevenin equivalent circuits.
+
+   :param :
+   :type : param name: identifier of the component
+   :param :
+   :type : type name: str
+
+   .. attribute:: _v_series
+
+
+
+      :type: collection of all the past component voltages
+
+   .. attribute:: _t_series
+
+
+
+      :type: collection of all the past discrete steps of time
+
+   .. attribute:: Purpose
+
+
+
+   .. attribute:: -------
+
+
+
+   .. attribute:: This class builds a generic component of the Thevenin equivalent circuit and presents common attributes and
+
+
+
+   .. attribute:: collections that can be useful in each single element of the circuit (Resistor, RCParallel, V_OCV generator).
+
+
+
+
+   .. py:property:: name
+
+
+   .. py:property:: temp
+
+
+   .. py:property:: soc
+
+
+   .. py:property:: soh
+
+
+   .. py:method:: get_v_series(k=None)
+
+      Getter of the specific value at step K, if specified, otherwise of the entire collection
+
+
+
+   .. py:method:: reset_data()
+
+
+   .. py:method:: init_component(v=0)
+
+
+   .. py:method:: update_v(value: float)
+
+
+.. py:class:: Resistor(name: str, resistance: Union[ernestogym.ernesto.energy_storage.battery_models.parameters.Scalar, ernestogym.ernesto.energy_storage.battery_models.parameters.LookupTableFunction])
+
+   Bases: :py:obj:`ernestogym.ernesto.energy_storage.battery_models.electrical.ecm_components.generic_component.ECMComponent`
+
+
+   Resistor element of Thevenin equivalent circuits.
+
+   :param :
+   :type : param name: identifier of the resistor
+   :param :
+   :type : type name: str
+   :param :
+   :type : param resistance: value of the resistance (Ohm)
+   :param :
+   :type : type resistance: float or int or pint.Quantity
+
+
+   .. py:property:: resistance
+      Getter of the R0 value. Depending on the x_names (inputs of the function), we retrieve components attribute
+      among {SoC, SoH, Temp}.
+      If R0 is a scalar, we don't need to provide any input.
+
+
+   .. py:method:: reset_data()
+
+
+   .. py:method:: init_component(v=None, r0=None)
+
+      Initialize R0 component at t=0
+
+
+
+   .. py:method:: get_r0_series(k=None)
+
+      Getter of the specific value at step K, if specified, otherwise of the entire collection
+
+
+
+   .. py:method:: compute_v(i)
+
+      Compute the resistor potential V_r0, given in input the electric current I=I_r0
+      #TODO: we will use 'k' when there will be the decay of resistance
+
+
+
+   .. py:method:: compute_i(v_r0)
+
+      Compute the flowing electric current I_r0=I, given in input the resistor potential V_r0
+
+
+
+   .. py:method:: compute_dv(i, i_, dt)
+
+      Compute the derivative of (dv_r0/dt) using the backward finite differences approach.
+      We consider (dr0/dt) constant, so we can erase the second term of the derivation by parts.
+
+      Inputs:
+      :param i: current at time t
+      :param i_: current at previous sampling time t-dt
+      :param dt: delta of time
+
+
+
+   .. py:method:: update_step_variables(r0, v_r0)
+
+      Aggiorno le liste delle variabili calcolate
+
+
+

@@ -1,0 +1,239 @@
+ernestogym.ernesto.energy_storage.battery_models.electrical.ecm_components.rc_parallel
+======================================================================================
+
+.. py:module:: ernestogym.ernesto.energy_storage.battery_models.electrical.ecm_components.rc_parallel
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   ernestogym.ernesto.energy_storage.battery_models.electrical.ecm_components.rc_parallel.Scalar
+   ernestogym.ernesto.energy_storage.battery_models.electrical.ecm_components.rc_parallel.LookupTableFunction
+   ernestogym.ernesto.energy_storage.battery_models.electrical.ecm_components.rc_parallel.ECMComponent
+   ernestogym.ernesto.energy_storage.battery_models.electrical.ecm_components.rc_parallel.ResistorCapacitorParallel
+
+
+Module Contents
+---------------
+
+.. py:class:: Scalar(name: str, value: Union[int, float])
+
+   Bases: :py:obj:`GenericVariable`
+
+
+   
+
+
+   .. py:method:: get_value(input_vars: dict = None)
+
+
+   .. py:method:: set_value(new_value: float)
+
+
+.. py:class:: LookupTableFunction(name: str, y_values: list, x_names: list, x_values: list)
+
+   Bases: :py:obj:`GenericVariable`
+
+
+   
+
+
+   .. py:method:: get_value(input_vars: dict)
+
+      Retrieve the result of the interpolation function from the lookup table.
+
+
+
+   .. py:method:: get_y_values()
+
+      Get y_values from which is extracted the result of the interpolation function.
+
+
+
+   .. py:method:: set_value(new_values: numpy.ndarray)
+
+      Set the values of the lookup table
+
+
+
+   .. py:method:: render()
+
+
+.. py:class:: ECMComponent(name)
+
+   Generic component of Thevenin equivalent circuits.
+
+   :param :
+   :type : param name: identifier of the component
+   :param :
+   :type : type name: str
+
+   .. attribute:: _v_series
+
+
+
+      :type: collection of all the past component voltages
+
+   .. attribute:: _t_series
+
+
+
+      :type: collection of all the past discrete steps of time
+
+   .. attribute:: Purpose
+
+
+
+   .. attribute:: -------
+
+
+
+   .. attribute:: This class builds a generic component of the Thevenin equivalent circuit and presents common attributes and
+
+
+
+   .. attribute:: collections that can be useful in each single element of the circuit (Resistor, RCParallel, V_OCV generator).
+
+
+
+
+   .. py:property:: name
+
+
+   .. py:property:: temp
+
+
+   .. py:property:: soc
+
+
+   .. py:property:: soh
+
+
+   .. py:method:: get_v_series(k=None)
+
+      Getter of the specific value at step K, if specified, otherwise of the entire collection
+
+
+
+   .. py:method:: reset_data()
+
+
+   .. py:method:: init_component(v=0)
+
+
+   .. py:method:: update_v(value: float)
+
+
+.. py:class:: ResistorCapacitorParallel(name, resistance: Union[ernestogym.ernesto.energy_storage.battery_models.parameters.Scalar, ernestogym.ernesto.energy_storage.battery_models.parameters.LookupTableFunction], capacity: Union[ernestogym.ernesto.energy_storage.battery_models.parameters.Scalar, ernestogym.ernesto.energy_storage.battery_models.parameters.LookupTableFunction])
+
+   Bases: :py:obj:`ernestogym.ernesto.energy_storage.battery_models.electrical.ecm_components.generic_component.ECMComponent`
+
+
+   Parallel Resistor-Capacitor (RC) element for Thevenin equivalent circuits.
+
+   :param :
+   :type : param resistance:
+   :param :
+   :type : type resistance:
+   :param :
+   :type : param capacity:
+   :param :
+   :type : type capacity:
+
+
+   .. py:property:: resistance
+      Getter of the R1 value. Depending on the x_names (inputs of the function), we retrieve components attribute
+      among {SoC, SoH, Temp}.
+      If R1 is a scalar, we don't need to provide any input.
+
+
+   .. py:property:: capacity
+      Getter of the C value. Depending on the x_names (inputs of the function), we retrieve components attribute
+      among {SoC, SoH, Temp}.
+      If C is a scalar, we don't need to provide any input.
+
+
+   .. py:method:: get_r1_series(k=None)
+
+      Getter of the specific value at step K, if specified, otherwise of the entire collection
+
+
+
+   .. py:method:: get_c_series(k=None)
+
+      Getter of the specific value at step K, if specified, otherwise of the entire collection
+
+
+
+   .. py:method:: get_i_r1_series(k=None)
+
+      Getter of the specific value at step K, if specified, otherwise of the entire collection
+
+
+
+   .. py:method:: get_i_c_series(k=None)
+
+      Getter of the specific value at step K, if specified, otherwise of the entire collection
+
+
+
+   .. py:method:: reset_data()
+
+
+   .. py:method:: init_component(r1=None, c=None, i_c=0, i_r1=0, v_rc=None)
+
+      Initialize RC component at t=0
+
+
+
+   .. py:method:: compute_v(i_r1)
+
+      Compute the potential of the RC parallel V_r1=V_c.
+
+      Inputs:
+      :param i_r1: current I_r1 flowing through the resistor
+
+
+
+   .. py:method:: compute_i_r1(v_rc)
+
+      Compute the flowing electric current I_r1, given the voltage of the resistor V_r1.
+      The formula for the computation of I_r1 at step k is:
+
+          I_r1[k] = V_r1[k] / R1
+
+      Inputs
+      ------
+      :param v_rc : voltage of resistor R1
+
+
+
+   .. py:method:: compute_i_c(dv_c=None, i=None, i_r1=None)
+
+      Compute the flowing electric current I_c, given the derivative of the capacitor voltage dV_c, by means of the
+      capacitor characteristic formula: dV_c = I_c / C (with respect to time).
+      In alternative, if available we can use the resistor current I_r1 and the circuit current I. In this case, we
+      use the Kirchhoff's law at node: I_c = I - I_r1.
+
+      Inputs
+      ------
+      param dv_c:
+      param i:
+      param i_r1:
+
+
+
+   .. py:method:: compute_tau()
+
+      Compute the
+
+
+
+   .. py:method:: update_step_variables(r1, c, v_rc, i_r1, i_c)
+
+      Aggiorno le liste delle variabili calcolate
+
+
+

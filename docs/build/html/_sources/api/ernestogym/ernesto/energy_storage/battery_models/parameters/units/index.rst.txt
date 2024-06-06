@@ -1,0 +1,59 @@
+ernestogym.ernesto.energy_storage.battery_models.parameters.units
+=================================================================
+
+.. py:module:: ernestogym.ernesto.energy_storage.battery_models.parameters.units
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   ernestogym.ernesto.energy_storage.battery_models.parameters.units.ureg
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   ernestogym.ernesto.energy_storage.battery_models.parameters.units.Unit
+
+
+Module Contents
+---------------
+
+.. py:data:: ureg
+
+.. py:class:: Unit(**kwargs)
+
+   .. py:attribute:: OHM
+
+
+   .. py:attribute:: AMPERE
+
+
+   .. py:attribute:: VOLT
+
+
+   .. py:attribute:: FARADAY
+
+
+   .. py:attribute:: WATT
+
+
+   .. py:attribute:: HOUR
+
+
+   .. py:attribute:: MINUTE
+
+
+   .. py:attribute:: SECOND
+
+
+   .. py:attribute:: CELSIUS
+
+
+   .. py:attribute:: KELVIN
+
+

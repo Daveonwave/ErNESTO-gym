@@ -1,0 +1,129 @@
+ernestogym.ernesto.energy_storage.battery_models.thermal.rc
+===========================================================
+
+.. py:module:: ernestogym.ernesto.energy_storage.battery_models.thermal.rc
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   ernestogym.ernesto.energy_storage.battery_models.thermal.rc.ThermalModel
+   ernestogym.ernesto.energy_storage.battery_models.thermal.rc.Scalar
+   ernestogym.ernesto.energy_storage.battery_models.thermal.rc.RCThermal
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   ernestogym.ernesto.energy_storage.battery_models.thermal.rc.instantiate_variables
+
+
+Module Contents
+---------------
+
+.. py:class:: ThermalModel(name: str)
+
+   Bases: :py:obj:`GenericModel`
+
+
+   
+
+
+   .. py:property:: name
+
+
+   .. py:method:: reset_model(**kwargs)
+
+
+   .. py:method:: init_model(**kwargs)
+
+
+   .. py:method:: load_battery_state(**kwargs)
+
+
+   .. py:method:: compute_temp(**kwargs)
+
+
+   .. py:method:: get_results(**kwargs)
+
+      Returns a dictionary with all final results
+
+
+
+   .. py:method:: get_temp_series(k=None)
+
+      Getter of the specific value at step K, if specified, otherwise of the entire collection
+
+
+
+   .. py:method:: get_heat_series(k=None)
+
+      Getter of the specific value at step K, if specified, otherwise of the entire collection
+
+
+
+   .. py:method:: update_temp(value: float)
+
+
+   .. py:method:: update_heat(value: float)
+
+
+.. py:class:: Scalar(name: str, value: Union[int, float])
+
+   Bases: :py:obj:`GenericVariable`
+
+
+   
+
+
+   .. py:method:: get_value(input_vars: dict = None)
+
+
+   .. py:method:: set_value(new_value: float)
+
+
+.. py:function:: instantiate_variables(var_dict: dict) -> dict
+
+   # TODO: cambiare configurazione dati in ingresso (esempio: LookupTable passata con un csv)
+
+
+.. py:class:: RCThermal(components_settings: dict)
+
+   Bases: :py:obj:`ernestogym.ernesto.energy_storage.battery_models.generic_models.ThermalModel`
+
+
+   Pellegrino paper (@reference [paper link])
+
+
+   .. py:property:: r_term
+
+
+   .. py:property:: c_term
+
+
+   .. py:method:: reset_model(**kwargs)
+
+
+   .. py:method:: init_model(**kwargs)
+
+      Initialize the model at timestep t=0 with an initial temperature equal to 2 degC (ambient temperature)
+
+
+
+   .. py:method:: compute_temp(q, T_amb, dt, k=-1, i=None)
+
+      Compute the current temperature with equation described in the aforementioned paper
+
+      Inputs:
+      :param q: power dissipated adopted as heat
+      :param T_amb: ambient temperature
+      :param dt: delta of time from last update
+      :param k: iteration
+      :param i: actual current in the circuit
+
+
+

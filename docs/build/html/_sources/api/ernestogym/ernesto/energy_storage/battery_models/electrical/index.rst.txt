@@ -1,0 +1,183 @@
+ernestogym.ernesto.energy_storage.battery_models.electrical
+===========================================================
+
+.. py:module:: ernestogym.ernesto.energy_storage.battery_models.electrical
+
+
+Subpackages
+-----------
+
+.. toctree::
+   :maxdepth: 1
+
+   /api/ernestogym/ernesto/energy_storage/battery_models/electrical/ecm_components/index
+
+
+Submodules
+----------
+
+.. toctree::
+   :maxdepth: 1
+
+   /api/ernestogym/ernesto/energy_storage/battery_models/electrical/ecm/index
+   /api/ernestogym/ernesto/energy_storage/battery_models/electrical/ecm_with_fading/index
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   ernestogym.ernesto.energy_storage.battery_models.electrical.TheveninModel
+   ernestogym.ernesto.energy_storage.battery_models.electrical.TheveninFadingModel
+
+
+Package Contents
+----------------
+
+.. py:class:: TheveninModel(components_settings: dict, sign_convention='active', **kwargs)
+
+   Bases: :py:obj:`ernestogym.ernesto.energy_storage.battery_models.generic_models.ElectricalModel`
+
+
+   Class
+
+
+   .. py:method:: reset_model(**kwargs)
+
+
+   .. py:method:: init_model(**kwargs)
+
+      Initialize the model at t=0
+
+
+
+   .. py:method:: load_battery_state(temp=None, soc=None, soh=None)
+
+      Update the SoC and SoH for the current simulation step
+
+
+
+   .. py:method:: step_voltage_driven(v_load, dt, k)
+
+      CV mode
+
+
+
+   .. py:method:: step_current_driven(i_load, dt, k, p_load=None)
+
+      CC mode
+
+
+
+   .. py:method:: step_power_driven(p_load, dt, k)
+
+      CP mode: to simplify the power driven case, we pose I = P / V(t-1), having a little shift in computed data
+
+
+
+   .. py:method:: compute_generated_heat(k=-1)
+
+      Compute the generated heat that can be used to feed the thermal model (when required).
+      For Thevenin first order circuit it is: [P = V * I + V_rc * I_r1].
+
+      Inputs:
+      :param k: step for which compute the heat generation
+
+
+
+   .. py:method:: get_internal_resistance()
+
+
+   .. py:method:: get_polarization_resistance()
+
+
+   .. py:method:: get_internal_capacity()
+
+
+   .. py:method:: get_results(**kwargs)
+
+      Returns a dictionary with all final results
+      TODO: selection of results by label from config file?
+
+
+
+.. py:class:: TheveninFadingModel(components_settings: dict, sign_convention='active', **kwargs)
+
+   Bases: :py:obj:`ernestogym.ernesto.energy_storage.battery_models.generic_models.ElectricalModel`
+
+
+   Thevenin Equivalent Circuit Model with fading functions for internal parameters.
+
+   Reference:
+   ----------------
+   S. Barcellona, S. Colnago, E. Ferri and L. Piegari, "Evaluation of Dual-Chemistry Battery Storage System for
+   Electric Vehicles Charging Stations," 2023 IEEE Vehicle Power and Propulsion Conference (VPPC), Milan, Italy, 2023,
+   doi: 10.1109/VPPC60535.2023.10403281.
+
+
+   .. py:method:: reset_model(**kwargs)
+
+
+   .. py:method:: init_model(**kwargs)
+
+      Initialize the model at t=0
+
+
+
+   .. py:method:: load_battery_state(temp=None, soc=None, soh=None)
+
+      Update the SoC and SoH for the current simulation step
+
+
+
+   .. py:method:: step_voltage_driven(v_load, dt, k)
+
+      CV mode
+
+
+
+   .. py:method:: step_current_driven(i_load, dt, k, p_load=None)
+
+      CC mode
+
+
+
+   .. py:method:: step_power_driven(p_load, dt, k)
+
+      CP mode: to simplify the power driven case, we pose I = P / V(t-1), having a little shift in computed data
+
+
+
+   .. py:method:: compute_generated_heat(k=-1)
+
+      Compute the generated heat that can be used to feed the thermal model (when required).
+      For Thevenin first order circuit it is: [P = V * I + V_rc * I_r1].
+
+      Inputs:
+      :param k: step for which compute the heat generation
+
+
+
+   .. py:method:: compute_parameter_fading(k=-1)
+
+      Model of parameter fading hardcoded in this file within function 'capacity_fading' and 'resistor_fading'.
+
+
+
+   .. py:method:: get_internal_resistance()
+
+
+   .. py:method:: get_polarization_resistance()
+
+
+   .. py:method:: get_internal_capacity()
+
+
+   .. py:method:: get_results(**kwargs)
+
+      Returns a dictionary with all final results
+      TODO: selection of results by label from config file?
+
+
+

@@ -1,0 +1,21 @@
+launch_env
+==========
+
+.. py:module:: launch_env
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   launch_env.pack_options
+
+
+Module Contents
+---------------
+
+.. py:data:: pack_options
+   :value: 'ernestogym/ernesto/data/battery/pack.yaml'
+
+

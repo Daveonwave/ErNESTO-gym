@@ -1,0 +1,950 @@
+<!doctype html>
+<html class="no-js" lang="en" data-content_root="../../../../../">
+  <head><meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1"/>
+    <meta name="color-scheme" content="light dark"><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+<link rel="index" title="Index" href="../../../../../genindex.html" /><link rel="search" title="Search" href="../../../../../search.html" />
+
+    <!-- Generated with Sphinx 7.3.7 and Furo 2024.05.06 -->
+        <title>ernestogym.envs.single_agent.env - ErNESTO-gym</title>
+      <link rel="stylesheet" type="text/css" href="../../../../../_static/pygments.css?v=362ab14a" />
+    <link rel="stylesheet" type="text/css" href="../../../../../_static/styles/furo.css?v=387cc868" />
+    <link rel="stylesheet" type="text/css" href="../../../../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../../../../_static/graphviz.css?v=fd3f3429" />
+    <link rel="stylesheet" type="text/css" href="../../../../../_static/styles/furo-extensions.css?v=36a5483c" />
+    
+    
+
+
+<style>
+  body {
+    --color-code-background: #f8f8f8;
+  --color-code-foreground: black;
+  
+  }
+  @media not print {
+    body[data-theme="dark"] {
+      --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+    }
+    @media (prefers-color-scheme: dark) {
+      body:not([data-theme="light"]) {
+        --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+      }
+    }
+  }
+</style></head>
+  <body>
+    
+    <script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
+    
+
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="svg-toc" viewBox="0 0 24 24">
+    <title>Contents</title>
+    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024">
+      <path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-menu" viewBox="0 0 24 24">
+    <title>Menu</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-menu">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
+    <title>Expand</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-chevron-right">
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </symbol>
+  <symbol id="svg-sun" viewBox="0 0 24 24">
+    <title>Light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="feather-sun">
+      <circle cx="12" cy="12" r="5"></circle>
+      <line x1="12" y1="1" x2="12" y2="3"></line>
+      <line x1="12" y1="21" x2="12" y2="23"></line>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+      <line x1="1" y1="12" x2="3" y2="12"></line>
+      <line x1="21" y1="12" x2="23" y2="12"></line>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon" viewBox="0 0 24 24">
+    <title>Dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-moon">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
+    </svg>
+  </symbol>
+  <symbol id="svg-sun-half" viewBox="0 0 24 24">
+    <title>Auto light/dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-shadow">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M13 12h5" />
+      <path d="M13 15h4" />
+      <path d="M13 18h1" />
+      <path d="M13 9h4" />
+      <path d="M13 6h1" />
+    </svg>
+  </symbol>
+  <symbol id="svg-sun-with-moon" viewBox="0 0 24 24">
+    <title>Auto light/dark, in light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path style="opacity: 50%" d="M 5.411 14.504 C 5.471 14.504 5.532 14.504 5.591 14.504 C 3.639 16.319 4.383 19.569 6.931 20.352 C 7.693 20.586 8.512 20.551 9.25 20.252 C 8.023 23.207 4.056 23.725 2.11 21.184 C 0.166 18.642 1.702 14.949 4.874 14.536 C 5.051 14.512 5.231 14.5 5.411 14.5 L 5.411 14.504 Z"/>
+      <line x1="14.5" y1="3.25" x2="14.5" y2="1.25"/>
+      <line x1="14.5" y1="15.85" x2="14.5" y2="17.85"/>
+      <line x1="10.044" y1="5.094" x2="8.63" y2="3.68"/>
+      <line x1="19" y1="14.05" x2="20.414" y2="15.464"/>
+      <line x1="8.2" y1="9.55" x2="6.2" y2="9.55"/>
+      <line x1="20.8" y1="9.55" x2="22.8" y2="9.55"/>
+      <line x1="10.044" y1="14.006" x2="8.63" y2="15.42"/>
+      <line x1="19" y1="5.05" x2="20.414" y2="3.636"/>
+      <circle cx="14.5" cy="9.55" r="3.6"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon-with-sun" viewBox="0 0 24 24">
+    <title>Auto light/dark, in dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path d="M 8.282 7.007 C 8.385 7.007 8.494 7.007 8.595 7.007 C 5.18 10.184 6.481 15.869 10.942 17.24 C 12.275 17.648 13.706 17.589 15 17.066 C 12.851 22.236 5.91 23.143 2.505 18.696 C -0.897 14.249 1.791 7.786 7.342 7.063 C 7.652 7.021 7.965 7 8.282 7 L 8.282 7.007 Z"/>
+      <line style="opacity: 50%" x1="18" y1="3.705" x2="18" y2="2.5"/>
+      <line style="opacity: 50%" x1="18" y1="11.295" x2="18" y2="12.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="4.816" x2="14.464" y2="3.964"/>
+      <line style="opacity: 50%" x1="20.711" y1="10.212" x2="21.563" y2="11.063"/>
+      <line style="opacity: 50%" x1="14.205" y1="7.5" x2="13.001" y2="7.5"/>
+      <line style="opacity: 50%" x1="21.795" y1="7.5" x2="23" y2="7.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="10.184" x2="14.464" y2="11.036"/>
+      <line style="opacity: 50%" x1="20.711" y1="4.789" x2="21.563" y2="3.937"/>
+      <circle style="opacity: 50%" cx="18" cy="7.5" r="2.169"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-pencil" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-pencil-code">
+      <path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" />
+      <path d="M13.5 6.5l4 4" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" /
+    </svg>
+  </symbol>
+  <symbol id="svg-eye" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-eye-code">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
+      <path
+        d="M11.11 17.958c-3.209 -.307 -5.91 -2.293 -8.11 -5.958c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6c-.21 .352 -.427 .688 -.647 1.008" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+</svg>
+
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation">
+<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc">
+<label class="overlay sidebar-overlay" for="__navigation">
+  <div class="visually-hidden">Hide navigation sidebar</div>
+</label>
+<label class="overlay toc-overlay" for="__toc">
+  <div class="visually-hidden">Hide table of contents sidebar</div>
+</label>
+
+<a class="skip-to-content muted-link" href="#furo-main-content">Skip to content</a>
+
+
+
+<div class="page">
+  <header class="mobile-header">
+    <div class="header-left">
+      <label class="nav-overlay-icon" for="__navigation">
+        <div class="visually-hidden">Toggle site navigation sidebar</div>
+        <i class="icon"><svg><use href="#svg-menu"></use></svg></i>
+      </label>
+    </div>
+    <div class="header-center">
+      <a href="../../../../../index.html"><div class="brand">ErNESTO-gym</div></a>
+    </div>
+    <div class="header-right">
+      <div class="theme-toggle-container theme-toggle-header">
+        <button class="theme-toggle">
+          <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+          <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+          <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+          <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+          <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+        </button>
+      </div>
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
+        <div class="visually-hidden">Toggle table of contents sidebar</div>
+        <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+      </label>
+    </div>
+  </header>
+  <aside class="sidebar-drawer">
+    <div class="sidebar-container">
+      
+      <div class="sidebar-sticky"><a class="sidebar-brand" href="../../../../../index.html">
+  
+  
+  <span class="sidebar-brand-text">ErNESTO-gym</span>
+  
+</a><form class="sidebar-search-container" method="get" action="../../../../../search.html" role="search">
+  <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
+  <input type="hidden" name="check_keywords" value="yes">
+  <input type="hidden" name="area" value="default">
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+  
+</div>
+</div>
+
+      </div>
+      
+    </div>
+  </aside>
+  <div class="main">
+    <div class="content">
+      <div class="article-container">
+        <a href="#" class="back-to-top muted-link">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+          </svg>
+          <span>Back to top</span>
+        </a>
+        <div class="content-icon-container">
+          <div class="view-this-page">
+  <a class="muted-link" href="https://github.com/Daveonwave/ErNESTO-gym/blob/main/docs/api/ernestogym/envs/single_agent/env/index.rst?plain=true" title="View this page">
+    <svg><use href="#svg-eye"></use></svg>
+    <span class="visually-hidden">View this page</span>
+  </a>
+</div><div class="edit-this-page">
+  <a class="muted-link" href="https://github.com/Daveonwave/ErNESTO-gym/edit/main/docs/api/ernestogym/envs/single_agent/env/index.rst" title="Edit this page">
+    <svg><use href="#svg-pencil"></use></svg>
+    <span class="visually-hidden">Edit this page</span>
+  </a>
+</div><div class="theme-toggle-container theme-toggle-content">
+            <button class="theme-toggle">
+              <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+              <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+              <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+              <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+              <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+            </button>
+          </div>
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
+            <div class="visually-hidden">Toggle table of contents sidebar</div>
+            <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+          </label>
+        </div>
+        <article role="main" id="furo-main-content">
+          <section id="module-ernestogym.envs.single_agent.env">
+<span id="ernestogym-envs-single-agent-env"></span><h1>ernestogym.envs.single_agent.env<a class="headerlink" href="#module-ernestogym.envs.single_agent.env" title="Link to this heading">¶</a></h1>
+<section id="classes">
+<h2>Classes<a class="headerlink" href="#classes" title="Link to this heading">¶</a></h2>
+<div class="table-wrapper autosummary longtable docutils container">
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ernestogym.envs.single_agent.env.BatteryEnergyStorageSystem" title="ernestogym.envs.single_agent.env.BatteryEnergyStorageSystem"><code class="xref py py-obj docutils literal notranslate"><span class="pre">BatteryEnergyStorageSystem</span></code></a></p></td>
+<td><p>Class representing the battery abstraction.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ernestogym.envs.single_agent.env.PVGenerator" title="ernestogym.envs.single_agent.env.PVGenerator"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PVGenerator</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ernestogym.envs.single_agent.env.EnergyDemand" title="ernestogym.envs.single_agent.env.EnergyDemand"><code class="xref py py-obj docutils literal notranslate"><span class="pre">EnergyDemand</span></code></a></p></td>
+<td><p>Energy demand</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ernestogym.envs.single_agent.env.EnergyMarket" title="ernestogym.envs.single_agent.env.EnergyMarket"><code class="xref py py-obj docutils literal notranslate"><span class="pre">EnergyMarket</span></code></a></p></td>
+<td><p>Class to represent an energy market.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ernestogym.envs.single_agent.env.DummyGenerator" title="ernestogym.envs.single_agent.env.DummyGenerator"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DummyGenerator</span></code></a></p></td>
+<td><p>Dummy generator for testing purposes with fixed energy generation.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ernestogym.envs.single_agent.env.DummyMarket" title="ernestogym.envs.single_agent.env.DummyMarket"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DummyMarket</span></code></a></p></td>
+<td><p>Simpler version of EnergyMarket with fixed ask and bid values.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ernestogym.envs.single_agent.env.MiniGridEnv" title="ernestogym.envs.single_agent.env.MiniGridEnv"><code class="xref py py-obj docutils literal notranslate"><span class="pre">MiniGridEnv</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="functions">
+<h2>Functions<a class="headerlink" href="#functions" title="Link to this heading">¶</a></h2>
+<div class="table-wrapper autosummary longtable docutils container">
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ernestogym.envs.single_agent.env.operational_cost" title="ernestogym.envs.single_agent.env.operational_cost"><code class="xref py py-obj docutils literal notranslate"><span class="pre">operational_cost</span></code></a>(→ float)</p></td>
+<td><p>Compute the operational cost of using the battery depending on the replacement cost of the battery, the power used</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ernestogym.envs.single_agent.env.linearized_degradation" title="ernestogym.envs.single_agent.env.linearized_degradation"><code class="xref py py-obj docutils literal notranslate"><span class="pre">linearized_degradation</span></code></a>(→ float)</p></td>
+<td><p>Compute the cost associated to a linearized degradation of the battery.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="module-contents">
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Link to this heading">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="ernestogym.envs.single_agent.env.operational_cost">
+<span class="sig-prename descclassname"><span class="pre">ernestogym.envs.single_agent.env.</span></span><span class="sig-name descname"><span class="pre">operational_cost</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">replacement_cost</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">C_rated</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">DoD_rated</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">L_rated</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">v_rated</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">r</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">K_rated</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">soc</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_discharging</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference internal" href="../../../../../_modules/ernestogym/envs/single_agent/rewards.html#operational_cost"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ernestogym.envs.single_agent.env.operational_cost" title="Link to this definition">¶</a></dt>
+<dd><p>Compute the operational cost of using the battery depending on the replacement cost of the battery, the power used
+to charge and discharge the system and the power losses occurring within the process.</p>
+<section id="parameters">
+<h3>Parameters:<a class="headerlink" href="#parameters" title="Link to this heading">¶</a></h3>
+<p>replacement_cost (float): The replacement cost of the battery.
+C_rated (float): The rated capacity of the battery.
+DoD_n (float): The rated depth of discharge (DoD) of the battery.
+L_rated (float): The rated lifetime of the battery.
+v_rated (float): The rated voltage of the battery.
+p (float): The charge/discharged power of the battery.
+r (float): The internal resistance of the battery.
+K_rated (float): The polarization constant of the battery that corresponds to the R1 of the ECM.
+soc (float): The current state of charge (SoC) of the battery.
+is_discharging (bool): Whether the battery is discharging or charging.</p>
+</section>
+<section id="reference-paper">
+<h3>Reference paper:<a class="headerlink" href="#reference-paper" title="Link to this heading">¶</a></h3>
+<p>T. A. Nguyen and M. L. Crow, “Stochastic Optimization of Renewable-Based Microgrid Operation Incorporating Battery
+Operating Cost,” in IEEE Transactions on Power Systems, vol. 31, no. 3, pp. 2289-2296, May 2016,
+doi: 10.1109/TPWRS.2015.2455491.</p>
+</section>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>replacement_cost</strong> (<em>float</em>)</p></li>
+<li><p><strong>C_rated</strong> (<em>float</em>)</p></li>
+<li><p><strong>DoD_rated</strong> (<em>float</em>)</p></li>
+<li><p><strong>L_rated</strong> (<em>float</em>)</p></li>
+<li><p><strong>v_rated</strong> (<em>float</em>)</p></li>
+<li><p><strong>p</strong> (<em>float</em>)</p></li>
+<li><p><strong>r</strong> (<em>float</em>)</p></li>
+<li><p><strong>K_rated</strong> (<em>float</em>)</p></li>
+<li><p><strong>soc</strong> (<em>float</em>)</p></li>
+<li><p><strong>is_discharging</strong> (<em>bool</em>)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ernestogym.envs.single_agent.env.linearized_degradation">
+<span class="sig-prename descclassname"><span class="pre">ernestogym.envs.single_agent.env.</span></span><span class="sig-name descname"><span class="pre">linearized_degradation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">replacement_cost</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">delta_deg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">deg_limit</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference internal" href="../../../../../_modules/ernestogym/envs/single_agent/rewards.html#linearized_degradation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ernestogym.envs.single_agent.env.linearized_degradation" title="Link to this definition">¶</a></dt>
+<dd><p>Compute the cost associated to a linearized degradation of the battery.</p>
+<section id="id1">
+<h3>Parameters:<a class="headerlink" href="#id1" title="Link to this heading">¶</a></h3>
+<p>replacement_cost (float): The replacement cost of the battery.
+delta_deg (float): The step degradation of the battery.
+deg_limit (float): The maximum degradation of the battery.</p>
+<p>Reference: <a class="reference external" href="https://github.com/OscarPindaro/RLithium-0/tree/main">https://github.com/OscarPindaro/RLithium-0/tree/main</a></p>
+</section>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>replacement_cost</strong> (<em>float</em>)</p></li>
+<li><p><strong>delta_deg</strong> (<em>float</em>)</p></li>
+<li><p><strong>deg_limit</strong> (<em>float</em>)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ernestogym.envs.single_agent.env.BatteryEnergyStorageSystem">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ernestogym.envs.single_agent.env.</span></span><span class="sig-name descname"><span class="pre">BatteryEnergyStorageSystem</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">models_config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">battery_options</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_var</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">check_soh_every</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../../_modules/ernestogym/ernesto/energy_storage/bess.html#BatteryEnergyStorageSystem"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ernestogym.envs.single_agent.env.BatteryEnergyStorageSystem" title="Link to this definition">¶</a></dt>
+<dd><p>Class representing the battery abstraction.
+Here we select all the electrical, thermal and mathematical electrical to simulate the BESS behaviour.
+#TODO: can be done with multi-threading (one for each submodel)?</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>models_config</strong> (<em>list</em>)</p></li>
+<li><p><strong>battery_options</strong> (<em>dict</em>)</p></li>
+<li><p><strong>input_var</strong> (<em>str</em>)</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py property">
+<dt class="sig sig-object py" id="ernestogym.envs.single_agent.env.BatteryEnergyStorageSystem.load_var">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">load_var</span></span><a class="headerlink" href="#ernestogym.envs.single_agent.env.BatteryEnergyStorageSystem.load_var" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ernestogym.envs.single_agent.env.BatteryEnergyStorageSystem.get_v">
+<span class="sig-name descname"><span class="pre">get_v</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../../_modules/ernestogym/ernesto/energy_storage/bess.html#BatteryEnergyStorageSystem.get_v"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ernestogym.envs.single_agent.env.BatteryEnergyStorageSystem.get_v" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ernestogym.envs.single_agent.env.BatteryEnergyStorageSystem.get_i">
+<span class="sig-name descname"><span class="pre">get_i</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../../_modules/ernestogym/ernesto/energy_storage/bess.html#BatteryEnergyStorageSystem.get_i"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ernestogym.envs.single_agent.env.BatteryEnergyStorageSystem.get_i" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ernestogym.envs.single_agent.env.BatteryEnergyStorageSystem.get_p">
+<span class="sig-name descname"><span class="pre">get_p</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../../_modules/ernestogym/ernesto/energy_storage/bess.html#BatteryEnergyStorageSystem.get_p"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ernestogym.envs.single_agent.env.BatteryEnergyStorageSystem.get_p" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ernestogym.envs.single_agent.env.BatteryEnergyStorageSystem.get_temp">
+<span class="sig-name descname"><span class="pre">get_temp</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../../_modules/ernestogym/ernesto/energy_storage/bess.html#BatteryEnergyStorageSystem.get_temp"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ernestogym.envs.single_agent.env.BatteryEnergyStorageSystem.get_temp" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ernestogym.envs.single_agent.env.BatteryEnergyStorageSystem.get_internal_resistance">
+<span class="sig-name descname"><span class="pre">get_internal_resistance</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../../_modules/ernestogym/ernesto/energy_storage/bess.html#BatteryEnergyStorageSystem.get_internal_resistance"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ernestogym.envs.single_agent.env.BatteryEnergyStorageSystem.get_internal_resistance" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ernestogym.envs.single_agent.env.BatteryEnergyStorageSystem.get_polarization_resistance">
+<span class="sig-name descname"><span class="pre">get_polarization_resistance</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../../_modules/ernestogym/ernesto/energy_storage/bess.html#BatteryEnergyStorageSystem.get_polarization_resistance"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ernestogym.envs.single_agent.env.BatteryEnergyStorageSystem.get_polarization_resistance" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ernestogym.envs.single_agent.env.BatteryEnergyStorageSystem.get_internal_capacity">
+<span class="sig-name descname"><span class="pre">get_internal_capacity</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../../_modules/ernestogym/ernesto/energy_storage/bess.html#BatteryEnergyStorageSystem.get_internal_capacity"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ernestogym.envs.single_agent.env.BatteryEnergyStorageSystem.get_internal_capacity" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ernestogym.envs.single_agent.env.BatteryEnergyStorageSystem.get_feasible_current">
+<span class="sig-name descname"><span class="pre">get_feasible_current</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">last_soc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dt</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../../_modules/ernestogym/ernesto/energy_storage/bess.html#BatteryEnergyStorageSystem.get_feasible_current"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ernestogym.envs.single_agent.env.BatteryEnergyStorageSystem.get_feasible_current" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ernestogym.envs.single_agent.env.BatteryEnergyStorageSystem.get_delta_degradation">
+<span class="sig-name descname"><span class="pre">get_delta_degradation</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../../_modules/ernestogym/ernesto/energy_storage/bess.html#BatteryEnergyStorageSystem.get_delta_degradation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ernestogym.envs.single_agent.env.BatteryEnergyStorageSystem.get_delta_degradation" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ernestogym.envs.single_agent.env.BatteryEnergyStorageSystem.reset">
+<span class="sig-name descname"><span class="pre">reset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">reset_info</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../../_modules/ernestogym/ernesto/energy_storage/bess.html#BatteryEnergyStorageSystem.reset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ernestogym.envs.single_agent.env.BatteryEnergyStorageSystem.reset" title="Link to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>reset_info</strong> (<em>dict</em>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ernestogym.envs.single_agent.env.BatteryEnergyStorageSystem.init">
+<span class="sig-name descname"><span class="pre">init</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">init_info</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../../_modules/ernestogym/ernesto/energy_storage/bess.html#BatteryEnergyStorageSystem.init"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ernestogym.envs.single_agent.env.BatteryEnergyStorageSystem.init" title="Link to this definition">¶</a></dt>
+<dd><p>Initialization of the battery simulation environment at t=0.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>init_info</strong> (<em>dict</em>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ernestogym.envs.single_agent.env.BatteryEnergyStorageSystem.step">
+<span class="sig-name descname"><span class="pre">step</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">load</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dt</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../../_modules/ernestogym/ernesto/energy_storage/bess.html#BatteryEnergyStorageSystem.step"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ernestogym.envs.single_agent.env.BatteryEnergyStorageSystem.step" title="Link to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>(</strong><strong>)</strong> (<em>k</em>)</p></li>
+<li><p><strong>(</strong><strong>)</strong></p></li>
+<li><p><strong>(</strong><strong>)</strong></p></li>
+<li><p><strong>load</strong> (<em>float</em>)</p></li>
+<li><p><strong>dt</strong> (<em>float</em>)</p></li>
+<li><p><strong>k</strong> (<em>int</em>)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ernestogym.envs.single_agent.env.BatteryEnergyStorageSystem.get_status_table">
+<span class="sig-name descname"><span class="pre">get_status_table</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../../_modules/ernestogym/ernesto/energy_storage/bess.html#BatteryEnergyStorageSystem.get_status_table"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ernestogym.envs.single_agent.env.BatteryEnergyStorageSystem.get_status_table" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ernestogym.envs.single_agent.env.BatteryEnergyStorageSystem.build_results_table">
+<span class="sig-name descname"><span class="pre">build_results_table</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../../_modules/ernestogym/ernesto/energy_storage/bess.html#BatteryEnergyStorageSystem.build_results_table"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ernestogym.envs.single_agent.env.BatteryEnergyStorageSystem.build_results_table" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ernestogym.envs.single_agent.env.PVGenerator">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ernestogym.envs.single_agent.env.</span></span><span class="sig-name descname"><span class="pre">PVGenerator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pandas.DataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timestep</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_usage</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'end'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../../_modules/ernestogym/ernesto/generation.html#PVGenerator"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ernestogym.envs.single_agent.env.PVGenerator" title="Link to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>pandas.DataFrame</em>)</p></li>
+<li><p><strong>timestep</strong> (<em>int</em>)</p></li>
+<li><p><strong>data_usage</strong> (<em>str</em>)</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py property">
+<dt class="sig sig-object py" id="ernestogym.envs.single_agent.env.PVGenerator.history">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">history</span></span><a class="headerlink" href="#ernestogym.envs.single_agent.env.PVGenerator.history" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ernestogym.envs.single_agent.env.PVGenerator.get_idx_from_times">
+<span class="sig-name descname"><span class="pre">get_idx_from_times</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">time</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../../_modules/ernestogym/ernesto/generation.html#PVGenerator.get_idx_from_times"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ernestogym.envs.single_agent.env.PVGenerator.get_idx_from_times" title="Link to this definition">¶</a></dt>
+<dd><p>Get index of generation history for given time.
+:param time: time of generation history</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>time</strong> (<em>int</em>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ernestogym.envs.single_agent.env.PVGenerator.is_run_out_of_data">
+<span class="sig-name descname"><span class="pre">is_run_out_of_data</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../../_modules/ernestogym/ernesto/generation.html#PVGenerator.is_run_out_of_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ernestogym.envs.single_agent.env.PVGenerator.is_run_out_of_data" title="Link to this definition">¶</a></dt>
+<dd><p>Check if generation history is out-of-data.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ernestogym.envs.single_agent.env.EnergyDemand">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ernestogym.envs.single_agent.env.</span></span><span class="sig-name descname"><span class="pre">EnergyDemand</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pandas.DataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timestep</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">test_profiles</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_usage</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'end'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../../_modules/ernestogym/ernesto/demand.html#EnergyDemand"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ernestogym.envs.single_agent.env.EnergyDemand" title="Link to this definition">¶</a></dt>
+<dd><p>Energy demand</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>pandas.DataFrame</em>)</p></li>
+<li><p><strong>timestep</strong> (<em>int</em>)</p></li>
+<li><p><strong>test_profiles</strong> (<em>list</em><em>[</em><em>str</em><em>]</em>)</p></li>
+<li><p><strong>data_usage</strong> (<em>str</em>)</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py property">
+<dt class="sig sig-object py" id="ernestogym.envs.single_agent.env.EnergyDemand.history">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">history</span></span><a class="headerlink" href="#ernestogym.envs.single_agent.env.EnergyDemand.history" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ernestogym.envs.single_agent.env.EnergyDemand.times">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">times</span></span><a class="headerlink" href="#ernestogym.envs.single_agent.env.EnergyDemand.times" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ernestogym.envs.single_agent.env.EnergyDemand.labels">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">labels</span></span><a class="headerlink" href="#ernestogym.envs.single_agent.env.EnergyDemand.labels" title="Link to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>is_training</strong> (<em>bool</em>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ernestogym.envs.single_agent.env.EnergyDemand.profile">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">profile</span></span><a class="headerlink" href="#ernestogym.envs.single_agent.env.EnergyDemand.profile" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ernestogym.envs.single_agent.env.EnergyDemand.get_idx_from_times">
+<span class="sig-name descname"><span class="pre">get_idx_from_times</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">time</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">int</span></span></span><a class="reference internal" href="../../../../../_modules/ernestogym/ernesto/demand.html#EnergyDemand.get_idx_from_times"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ernestogym.envs.single_agent.env.EnergyDemand.get_idx_from_times" title="Link to this definition">¶</a></dt>
+<dd><p>Get index of demand history for given time.
+:param time: time of demand history
+:return: index of demand history</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>time</strong> (<em>int</em>)</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ernestogym.envs.single_agent.env.EnergyDemand.use_test_profile">
+<span class="sig-name descname"><span class="pre">use_test_profile</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">test_profile</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../../_modules/ernestogym/ernesto/demand.html#EnergyDemand.use_test_profile"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ernestogym.envs.single_agent.env.EnergyDemand.use_test_profile" title="Link to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>test_profile</strong> (<em>str</em>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ernestogym.envs.single_agent.env.EnergyDemand.is_run_out_of_data">
+<span class="sig-name descname"><span class="pre">is_run_out_of_data</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../../_modules/ernestogym/ernesto/demand.html#EnergyDemand.is_run_out_of_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ernestogym.envs.single_agent.env.EnergyDemand.is_run_out_of_data" title="Link to this definition">¶</a></dt>
+<dd><p>Check if demand history is out-of-data.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ernestogym.envs.single_agent.env.EnergyMarket">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ernestogym.envs.single_agent.env.</span></span><span class="sig-name descname"><span class="pre">EnergyMarket</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">pandas.DataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timestep</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_usage</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'end'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../../_modules/ernestogym/ernesto/market.html#EnergyMarket"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ernestogym.envs.single_agent.env.EnergyMarket" title="Link to this definition">¶</a></dt>
+<dd><p>Class to represent an energy market.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>pandas.DataFrame</em>)</p></li>
+<li><p><strong>timestep</strong> (<em>int</em>)</p></li>
+<li><p><strong>data_usage</strong> (<em>str</em>)</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py property">
+<dt class="sig sig-object py" id="ernestogym.envs.single_agent.env.EnergyMarket.ask">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ask</span></span><a class="headerlink" href="#ernestogym.envs.single_agent.env.EnergyMarket.ask" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ernestogym.envs.single_agent.env.EnergyMarket.bid">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">bid</span></span><a class="headerlink" href="#ernestogym.envs.single_agent.env.EnergyMarket.bid" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ernestogym.envs.single_agent.env.EnergyMarket.get_idx_from_times">
+<span class="sig-name descname"><span class="pre">get_idx_from_times</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">time</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">int</span></span></span><a class="reference internal" href="../../../../../_modules/ernestogym/ernesto/market.html#EnergyMarket.get_idx_from_times"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ernestogym.envs.single_agent.env.EnergyMarket.get_idx_from_times" title="Link to this definition">¶</a></dt>
+<dd><p>Get index of market history for given time.
+:param time: time of market history</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>time</strong> (<em>int</em>)</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ernestogym.envs.single_agent.env.EnergyMarket.is_run_out_of_data">
+<span class="sig-name descname"><span class="pre">is_run_out_of_data</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../../_modules/ernestogym/ernesto/market.html#EnergyMarket.is_run_out_of_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ernestogym.envs.single_agent.env.EnergyMarket.is_run_out_of_data" title="Link to this definition">¶</a></dt>
+<dd><p>Check if market history is out-of-data.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ernestogym.envs.single_agent.env.DummyGenerator">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ernestogym.envs.single_agent.env.</span></span><span class="sig-name descname"><span class="pre">DummyGenerator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">gen_value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../../_modules/ernestogym/ernesto/generation.html#DummyGenerator"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ernestogym.envs.single_agent.env.DummyGenerator" title="Link to this definition">¶</a></dt>
+<dd><p>Dummy generator for testing purposes with fixed energy generation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>gen_value</strong> (<em>float</em>)</p>
+</dd>
+</dl>
+<dl class="py property">
+<dt class="sig sig-object py" id="ernestogym.envs.single_agent.env.DummyGenerator.history">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">history</span></span><a class="headerlink" href="#ernestogym.envs.single_agent.env.DummyGenerator.history" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ernestogym.envs.single_agent.env.DummyGenerator.get_idx_from_times">
+<span class="sig-name descname"><span class="pre">get_idx_from_times</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">time</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">int</span></span></span><a class="reference internal" href="../../../../../_modules/ernestogym/ernesto/generation.html#DummyGenerator.get_idx_from_times"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ernestogym.envs.single_agent.env.DummyGenerator.get_idx_from_times" title="Link to this definition">¶</a></dt>
+<dd><p>Get index of generation history for given time.
+:param time: time of generation history</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>time</strong> (<em>int</em>)</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ernestogym.envs.single_agent.env.DummyGenerator.is_run_out_of_data">
+<span class="sig-name descname"><span class="pre">is_run_out_of_data</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../../_modules/ernestogym/ernesto/generation.html#DummyGenerator.is_run_out_of_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ernestogym.envs.single_agent.env.DummyGenerator.is_run_out_of_data" title="Link to this definition">¶</a></dt>
+<dd><p>Check if generation history is out-of-data.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ernestogym.envs.single_agent.env.DummyMarket">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ernestogym.envs.single_agent.env.</span></span><span class="sig-name descname"><span class="pre">DummyMarket</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ask</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bid</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../../_modules/ernestogym/ernesto/market.html#DummyMarket"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ernestogym.envs.single_agent.env.DummyMarket" title="Link to this definition">¶</a></dt>
+<dd><p>Simpler version of EnergyMarket with fixed ask and bid values.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ask</strong> (<em>float</em>)</p></li>
+<li><p><strong>bid</strong> (<em>float</em>)</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py property">
+<dt class="sig sig-object py" id="ernestogym.envs.single_agent.env.DummyMarket.ask">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ask</span></span><a class="headerlink" href="#ernestogym.envs.single_agent.env.DummyMarket.ask" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ernestogym.envs.single_agent.env.DummyMarket.bid">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">bid</span></span><a class="headerlink" href="#ernestogym.envs.single_agent.env.DummyMarket.bid" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ernestogym.envs.single_agent.env.DummyMarket.get_idx_from_times">
+<span class="sig-name descname"><span class="pre">get_idx_from_times</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">time</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">int</span></span></span><a class="reference internal" href="../../../../../_modules/ernestogym/ernesto/market.html#DummyMarket.get_idx_from_times"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ernestogym.envs.single_agent.env.DummyMarket.get_idx_from_times" title="Link to this definition">¶</a></dt>
+<dd><p>Get index of market history for given time. Useless in dummy market.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>time</strong> (<em>int</em>)</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ernestogym.envs.single_agent.env.DummyMarket.is_run_out_of_data">
+<span class="sig-name descname"><span class="pre">is_run_out_of_data</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../../_modules/ernestogym/ernesto/market.html#DummyMarket.is_run_out_of_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ernestogym.envs.single_agent.env.DummyMarket.is_run_out_of_data" title="Link to this definition">¶</a></dt>
+<dd><p>Check if market history is out-of-data.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ernestogym.envs.single_agent.env.MiniGridEnv">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ernestogym.envs.single_agent.env.</span></span><span class="sig-name descname"><span class="pre">MiniGridEnv</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">settings</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../../_modules/ernestogym/envs/single_agent/env.html#MiniGridEnv"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ernestogym.envs.single_agent.env.MiniGridEnv" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">gymnasium.Env</span></code></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>settings</strong> (<em>dict</em><em>[</em><em>str</em><em>, </em><em>Any</em><em>]</em>)</p>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ernestogym.envs.single_agent.env.MiniGridEnv.SECONDS_PER_MINUTE">
+<span class="sig-name descname"><span class="pre">SECONDS_PER_MINUTE</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">60</span></em><a class="reference internal" href="../../../../../_modules/ernestogym/envs/single_agent/env.html#MiniGridEnv.SECONDS_PER_MINUTE"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ernestogym.envs.single_agent.env.MiniGridEnv.SECONDS_PER_MINUTE" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ernestogym.envs.single_agent.env.MiniGridEnv.SECONDS_PER_HOUR">
+<span class="sig-name descname"><span class="pre">SECONDS_PER_HOUR</span></span><a class="reference internal" href="../../../../../_modules/ernestogym/envs/single_agent/env.html#MiniGridEnv.SECONDS_PER_HOUR"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ernestogym.envs.single_agent.env.MiniGridEnv.SECONDS_PER_HOUR" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ernestogym.envs.single_agent.env.MiniGridEnv.SECONDS_PER_DAY">
+<span class="sig-name descname"><span class="pre">SECONDS_PER_DAY</span></span><a class="reference internal" href="../../../../../_modules/ernestogym/envs/single_agent/env.html#MiniGridEnv.SECONDS_PER_DAY"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ernestogym.envs.single_agent.env.MiniGridEnv.SECONDS_PER_DAY" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ernestogym.envs.single_agent.env.MiniGridEnv.DAYS_PER_YEAR">
+<span class="sig-name descname"><span class="pre">DAYS_PER_YEAR</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">365.25</span></em><a class="reference internal" href="../../../../../_modules/ernestogym/envs/single_agent/env.html#MiniGridEnv.DAYS_PER_YEAR"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ernestogym.envs.single_agent.env.MiniGridEnv.DAYS_PER_YEAR" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ernestogym.envs.single_agent.env.MiniGridEnv.reset">
+<span class="sig-name descname"><span class="pre">reset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">options</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../../_modules/ernestogym/envs/single_agent/env.html#MiniGridEnv.reset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ernestogym.envs.single_agent.env.MiniGridEnv.reset" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ernestogym.envs.single_agent.env.MiniGridEnv.step">
+<span class="sig-name descname"><span class="pre">step</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">action</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../../_modules/ernestogym/envs/single_agent/env.html#MiniGridEnv.step"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ernestogym.envs.single_agent.env.MiniGridEnv.step" title="Link to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>action</strong> (<em>numpy.ndarray</em>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ernestogym.envs.single_agent.env.MiniGridEnv.render">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">render</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../../_modules/ernestogym/envs/single_agent/env.html#MiniGridEnv.render"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ernestogym.envs.single_agent.env.MiniGridEnv.render" title="Link to this definition">¶</a></dt>
+<dd><p>Compute the render frames as specified by <code class="xref py py-attr docutils literal notranslate"><span class="pre">render_mode</span></code> during the initialization of the environment.</p>
+<p>The environment’s <code class="xref py py-attr docutils literal notranslate"><span class="pre">metadata</span></code> render modes (<code class="xref any docutils literal notranslate"><span class="pre">env.metadata[&quot;render_modes&quot;]</span></code>) should contain the possible
+ways to implement the render modes. In addition, list versions for most render modes is achieved through
+<code class="xref any docutils literal notranslate"><span class="pre">gymnasium.make</span></code> which automatically applies a wrapper to collect rendered frames.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>As the <code class="xref py py-attr docutils literal notranslate"><span class="pre">render_mode</span></code> is known during <code class="docutils literal notranslate"><span class="pre">__init__</span></code>, the objects used to render the environment state
+should be initialised in <code class="docutils literal notranslate"><span class="pre">__init__</span></code>.</p>
+</div>
+<p>By convention, if the <code class="xref py py-attr docutils literal notranslate"><span class="pre">render_mode</span></code> is:</p>
+<ul class="simple">
+<li><p>None (default): no render is computed.</p></li>
+<li><p>“human”: The environment is continuously rendered in the current display or terminal, usually for human consumption.
+This rendering should occur during <a class="reference internal" href="#ernestogym.envs.single_agent.env.MiniGridEnv.step" title="ernestogym.envs.single_agent.env.MiniGridEnv.step"><code class="xref py py-meth docutils literal notranslate"><span class="pre">step()</span></code></a> and <a class="reference internal" href="#ernestogym.envs.single_agent.env.MiniGridEnv.render" title="ernestogym.envs.single_agent.env.MiniGridEnv.render"><code class="xref py py-meth docutils literal notranslate"><span class="pre">render()</span></code></a> doesn’t need to be called. Returns <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p></li>
+<li><p>“rgb_array”: Return a single frame representing the current state of the environment.
+A frame is a <code class="docutils literal notranslate"><span class="pre">np.ndarray</span></code> with shape <code class="docutils literal notranslate"><span class="pre">(x,</span> <span class="pre">y,</span> <span class="pre">3)</span></code> representing RGB values for an x-by-y pixel image.</p></li>
+<li><p>“ansi”: Return a strings (<code class="docutils literal notranslate"><span class="pre">str</span></code>) or <code class="docutils literal notranslate"><span class="pre">StringIO.StringIO</span></code> containing a terminal-style text representation
+for each time step. The text can include newlines and ANSI escape sequences (e.g. for colors).</p></li>
+<li><p>“rgb_array_list” and “ansi_list”: List based version of render modes are possible (except Human) through the
+wrapper, <code class="xref py py-class docutils literal notranslate"><span class="pre">gymnasium.wrappers.RenderCollection</span></code> that is automatically applied during <code class="docutils literal notranslate"><span class="pre">gymnasium.make(...,</span> <span class="pre">render_mode=&quot;rgb_array_list&quot;)</span></code>.
+The frames collected are popped after <a class="reference internal" href="#ernestogym.envs.single_agent.env.MiniGridEnv.render" title="ernestogym.envs.single_agent.env.MiniGridEnv.render"><code class="xref py py-meth docutils literal notranslate"><span class="pre">render()</span></code></a> is called or <a class="reference internal" href="#ernestogym.envs.single_agent.env.MiniGridEnv.reset" title="ernestogym.envs.single_agent.env.MiniGridEnv.reset"><code class="xref py py-meth docutils literal notranslate"><span class="pre">reset()</span></code></a>.</p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Make sure that your class’s <code class="xref py py-attr docutils literal notranslate"><span class="pre">metadata</span></code> <code class="docutils literal notranslate"><span class="pre">&quot;render_modes&quot;</span></code> key includes the list of supported modes.</p>
+</div>
+<div class="versionchanged">
+<p><span class="versionmodified changed">Changed in version 0.25.0: </span>The render function was changed to no longer accept parameters, rather these parameters should be specified
+in the environment initialised, i.e., <code class="docutils literal notranslate"><span class="pre">gymnasium.make(&quot;CartPole-v1&quot;,</span> <span class="pre">render_mode=&quot;human&quot;)</span></code></p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ernestogym.envs.single_agent.env.MiniGridEnv.close">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">close</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../../_modules/ernestogym/envs/single_agent/env.html#MiniGridEnv.close"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ernestogym.envs.single_agent.env.MiniGridEnv.close" title="Link to this definition">¶</a></dt>
+<dd><p>After the user has finished using the environment, close contains the code necessary to “clean up” the environment.</p>
+<p>This is critical for closing rendering windows, database or HTTP connections.
+Calling <code class="docutils literal notranslate"><span class="pre">close</span></code> on an already closed environment has no effect and won’t raise an error.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+
+        </article>
+      </div>
+      <footer>
+        
+        <div class="related-pages">
+          
+          
+        </div>
+        <div class="bottom-of-page">
+          <div class="left-details">
+            <div class="copyright">
+                Copyright &#169; 2024, Davide Salaorni
+            </div>
+            Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
+            
+            <a href="https://github.com/pradyunsg/furo">Furo</a>
+            
+          </div>
+          <div class="right-details">
+            
+          </div>
+        </div>
+        
+      </footer>
+    </div>
+    <aside class="toc-drawer">
+      
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            On this page
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">ernestogym.envs.single_agent.env</a><ul>
+<li><a class="reference internal" href="#classes">Classes</a></li>
+<li><a class="reference internal" href="#functions">Functions</a></li>
+<li><a class="reference internal" href="#module-contents">Module Contents</a><ul>
+<li><a class="reference internal" href="#ernestogym.envs.single_agent.env.operational_cost"><code class="docutils literal notranslate"><span class="pre">operational_cost()</span></code></a></li>
+<li><a class="reference internal" href="#ernestogym.envs.single_agent.env.linearized_degradation"><code class="docutils literal notranslate"><span class="pre">linearized_degradation()</span></code></a></li>
+<li><a class="reference internal" href="#ernestogym.envs.single_agent.env.BatteryEnergyStorageSystem"><code class="docutils literal notranslate"><span class="pre">BatteryEnergyStorageSystem</span></code></a><ul>
+<li><a class="reference internal" href="#ernestogym.envs.single_agent.env.BatteryEnergyStorageSystem.load_var"><code class="docutils literal notranslate"><span class="pre">BatteryEnergyStorageSystem.load_var</span></code></a></li>
+<li><a class="reference internal" href="#ernestogym.envs.single_agent.env.BatteryEnergyStorageSystem.get_v"><code class="docutils literal notranslate"><span class="pre">BatteryEnergyStorageSystem.get_v()</span></code></a></li>
+<li><a class="reference internal" href="#ernestogym.envs.single_agent.env.BatteryEnergyStorageSystem.get_i"><code class="docutils literal notranslate"><span class="pre">BatteryEnergyStorageSystem.get_i()</span></code></a></li>
+<li><a class="reference internal" href="#ernestogym.envs.single_agent.env.BatteryEnergyStorageSystem.get_p"><code class="docutils literal notranslate"><span class="pre">BatteryEnergyStorageSystem.get_p()</span></code></a></li>
+<li><a class="reference internal" href="#ernestogym.envs.single_agent.env.BatteryEnergyStorageSystem.get_temp"><code class="docutils literal notranslate"><span class="pre">BatteryEnergyStorageSystem.get_temp()</span></code></a></li>
+<li><a class="reference internal" href="#ernestogym.envs.single_agent.env.BatteryEnergyStorageSystem.get_internal_resistance"><code class="docutils literal notranslate"><span class="pre">BatteryEnergyStorageSystem.get_internal_resistance()</span></code></a></li>
+<li><a class="reference internal" href="#ernestogym.envs.single_agent.env.BatteryEnergyStorageSystem.get_polarization_resistance"><code class="docutils literal notranslate"><span class="pre">BatteryEnergyStorageSystem.get_polarization_resistance()</span></code></a></li>
+<li><a class="reference internal" href="#ernestogym.envs.single_agent.env.BatteryEnergyStorageSystem.get_internal_capacity"><code class="docutils literal notranslate"><span class="pre">BatteryEnergyStorageSystem.get_internal_capacity()</span></code></a></li>
+<li><a class="reference internal" href="#ernestogym.envs.single_agent.env.BatteryEnergyStorageSystem.get_feasible_current"><code class="docutils literal notranslate"><span class="pre">BatteryEnergyStorageSystem.get_feasible_current()</span></code></a></li>
+<li><a class="reference internal" href="#ernestogym.envs.single_agent.env.BatteryEnergyStorageSystem.get_delta_degradation"><code class="docutils literal notranslate"><span class="pre">BatteryEnergyStorageSystem.get_delta_degradation()</span></code></a></li>
+<li><a class="reference internal" href="#ernestogym.envs.single_agent.env.BatteryEnergyStorageSystem.reset"><code class="docutils literal notranslate"><span class="pre">BatteryEnergyStorageSystem.reset()</span></code></a></li>
+<li><a class="reference internal" href="#ernestogym.envs.single_agent.env.BatteryEnergyStorageSystem.init"><code class="docutils literal notranslate"><span class="pre">BatteryEnergyStorageSystem.init()</span></code></a></li>
+<li><a class="reference internal" href="#ernestogym.envs.single_agent.env.BatteryEnergyStorageSystem.step"><code class="docutils literal notranslate"><span class="pre">BatteryEnergyStorageSystem.step()</span></code></a></li>
+<li><a class="reference internal" href="#ernestogym.envs.single_agent.env.BatteryEnergyStorageSystem.get_status_table"><code class="docutils literal notranslate"><span class="pre">BatteryEnergyStorageSystem.get_status_table()</span></code></a></li>
+<li><a class="reference internal" href="#ernestogym.envs.single_agent.env.BatteryEnergyStorageSystem.build_results_table"><code class="docutils literal notranslate"><span class="pre">BatteryEnergyStorageSystem.build_results_table()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#ernestogym.envs.single_agent.env.PVGenerator"><code class="docutils literal notranslate"><span class="pre">PVGenerator</span></code></a><ul>
+<li><a class="reference internal" href="#ernestogym.envs.single_agent.env.PVGenerator.history"><code class="docutils literal notranslate"><span class="pre">PVGenerator.history</span></code></a></li>
+<li><a class="reference internal" href="#ernestogym.envs.single_agent.env.PVGenerator.get_idx_from_times"><code class="docutils literal notranslate"><span class="pre">PVGenerator.get_idx_from_times()</span></code></a></li>
+<li><a class="reference internal" href="#ernestogym.envs.single_agent.env.PVGenerator.is_run_out_of_data"><code class="docutils literal notranslate"><span class="pre">PVGenerator.is_run_out_of_data()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#ernestogym.envs.single_agent.env.EnergyDemand"><code class="docutils literal notranslate"><span class="pre">EnergyDemand</span></code></a><ul>
+<li><a class="reference internal" href="#ernestogym.envs.single_agent.env.EnergyDemand.history"><code class="docutils literal notranslate"><span class="pre">EnergyDemand.history</span></code></a></li>
+<li><a class="reference internal" href="#ernestogym.envs.single_agent.env.EnergyDemand.times"><code class="docutils literal notranslate"><span class="pre">EnergyDemand.times</span></code></a></li>
+<li><a class="reference internal" href="#ernestogym.envs.single_agent.env.EnergyDemand.labels"><code class="docutils literal notranslate"><span class="pre">EnergyDemand.labels</span></code></a></li>
+<li><a class="reference internal" href="#ernestogym.envs.single_agent.env.EnergyDemand.profile"><code class="docutils literal notranslate"><span class="pre">EnergyDemand.profile</span></code></a></li>
+<li><a class="reference internal" href="#ernestogym.envs.single_agent.env.EnergyDemand.get_idx_from_times"><code class="docutils literal notranslate"><span class="pre">EnergyDemand.get_idx_from_times()</span></code></a></li>
+<li><a class="reference internal" href="#ernestogym.envs.single_agent.env.EnergyDemand.use_test_profile"><code class="docutils literal notranslate"><span class="pre">EnergyDemand.use_test_profile()</span></code></a></li>
+<li><a class="reference internal" href="#ernestogym.envs.single_agent.env.EnergyDemand.is_run_out_of_data"><code class="docutils literal notranslate"><span class="pre">EnergyDemand.is_run_out_of_data()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#ernestogym.envs.single_agent.env.EnergyMarket"><code class="docutils literal notranslate"><span class="pre">EnergyMarket</span></code></a><ul>
+<li><a class="reference internal" href="#ernestogym.envs.single_agent.env.EnergyMarket.ask"><code class="docutils literal notranslate"><span class="pre">EnergyMarket.ask</span></code></a></li>
+<li><a class="reference internal" href="#ernestogym.envs.single_agent.env.EnergyMarket.bid"><code class="docutils literal notranslate"><span class="pre">EnergyMarket.bid</span></code></a></li>
+<li><a class="reference internal" href="#ernestogym.envs.single_agent.env.EnergyMarket.get_idx_from_times"><code class="docutils literal notranslate"><span class="pre">EnergyMarket.get_idx_from_times()</span></code></a></li>
+<li><a class="reference internal" href="#ernestogym.envs.single_agent.env.EnergyMarket.is_run_out_of_data"><code class="docutils literal notranslate"><span class="pre">EnergyMarket.is_run_out_of_data()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#ernestogym.envs.single_agent.env.DummyGenerator"><code class="docutils literal notranslate"><span class="pre">DummyGenerator</span></code></a><ul>
+<li><a class="reference internal" href="#ernestogym.envs.single_agent.env.DummyGenerator.history"><code class="docutils literal notranslate"><span class="pre">DummyGenerator.history</span></code></a></li>
+<li><a class="reference internal" href="#ernestogym.envs.single_agent.env.DummyGenerator.get_idx_from_times"><code class="docutils literal notranslate"><span class="pre">DummyGenerator.get_idx_from_times()</span></code></a></li>
+<li><a class="reference internal" href="#ernestogym.envs.single_agent.env.DummyGenerator.is_run_out_of_data"><code class="docutils literal notranslate"><span class="pre">DummyGenerator.is_run_out_of_data()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#ernestogym.envs.single_agent.env.DummyMarket"><code class="docutils literal notranslate"><span class="pre">DummyMarket</span></code></a><ul>
+<li><a class="reference internal" href="#ernestogym.envs.single_agent.env.DummyMarket.ask"><code class="docutils literal notranslate"><span class="pre">DummyMarket.ask</span></code></a></li>
+<li><a class="reference internal" href="#ernestogym.envs.single_agent.env.DummyMarket.bid"><code class="docutils literal notranslate"><span class="pre">DummyMarket.bid</span></code></a></li>
+<li><a class="reference internal" href="#ernestogym.envs.single_agent.env.DummyMarket.get_idx_from_times"><code class="docutils literal notranslate"><span class="pre">DummyMarket.get_idx_from_times()</span></code></a></li>
+<li><a class="reference internal" href="#ernestogym.envs.single_agent.env.DummyMarket.is_run_out_of_data"><code class="docutils literal notranslate"><span class="pre">DummyMarket.is_run_out_of_data()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#ernestogym.envs.single_agent.env.MiniGridEnv"><code class="docutils literal notranslate"><span class="pre">MiniGridEnv</span></code></a><ul>
+<li><a class="reference internal" href="#ernestogym.envs.single_agent.env.MiniGridEnv.SECONDS_PER_MINUTE"><code class="docutils literal notranslate"><span class="pre">MiniGridEnv.SECONDS_PER_MINUTE</span></code></a></li>
+<li><a class="reference internal" href="#ernestogym.envs.single_agent.env.MiniGridEnv.SECONDS_PER_HOUR"><code class="docutils literal notranslate"><span class="pre">MiniGridEnv.SECONDS_PER_HOUR</span></code></a></li>
+<li><a class="reference internal" href="#ernestogym.envs.single_agent.env.MiniGridEnv.SECONDS_PER_DAY"><code class="docutils literal notranslate"><span class="pre">MiniGridEnv.SECONDS_PER_DAY</span></code></a></li>
+<li><a class="reference internal" href="#ernestogym.envs.single_agent.env.MiniGridEnv.DAYS_PER_YEAR"><code class="docutils literal notranslate"><span class="pre">MiniGridEnv.DAYS_PER_YEAR</span></code></a></li>
+<li><a class="reference internal" href="#ernestogym.envs.single_agent.env.MiniGridEnv.reset"><code class="docutils literal notranslate"><span class="pre">MiniGridEnv.reset()</span></code></a></li>
+<li><a class="reference internal" href="#ernestogym.envs.single_agent.env.MiniGridEnv.step"><code class="docutils literal notranslate"><span class="pre">MiniGridEnv.step()</span></code></a></li>
+<li><a class="reference internal" href="#ernestogym.envs.single_agent.env.MiniGridEnv.render"><code class="docutils literal notranslate"><span class="pre">MiniGridEnv.render()</span></code></a></li>
+<li><a class="reference internal" href="#ernestogym.envs.single_agent.env.MiniGridEnv.close"><code class="docutils literal notranslate"><span class="pre">MiniGridEnv.close()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
+      
+      
+    </aside>
+  </div>
+</div><script src="../../../../../_static/documentation_options.js?v=2709fde1"></script>
+    <script src="../../../../../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../../../_static/scripts/furo.js?v=4e2eecee"></script>
+    <script src="../../../../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../../../../_static/copybutton.js?v=f281be69"></script>
+    </body>
+</html>

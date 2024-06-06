@@ -1,0 +1,57 @@
+ernestogym.ernesto.generation
+=============================
+
+.. py:module:: ernestogym.ernesto.generation
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   ernestogym.ernesto.generation.PVGenerator
+   ernestogym.ernesto.generation.DummyGenerator
+
+
+Module Contents
+---------------
+
+.. py:class:: PVGenerator(data: pandas.DataFrame, timestep: int, data_usage: str = 'end')
+
+   .. py:property:: history
+
+
+   .. py:method:: get_idx_from_times(time: int)
+
+      Get index of generation history for given time.
+      :param time: time of generation history
+
+
+
+   .. py:method:: is_run_out_of_data()
+
+      Check if generation history is out-of-data.
+
+
+
+.. py:class:: DummyGenerator(gen_value: float)
+
+   Dummy generator for testing purposes with fixed energy generation.
+
+
+   .. py:property:: history
+
+
+   .. py:method:: get_idx_from_times(time: int = None) -> int
+
+      Get index of generation history for given time.
+      :param time: time of generation history
+
+
+
+   .. py:method:: is_run_out_of_data()
+
+      Check if generation history is out-of-data.
+
+
+

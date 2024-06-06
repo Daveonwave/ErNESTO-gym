@@ -1,0 +1,65 @@
+ernestogym.ernesto.market
+=========================
+
+.. py:module:: ernestogym.ernesto.market
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   ernestogym.ernesto.market.EnergyMarket
+   ernestogym.ernesto.market.DummyMarket
+
+
+Module Contents
+---------------
+
+.. py:class:: EnergyMarket(data: pandas.DataFrame, timestep: int, data_usage: str = 'end')
+
+   Class to represent an energy market.
+
+
+   .. py:property:: ask
+
+
+   .. py:property:: bid
+
+
+   .. py:method:: get_idx_from_times(time: int) -> int
+
+      Get index of market history for given time.
+      :param time: time of market history
+
+
+
+   .. py:method:: is_run_out_of_data()
+
+      Check if market history is out-of-data.
+
+
+
+.. py:class:: DummyMarket(ask: float, bid: float)
+
+   Simpler version of EnergyMarket with fixed ask and bid values.
+
+
+   .. py:property:: ask
+
+
+   .. py:property:: bid
+
+
+   .. py:method:: get_idx_from_times(time: int = None) -> int
+
+      Get index of market history for given time. Useless in dummy market.
+
+
+
+   .. py:method:: is_run_out_of_data()
+
+      Check if market history is out-of-data.
+
+
+

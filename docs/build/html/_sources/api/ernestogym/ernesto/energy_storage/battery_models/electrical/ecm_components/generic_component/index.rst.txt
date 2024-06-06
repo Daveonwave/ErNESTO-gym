@@ -1,0 +1,82 @@
+ernestogym.ernesto.energy_storage.battery_models.electrical.ecm_components.generic_component
+============================================================================================
+
+.. py:module:: ernestogym.ernesto.energy_storage.battery_models.electrical.ecm_components.generic_component
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   ernestogym.ernesto.energy_storage.battery_models.electrical.ecm_components.generic_component.ECMComponent
+
+
+Module Contents
+---------------
+
+.. py:class:: ECMComponent(name)
+
+   Generic component of Thevenin equivalent circuits.
+
+   :param :
+   :type : param name: identifier of the component
+   :param :
+   :type : type name: str
+
+   .. attribute:: _v_series
+
+
+
+      :type: collection of all the past component voltages
+
+   .. attribute:: _t_series
+
+
+
+      :type: collection of all the past discrete steps of time
+
+   .. attribute:: Purpose
+
+
+
+   .. attribute:: -------
+
+
+
+   .. attribute:: This class builds a generic component of the Thevenin equivalent circuit and presents common attributes and
+
+
+
+   .. attribute:: collections that can be useful in each single element of the circuit (Resistor, RCParallel, V_OCV generator).
+
+
+
+
+   .. py:property:: name
+
+
+   .. py:property:: temp
+
+
+   .. py:property:: soc
+
+
+   .. py:property:: soh
+
+
+   .. py:method:: get_v_series(k=None)
+
+      Getter of the specific value at step K, if specified, otherwise of the entire collection
+
+
+
+   .. py:method:: reset_data()
+
+
+   .. py:method:: init_component(v=0)
+
+
+   .. py:method:: update_v(value: float)
+
+

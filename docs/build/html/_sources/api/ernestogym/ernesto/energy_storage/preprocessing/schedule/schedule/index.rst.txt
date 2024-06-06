@@ -1,0 +1,55 @@
+ernestogym.ernesto.energy_storage.preprocessing.schedule.schedule
+=================================================================
+
+.. py:module:: ernestogym.ernesto.energy_storage.preprocessing.schedule.schedule
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   ernestogym.ernesto.energy_storage.preprocessing.schedule.schedule.schedule
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   ernestogym.ernesto.energy_storage.preprocessing.schedule.schedule.Schedule
+
+
+Module Contents
+---------------
+
+.. py:class:: Schedule(instructions: [str], c_value: float)
+
+   
+
+
+   .. py:method:: get_cmd()
+
+      Returns:
+
+
+
+
+   .. py:method:: is_empty()
+
+      Returns True if the command buffer is empty, False otherwise
+
+
+
+   .. py:method:: reset_cmd_buffer()
+
+
+   .. py:method:: next_cmd()
+
+      Returns:
+
+
+
+
+.. py:data:: schedule
+

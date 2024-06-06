@@ -1,0 +1,184 @@
+ernestogym.ernesto
+==================
+
+.. py:module:: ernestogym.ernesto
+
+
+Subpackages
+-----------
+
+.. toctree::
+   :maxdepth: 1
+
+   /api/ernestogym/ernesto/energy_storage/index
+
+
+Submodules
+----------
+
+.. toctree::
+   :maxdepth: 1
+
+   /api/ernestogym/ernesto/demand/index
+   /api/ernestogym/ernesto/generation/index
+   /api/ernestogym/ernesto/market/index
+   /api/ernestogym/ernesto/utils/index
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   ernestogym.ernesto.PVGenerator
+   ernestogym.ernesto.DummyGenerator
+   ernestogym.ernesto.EnergyDemand
+   ernestogym.ernesto.EnergyMarket
+   ernestogym.ernesto.DummyMarket
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   ernestogym.ernesto.read_yaml
+   ernestogym.ernesto.validate_yaml_parameters
+
+
+Package Contents
+----------------
+
+.. py:class:: PVGenerator(data: pandas.DataFrame, timestep: int, data_usage: str = 'end')
+
+   .. py:property:: history
+
+
+   .. py:method:: get_idx_from_times(time: int)
+
+      Get index of generation history for given time.
+      :param time: time of generation history
+
+
+
+   .. py:method:: is_run_out_of_data()
+
+      Check if generation history is out-of-data.
+
+
+
+.. py:class:: DummyGenerator(gen_value: float)
+
+   Dummy generator for testing purposes with fixed energy generation.
+
+
+   .. py:property:: history
+
+
+   .. py:method:: get_idx_from_times(time: int = None) -> int
+
+      Get index of generation history for given time.
+      :param time: time of generation history
+
+
+
+   .. py:method:: is_run_out_of_data()
+
+      Check if generation history is out-of-data.
+
+
+
+.. py:class:: EnergyDemand(data: pandas.DataFrame, timestep: int, test_profiles: list[str], data_usage: str = 'end')
+
+   Energy demand
+
+
+   .. py:property:: history
+
+
+   .. py:property:: times
+
+
+   .. py:property:: labels
+
+
+   .. py:property:: profile
+
+
+   .. py:method:: get_idx_from_times(time: int) -> int
+
+      Get index of demand history for given time.
+      :param time: time of demand history
+      :return: index of demand history
+
+
+
+   .. py:method:: use_test_profile(test_profile: str = None)
+
+
+   .. py:method:: is_run_out_of_data()
+
+      Check if demand history is out-of-data.
+
+
+
+.. py:class:: EnergyMarket(data: pandas.DataFrame, timestep: int, data_usage: str = 'end')
+
+   Class to represent an energy market.
+
+
+   .. py:property:: ask
+
+
+   .. py:property:: bid
+
+
+   .. py:method:: get_idx_from_times(time: int) -> int
+
+      Get index of market history for given time.
+      :param time: time of market history
+
+
+
+   .. py:method:: is_run_out_of_data()
+
+      Check if market history is out-of-data.
+
+
+
+.. py:class:: DummyMarket(ask: float, bid: float)
+
+   Simpler version of EnergyMarket with fixed ask and bid values.
+
+
+   .. py:property:: ask
+
+
+   .. py:property:: bid
+
+
+   .. py:method:: get_idx_from_times(time: int = None) -> int
+
+      Get index of market history for given time. Useless in dummy market.
+
+
+
+   .. py:method:: is_run_out_of_data()
+
+      Check if market history is out-of-data.
+
+
+
+.. py:function:: read_yaml(yaml_file: str, yaml_type: str, bypass_check: bool = False)
+
+   
+
+
+.. py:function:: validate_yaml_parameters(param_dict) -> dict
+
+   Function to validate and adapt units of provided parameters to internal simulator units.
+
+   :param param_dict: dictionary of parameters (read by for example yaml config file)
+   :type param_dict: dict
+
+

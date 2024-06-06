@@ -1,0 +1,46 @@
+ernestogym.ernesto.energy_storage.orchestrator.whatif_manager
+=============================================================
+
+.. py:module:: ernestogym.ernesto.energy_storage.orchestrator.whatif_manager
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   ernestogym.ernesto.energy_storage.orchestrator.whatif_manager.logger
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   ernestogym.ernesto.energy_storage.orchestrator.whatif_manager.WhatIfManager
+
+
+Module Contents
+---------------
+
+.. py:data:: logger
+
+.. py:class:: WhatIfManager(**kwargs)
+
+   Bases: :py:obj:`src.digital_twin.orchestrator.base_manager.GeneralPurposeManager`
+
+
+   Handler of the What-if experiment.
+   -----------------------------------------
+   The simulator is conceived to be the orchestrator and the brain of the specified experiment.
+
+   From here, all the kinds of data (input, output, config) are delivered to their consumer hubs, the
+   environment is instantiated and the instructions related to the simulation mode chosen by the user are provided.
+
+
+   .. py:method:: run()
+
+      
+
+
+
