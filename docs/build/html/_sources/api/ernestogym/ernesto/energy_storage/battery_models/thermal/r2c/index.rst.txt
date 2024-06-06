@@ -1,0 +1,145 @@
+ernestogym.ernesto.energy_storage.battery_models.thermal.r2c
+============================================================
+
+.. py:module:: ernestogym.ernesto.energy_storage.battery_models.thermal.r2c
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   ernestogym.ernesto.energy_storage.battery_models.thermal.r2c.ThermalModel
+   ernestogym.ernesto.energy_storage.battery_models.thermal.r2c.Scalar
+   ernestogym.ernesto.energy_storage.battery_models.thermal.r2c.R2CThermal
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   ernestogym.ernesto.energy_storage.battery_models.thermal.r2c.instantiate_variables
+
+
+Module Contents
+---------------
+
+.. py:class:: ThermalModel(name: str)
+
+   Bases: :py:obj:`GenericModel`
+
+
+   
+
+
+   .. py:property:: name
+
+
+   .. py:method:: reset_model(**kwargs)
+
+
+   .. py:method:: init_model(**kwargs)
+
+
+   .. py:method:: load_battery_state(**kwargs)
+
+
+   .. py:method:: compute_temp(**kwargs)
+
+
+   .. py:method:: get_results(**kwargs)
+
+      Returns a dictionary with all final results
+
+
+
+   .. py:method:: get_temp_series(k=None)
+
+      Getter of the specific value at step K, if specified, otherwise of the entire collection
+
+
+
+   .. py:method:: get_heat_series(k=None)
+
+      Getter of the specific value at step K, if specified, otherwise of the entire collection
+
+
+
+   .. py:method:: update_temp(value: float)
+
+
+   .. py:method:: update_heat(value: float)
+
+
+.. py:class:: Scalar(name: str, value: Union[int, float])
+
+   Bases: :py:obj:`GenericVariable`
+
+
+   
+
+
+   .. py:method:: get_value(input_vars: dict = None)
+
+
+   .. py:method:: set_value(new_value: float)
+
+
+.. py:function:: instantiate_variables(var_dict: dict) -> dict
+
+   # TODO: cambiare configurazione dati in ingresso (esempio: LookupTable passata con un csv)
+
+
+.. py:class:: R2CThermal(components_settings: dict, **kwargs)
+
+   Bases: :py:obj:`ernestogym.ernesto.energy_storage.battery_models.generic_models.ThermalModel`
+
+
+   Scarpelli-Fioriti paper
+   TODO: implement this class (which could be too dependent on cell physical factors)
+
+
+   .. py:property:: soc
+
+
+   .. py:property:: c_term
+
+
+   .. py:property:: r_cond
+
+
+   .. py:property:: r_conv
+
+
+   .. py:property:: dv_dT
+
+
+   .. py:method:: reset_model(**kwargs)
+
+
+   .. py:method:: init_model(**kwargs)
+
+      Initialize the model at timestep t=0 with an initial temperature equal to 25 degC (ambient temperature)
+
+
+
+   .. py:method:: load_battery_state(**kwargs)
+
+
+   .. py:method:: compute_temp(q, i, T_amb, dt, k=-1)
+
+      Compute the current temperature with equation described in the aforementioned paper
+      :param q: power dissipated adopted as heat
+      :type q: float
+      :param i: actual current in the circuit
+      :type i: float
+      :param T_amb: ambient temperature
+      :type T_amb: float
+      :param dt: delta of time from last update
+      :type dt: float
+      :param k: iteration
+      :type k: int
+
+
+

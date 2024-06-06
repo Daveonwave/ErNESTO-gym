@@ -1,0 +1,63 @@
+ernestogym.ernesto.energy_storage.orchestrator.base_manager
+===========================================================
+
+.. py:module:: ernestogym.ernesto.energy_storage.orchestrator.base_manager
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   ernestogym.ernesto.energy_storage.orchestrator.base_manager.logger
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   ernestogym.ernesto.energy_storage.orchestrator.base_manager.GeneralPurposeManager
+
+
+Module Contents
+---------------
+
+.. py:data:: logger
+
+.. py:class:: GeneralPurposeManager(config_folder: str, output_folder: str, exp_id_folder: str, assets_file: str, models: list, ground_folder: str = None, save_results: bool = None, save_metrics: bool = None, make_plots: bool = None)
+
+   Generic handler of the Digital Twin experiment.
+   -----------------------------------------
+   The simulator is conceived to be the orchestrator and the brain of the specified experiment.
+
+   From here, all the kinds of data (input, output, config) are delivered to their consumer hubs, the
+   environment is instantiated and the instructions related to the simulation mode chosen by the user are provided.
+
+
+   .. py:method:: get_instance(mode: str)
+      :classmethod:
+
+
+      Get the instance of the subclass for the current experiment mode, checking if the mode name is
+      contained inside the subclass name.
+      NOTE: this works because of the __init__.py, otherwise the method __subclasses__() cannot find
+            subclasses in other not yet loaded modules.
+
+
+
+   .. py:method:: run()
+      :abstractmethod:
+
+
+
+   .. py:method:: render()
+      :abstractmethod:
+
+
+
+   .. py:method:: evaluate()
+      :abstractmethod:
+
+
+

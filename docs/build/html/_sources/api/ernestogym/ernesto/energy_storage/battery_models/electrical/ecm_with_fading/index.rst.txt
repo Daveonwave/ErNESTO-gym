@@ -1,0 +1,465 @@
+ernestogym.ernesto.energy_storage.battery_models.electrical.ecm_with_fading
+===========================================================================
+
+.. py:module:: ernestogym.ernesto.energy_storage.battery_models.electrical.ecm_with_fading
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   ernestogym.ernesto.energy_storage.battery_models.electrical.ecm_with_fading.ElectricalModel
+   ernestogym.ernesto.energy_storage.battery_models.electrical.ecm_with_fading.Resistor
+   ernestogym.ernesto.energy_storage.battery_models.electrical.ecm_with_fading.ResistorCapacitorParallel
+   ernestogym.ernesto.energy_storage.battery_models.electrical.ecm_with_fading.OCVGenerator
+   ernestogym.ernesto.energy_storage.battery_models.electrical.ecm_with_fading.Scalar
+   ernestogym.ernesto.energy_storage.battery_models.electrical.ecm_with_fading.LookupTableFunction
+   ernestogym.ernesto.energy_storage.battery_models.electrical.ecm_with_fading.TheveninFadingModel
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   ernestogym.ernesto.energy_storage.battery_models.electrical.ecm_with_fading.instantiate_variables
+   ernestogym.ernesto.energy_storage.battery_models.electrical.ecm_with_fading.capacity_fading
+   ernestogym.ernesto.energy_storage.battery_models.electrical.ecm_with_fading.resistance_fading
+
+
+Module Contents
+---------------
+
+.. py:class:: ElectricalModel(name: str)
+
+   Bases: :py:obj:`GenericModel`
+
+
+   
+
+
+   .. py:property:: name
+
+
+   .. py:method:: reset_model(**kwargs)
+
+
+   .. py:method:: init_model(**kwargs)
+
+
+   .. py:method:: load_battery_state(temp: float, soc: float, soh: float)
+
+
+   .. py:method:: build_components(components: dict)
+
+
+   .. py:method:: compute_generated_heat(k: int)
+
+
+   .. py:method:: compute_parameter_fading(k: int = -1)
+
+
+   .. py:method:: get_results(**kwargs)
+
+
+   .. py:method:: get_v_series(k=None)
+
+      Getter of the specific value at step K, if specified, otherwise of the entire collection
+
+
+
+   .. py:method:: get_i_series(k=None)
+
+      Getter of the specific value at step K, if specified, otherwise of the entire collection
+
+
+
+   .. py:method:: get_p_series(k=None)
+
+      Getter of the specific value at step K, if specified, otherwise of the entire collection
+
+
+
+   .. py:method:: get_q_series(k=None)
+
+      Getter of the specific value at step K, if specified, otherwise of the entire collection
+
+
+
+   .. py:method:: get_internal_resistance()
+      :abstractmethod:
+
+
+
+   .. py:method:: get_polarization_resistance()
+      :abstractmethod:
+
+
+
+   .. py:method:: get_internal_capacity()
+      :abstractmethod:
+
+
+
+   .. py:method:: update_v_load(value: float)
+
+
+   .. py:method:: update_i_load(value: float)
+
+
+   .. py:method:: update_power(value: float)
+
+
+   .. py:method:: update_q(value: float)
+
+
+.. py:class:: Resistor(name: str, resistance: Union[ernestogym.ernesto.energy_storage.battery_models.parameters.Scalar, ernestogym.ernesto.energy_storage.battery_models.parameters.LookupTableFunction])
+
+   Bases: :py:obj:`ernestogym.ernesto.energy_storage.battery_models.electrical.ecm_components.generic_component.ECMComponent`
+
+
+   Resistor element of Thevenin equivalent circuits.
+
+   :param :
+   :type : param name: identifier of the resistor
+   :param :
+   :type : type name: str
+   :param :
+   :type : param resistance: value of the resistance (Ohm)
+   :param :
+   :type : type resistance: float or int or pint.Quantity
+
+
+   .. py:property:: resistance
+      Getter of the R0 value. Depending on the x_names (inputs of the function), we retrieve components attribute
+      among {SoC, SoH, Temp}.
+      If R0 is a scalar, we don't need to provide any input.
+
+
+   .. py:method:: reset_data()
+
+
+   .. py:method:: init_component(v=None, r0=None)
+
+      Initialize R0 component at t=0
+
+
+
+   .. py:method:: get_r0_series(k=None)
+
+      Getter of the specific value at step K, if specified, otherwise of the entire collection
+
+
+
+   .. py:method:: compute_v(i)
+
+      Compute the resistor potential V_r0, given in input the electric current I=I_r0
+      #TODO: we will use 'k' when there will be the decay of resistance
+
+
+
+   .. py:method:: compute_i(v_r0)
+
+      Compute the flowing electric current I_r0=I, given in input the resistor potential V_r0
+
+
+
+   .. py:method:: compute_dv(i, i_, dt)
+
+      Compute the derivative of (dv_r0/dt) using the backward finite differences approach.
+      We consider (dr0/dt) constant, so we can erase the second term of the derivation by parts.
+
+      Inputs:
+      :param i: current at time t
+      :param i_: current at previous sampling time t-dt
+      :param dt: delta of time
+
+
+
+   .. py:method:: update_step_variables(r0, v_r0)
+
+      Aggiorno le liste delle variabili calcolate
+
+
+
+.. py:class:: ResistorCapacitorParallel(name, resistance: Union[ernestogym.ernesto.energy_storage.battery_models.parameters.Scalar, ernestogym.ernesto.energy_storage.battery_models.parameters.LookupTableFunction], capacity: Union[ernestogym.ernesto.energy_storage.battery_models.parameters.Scalar, ernestogym.ernesto.energy_storage.battery_models.parameters.LookupTableFunction])
+
+   Bases: :py:obj:`ernestogym.ernesto.energy_storage.battery_models.electrical.ecm_components.generic_component.ECMComponent`
+
+
+   Parallel Resistor-Capacitor (RC) element for Thevenin equivalent circuits.
+
+   :param :
+   :type : param resistance:
+   :param :
+   :type : type resistance:
+   :param :
+   :type : param capacity:
+   :param :
+   :type : type capacity:
+
+
+   .. py:property:: resistance
+      Getter of the R1 value. Depending on the x_names (inputs of the function), we retrieve components attribute
+      among {SoC, SoH, Temp}.
+      If R1 is a scalar, we don't need to provide any input.
+
+
+   .. py:property:: capacity
+      Getter of the C value. Depending on the x_names (inputs of the function), we retrieve components attribute
+      among {SoC, SoH, Temp}.
+      If C is a scalar, we don't need to provide any input.
+
+
+   .. py:method:: get_r1_series(k=None)
+
+      Getter of the specific value at step K, if specified, otherwise of the entire collection
+
+
+
+   .. py:method:: get_c_series(k=None)
+
+      Getter of the specific value at step K, if specified, otherwise of the entire collection
+
+
+
+   .. py:method:: get_i_r1_series(k=None)
+
+      Getter of the specific value at step K, if specified, otherwise of the entire collection
+
+
+
+   .. py:method:: get_i_c_series(k=None)
+
+      Getter of the specific value at step K, if specified, otherwise of the entire collection
+
+
+
+   .. py:method:: reset_data()
+
+
+   .. py:method:: init_component(r1=None, c=None, i_c=0, i_r1=0, v_rc=None)
+
+      Initialize RC component at t=0
+
+
+
+   .. py:method:: compute_v(i_r1)
+
+      Compute the potential of the RC parallel V_r1=V_c.
+
+      Inputs:
+      :param i_r1: current I_r1 flowing through the resistor
+
+
+
+   .. py:method:: compute_i_r1(v_rc)
+
+      Compute the flowing electric current I_r1, given the voltage of the resistor V_r1.
+      The formula for the computation of I_r1 at step k is:
+
+          I_r1[k] = V_r1[k] / R1
+
+      Inputs
+      ------
+      :param v_rc : voltage of resistor R1
+
+
+
+   .. py:method:: compute_i_c(dv_c=None, i=None, i_r1=None)
+
+      Compute the flowing electric current I_c, given the derivative of the capacitor voltage dV_c, by means of the
+      capacitor characteristic formula: dV_c = I_c / C (with respect to time).
+      In alternative, if available we can use the resistor current I_r1 and the circuit current I. In this case, we
+      use the Kirchhoff's law at node: I_c = I - I_r1.
+
+      Inputs
+      ------
+      param dv_c:
+      param i:
+      param i_r1:
+
+
+
+   .. py:method:: compute_tau()
+
+      Compute the
+
+
+
+   .. py:method:: update_step_variables(r1, c, v_rc, i_r1, i_c)
+
+      Aggiorno le liste delle variabili calcolate
+
+
+
+.. py:class:: OCVGenerator(name, ocv_potential: Union[ernestogym.ernesto.energy_storage.battery_models.parameters.Scalar, ernestogym.ernesto.energy_storage.battery_models.parameters.LookupTableFunction])
+
+   Bases: :py:obj:`ernestogym.ernesto.energy_storage.battery_models.electrical.ecm_components.generic_component.ECMComponent`
+
+
+   Open Circuit Voltage (OCV) element for Thevenin equivalent circuits.
+
+
+
+   .. py:property:: ocv_potential
+
+
+   .. py:method:: init_component(v=None)
+
+      Initialize V_ocv component at t=0
+
+
+
+.. py:function:: instantiate_variables(var_dict: dict) -> dict
+
+   # TODO: cambiare configurazione dati in ingresso (esempio: LookupTable passata con un csv)
+
+
+.. py:class:: Scalar(name: str, value: Union[int, float])
+
+   Bases: :py:obj:`GenericVariable`
+
+
+   
+
+
+   .. py:method:: get_value(input_vars: dict = None)
+
+
+   .. py:method:: set_value(new_value: float)
+
+
+.. py:class:: LookupTableFunction(name: str, y_values: list, x_names: list, x_values: list)
+
+   Bases: :py:obj:`GenericVariable`
+
+
+   
+
+
+   .. py:method:: get_value(input_vars: dict)
+
+      Retrieve the result of the interpolation function from the lookup table.
+
+
+
+   .. py:method:: get_y_values()
+
+      Get y_values from which is extracted the result of the interpolation function.
+
+
+
+   .. py:method:: set_value(new_values: numpy.ndarray)
+
+      Set the values of the lookup table
+
+
+
+   .. py:method:: render()
+
+
+.. py:function:: capacity_fading(c: float, q: float, alpha: float)
+
+   Capacity fading model depending on the exchange charge in the time interval.
+
+   :param c:
+   :type c: Capacity of the battery.
+   :param q:
+   :type q: Exchange charge in the time interval.
+   :param alpha:
+   :type alpha: Constant given in configuration file
+
+
+.. py:function:: resistance_fading(r: float, q: float, beta: float)
+
+   Resistor fading model depending on the exchange charge in the time interval.
+
+   :param r:
+   :type r: Resistance of the battery.
+   :param q:
+   :type q: Exchange charge in the time interval.
+   :param beta:
+   :type beta: Constant given in configuration file
+
+
+.. py:class:: TheveninFadingModel(components_settings: dict, sign_convention='active', **kwargs)
+
+   Bases: :py:obj:`ernestogym.ernesto.energy_storage.battery_models.generic_models.ElectricalModel`
+
+
+   Thevenin Equivalent Circuit Model with fading functions for internal parameters.
+
+   Reference:
+   ----------------
+   S. Barcellona, S. Colnago, E. Ferri and L. Piegari, "Evaluation of Dual-Chemistry Battery Storage System for
+   Electric Vehicles Charging Stations," 2023 IEEE Vehicle Power and Propulsion Conference (VPPC), Milan, Italy, 2023,
+   doi: 10.1109/VPPC60535.2023.10403281.
+
+
+   .. py:method:: reset_model(**kwargs)
+
+
+   .. py:method:: init_model(**kwargs)
+
+      Initialize the model at t=0
+
+
+
+   .. py:method:: load_battery_state(temp=None, soc=None, soh=None)
+
+      Update the SoC and SoH for the current simulation step
+
+
+
+   .. py:method:: step_voltage_driven(v_load, dt, k)
+
+      CV mode
+
+
+
+   .. py:method:: step_current_driven(i_load, dt, k, p_load=None)
+
+      CC mode
+
+
+
+   .. py:method:: step_power_driven(p_load, dt, k)
+
+      CP mode: to simplify the power driven case, we pose I = P / V(t-1), having a little shift in computed data
+
+
+
+   .. py:method:: compute_generated_heat(k=-1)
+
+      Compute the generated heat that can be used to feed the thermal model (when required).
+      For Thevenin first order circuit it is: [P = V * I + V_rc * I_r1].
+
+      Inputs:
+      :param k: step for which compute the heat generation
+
+
+
+   .. py:method:: compute_parameter_fading(k=-1)
+
+      Model of parameter fading hardcoded in this file within function 'capacity_fading' and 'resistor_fading'.
+
+
+
+   .. py:method:: get_internal_resistance()
+
+
+   .. py:method:: get_polarization_resistance()
+
+
+   .. py:method:: get_internal_capacity()
+
+
+   .. py:method:: get_results(**kwargs)
+
+      Returns a dictionary with all final results
+      TODO: selection of results by label from config file?
+
+
+

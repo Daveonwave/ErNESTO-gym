@@ -1,0 +1,92 @@
+ernestogym.envs.single_agent.utils
+==================================
+
+.. py:module:: ernestogym.envs.single_agent.utils
+
+.. autoapi-nested-parse::
+
+   This module primarily implements the `parameter_generator()` function which
+   generates the parameters dict for `EnergyStorageEnv`.
+
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   ernestogym.envs.single_agent.utils.BATTERY_OPTIONS
+   ernestogym.envs.single_agent.utils.INPUT_VAR
+   ernestogym.envs.single_agent.utils.ECM
+   ernestogym.envs.single_agent.utils.R2C_THERMAL
+   ernestogym.envs.single_agent.utils.BOLUN_MODEL
+   ernestogym.envs.single_agent.utils.WORLD
+   ernestogym.envs.single_agent.utils.world_settings
+   ernestogym.envs.single_agent.utils.ureg
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   ernestogym.envs.single_agent.utils.read_csv
+   ernestogym.envs.single_agent.utils.read_yaml
+   ernestogym.envs.single_agent.utils.validate_yaml_parameters
+   ernestogym.envs.single_agent.utils.parameter_generator
+
+
+Module Contents
+---------------
+
+.. py:function:: read_csv(csv_file: str) -> pandas.DataFrame
+
+   Read data from csv files
+
+
+.. py:function:: read_yaml(yaml_file: str, yaml_type: str, bypass_check: bool = False)
+
+   
+
+
+.. py:function:: validate_yaml_parameters(param_dict) -> dict
+
+   Function to validate and adapt units of provided parameters to internal simulator units.
+
+   :param param_dict: dictionary of parameters (read by for example yaml config file)
+   :type param_dict: dict
+
+
+.. py:data:: BATTERY_OPTIONS
+   :value: 'ernestogym/ernesto/data/battery/cell.yaml'
+
+
+.. py:data:: INPUT_VAR
+   :value: 'power'
+
+
+.. py:data:: ECM
+   :value: 'ernestogym/ernesto/data/battery/models/electrical/thevenin_cell.yaml'
+
+
+.. py:data:: R2C_THERMAL
+   :value: 'ernestogym/ernesto/data/battery/models/thermal/r2c_thermal_cell.yaml'
+
+
+.. py:data:: BOLUN_MODEL
+   :value: 'ernestogym/ernesto/data/battery/models/aging/bolun_cell.yaml'
+
+
+.. py:data:: WORLD
+   :value: 'ernestogym/envs/single_agent/world.yaml'
+
+
+.. py:data:: world_settings
+
+.. py:data:: ureg
+
+.. py:function:: parameter_generator(battery_options: str = BATTERY_OPTIONS, input_var: str = INPUT_VAR, electrical_model: str = ECM, thermal_model: str = R2C_THERMAL, aging_model: str = BOLUN_MODEL, use_degradation: bool = None, use_fading: bool = None, step: int = None, random_battery_init: bool = None, random_data_init: bool = None, seed: int = None, max_iterations: int = None, max_degradation: float = None, reward_coeff: dict[str, float] = None, bypass_yaml_schema: bool = False) -> dict
+
+   Generates the parameters dict for `EnergyStorageEnv`.
+
+

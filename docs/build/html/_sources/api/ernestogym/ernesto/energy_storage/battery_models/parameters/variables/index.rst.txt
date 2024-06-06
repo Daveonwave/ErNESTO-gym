@@ -1,0 +1,129 @@
+ernestogym.ernesto.energy_storage.battery_models.parameters.variables
+=====================================================================
+
+.. py:module:: ernestogym.ernesto.energy_storage.battery_models.parameters.variables
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   ernestogym.ernesto.energy_storage.battery_models.parameters.variables.params_csv_folder
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   ernestogym.ernesto.energy_storage.battery_models.parameters.variables.GenericVariable
+   ernestogym.ernesto.energy_storage.battery_models.parameters.variables.Scalar
+   ernestogym.ernesto.energy_storage.battery_models.parameters.variables.Function
+   ernestogym.ernesto.energy_storage.battery_models.parameters.variables.FunctionTerm
+   ernestogym.ernesto.energy_storage.battery_models.parameters.variables.ParametricFunction
+   ernestogym.ernesto.energy_storage.battery_models.parameters.variables.LookupTableFunction
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   ernestogym.ernesto.energy_storage.battery_models.parameters.variables.instantiate_variables
+
+
+Module Contents
+---------------
+
+.. py:data:: params_csv_folder
+   :value: 'ernestogym/ernesto/data/battery/params/'
+
+
+.. py:class:: GenericVariable(name: str)
+
+   
+
+
+   .. py:property:: name
+
+
+   .. py:method:: get_value(input_vars: dict)
+      :abstractmethod:
+
+
+
+   .. py:method:: set_value(new_value)
+      :abstractmethod:
+
+
+
+.. py:class:: Scalar(name: str, value: Union[int, float])
+
+   Bases: :py:obj:`GenericVariable`
+
+
+   
+
+
+   .. py:method:: get_value(input_vars: dict = None)
+
+
+   .. py:method:: set_value(new_value: float)
+
+
+.. py:class:: Function
+
+   
+
+
+.. py:class:: FunctionTerm(variable, coefficient, operation, degree)
+
+   
+
+
+.. py:class:: ParametricFunction(name: str, function_terms: dict)
+
+   Bases: :py:obj:`GenericVariable`
+
+
+   
+
+
+   .. py:method:: get_value(**params)
+
+
+.. py:class:: LookupTableFunction(name: str, y_values: list, x_names: list, x_values: list)
+
+   Bases: :py:obj:`GenericVariable`
+
+
+   
+
+
+   .. py:method:: get_value(input_vars: dict)
+
+      Retrieve the result of the interpolation function from the lookup table.
+
+
+
+   .. py:method:: get_y_values()
+
+      Get y_values from which is extracted the result of the interpolation function.
+
+
+
+   .. py:method:: set_value(new_values: numpy.ndarray)
+
+      Set the values of the lookup table
+
+
+
+   .. py:method:: render()
+
+
+.. py:function:: instantiate_variables(var_dict: dict) -> dict
+
+   # TODO: cambiare configurazione dati in ingresso (esempio: LookupTable passata con un csv)
+
+

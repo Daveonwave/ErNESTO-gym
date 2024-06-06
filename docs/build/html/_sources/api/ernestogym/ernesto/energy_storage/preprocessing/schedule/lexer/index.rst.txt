@@ -1,0 +1,110 @@
+ernestogym.ernesto.energy_storage.preprocessing.schedule.lexer
+==============================================================
+
+.. py:module:: ernestogym.ernesto.energy_storage.preprocessing.schedule.lexer
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   ernestogym.ernesto.energy_storage.preprocessing.schedule.lexer.ScheduleLexer
+
+
+Module Contents
+---------------
+
+.. py:class:: ScheduleLexer
+
+   
+
+
+   .. py:attribute:: tokens
+      :value: ('DISCHARGE', 'CHARGE', 'REST', 'HOLD', 'AT', 'NUMBER', 'UNIT', 'MINUTES', 'HOURS', 'RATIO',...
+
+
+
+   .. py:attribute:: t_ignore
+      :value: ' \t'
+
+
+
+   .. py:attribute:: t_DISCHARGE
+      :value: 'Discharge'
+
+
+
+   .. py:attribute:: t_CHARGE
+      :value: 'Charge'
+
+
+
+   .. py:attribute:: t_REST
+      :value: 'Rest'
+
+
+
+   .. py:attribute:: t_HOLD
+      :value: 'Hold'
+
+
+
+   .. py:attribute:: t_AT
+      :value: 'at'
+
+
+
+   .. py:attribute:: t_NUMBER
+      :value: '\\d+(\\.\\d+)?'
+
+
+
+   .. py:attribute:: t_RATIO
+      :value: '/'
+
+
+
+   .. py:attribute:: t_CRATE
+      :value: 'C'
+
+
+
+   .. py:attribute:: t_UNIT
+      :value: '(mV|V|A|mA|W|mW)'
+
+
+
+   .. py:attribute:: t_HOURS
+      :value: 'hours?'
+
+
+
+   .. py:attribute:: t_MINUTES
+      :value: 'minutes?'
+
+
+
+   .. py:attribute:: t_SECONDS
+      :value: 'seconds?'
+
+
+
+   .. py:attribute:: t_UNTIL
+      :value: 'until'
+
+
+
+   .. py:attribute:: t_FOR
+      :value: 'for'
+
+
+
+   .. py:attribute:: t_OR
+      :value: 'or'
+
+
+
+   .. py:method:: t_error(t)
+
+

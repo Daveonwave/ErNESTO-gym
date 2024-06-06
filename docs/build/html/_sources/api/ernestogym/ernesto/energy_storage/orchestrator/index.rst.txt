@@ -1,0 +1,16 @@
+ernestogym.ernesto.energy_storage.orchestrator
+==============================================
+
+.. py:module:: ernestogym.ernesto.energy_storage.orchestrator
+
+
+Submodules
+----------
+
+.. toctree::
+   :maxdepth: 1
+
+   /api/ernestogym/ernesto/energy_storage/orchestrator/base_manager/index
+   /api/ernestogym/ernesto/energy_storage/orchestrator/whatif_manager/index
+
+

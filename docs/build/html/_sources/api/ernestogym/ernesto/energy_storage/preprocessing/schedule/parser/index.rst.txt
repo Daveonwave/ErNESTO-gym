@@ -1,0 +1,97 @@
+ernestogym.ernesto.energy_storage.preprocessing.schedule.parser
+===============================================================
+
+.. py:module:: ernestogym.ernesto.energy_storage.preprocessing.schedule.parser
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   ernestogym.ernesto.energy_storage.preprocessing.schedule.parser.ScheduleParser
+
+
+Module Contents
+---------------
+
+.. py:class:: ScheduleParser(lexer)
+
+   
+
+
+   .. py:attribute:: tokens
+
+
+   .. py:method:: parse(inputs, debug=0)
+
+      Parse the input string, debug is used to check the parser states and reductions.
+
+
+
+   .. py:method:: p_command_discharge(p)
+
+      command : DISCHARGE what
+
+
+
+   .. py:method:: p_command_charge(p)
+
+      command : CHARGE what
+
+
+
+   .. py:method:: p_command_rest(p)
+
+      command : REST time
+
+
+
+   .. py:method:: p_command_hold(p)
+
+      command : HOLD what
+
+
+
+   .. py:method:: p_command_what(p)
+
+      what : AT rate time
+
+
+
+   .. py:method:: p_rate(p)
+
+      rate : CRATE RATIO NUMBER
+           | NUMBER CRATE
+           | NUMBER UNIT
+
+
+
+   .. py:method:: p_until_rate(p)
+
+      until_rate : UNTIL CRATE RATIO NUMBER
+                 | UNTIL NUMBER CRATE
+                 | UNTIL NUMBER UNIT
+
+
+
+   .. py:method:: p_time(p)
+
+      time : duration
+           | until_rate
+           | duration OR until_rate
+           | until_rate OR duration
+
+
+
+   .. py:method:: p_for_duration(p)
+
+      duration : FOR NUMBER HOURS
+               | FOR NUMBER MINUTES
+               | FOR NUMBER SECONDS
+
+
+
+   .. py:method:: p_error(p)
+
+

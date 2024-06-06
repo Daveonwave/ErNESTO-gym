@@ -1,0 +1,25 @@
+ernestogym.ernesto.energy_storage.preprocessing
+===============================================
+
+.. py:module:: ernestogym.ernesto.energy_storage.preprocessing
+
+
+Subpackages
+-----------
+
+.. toctree::
+   :maxdepth: 1
+
+   /api/ernestogym/ernesto/energy_storage/preprocessing/schedule/index
+
+
+Submodules
+----------
+
+.. toctree::
+   :maxdepth: 1
+
+   /api/ernestogym/ernesto/energy_storage/preprocessing/schema/index
+   /api/ernestogym/ernesto/energy_storage/preprocessing/utils/index
+
+

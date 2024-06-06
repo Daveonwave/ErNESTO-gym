@@ -1,0 +1,163 @@
+ernestogym.ernesto.energy_storage.battery_models.aging.bolun
+============================================================
+
+.. py:module:: ernestogym.ernesto.energy_storage.battery_models.aging.bolun
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   ernestogym.ernesto.energy_storage.battery_models.aging.bolun.AgingModel
+   ernestogym.ernesto.energy_storage.battery_models.aging.bolun.BolunModel
+
+
+Module Contents
+---------------
+
+.. py:class:: AgingModel(name: str)
+
+   Bases: :py:obj:`GenericModel`
+
+
+   
+
+
+   .. py:property:: name
+
+
+   .. py:method:: reset_model(**kwargs)
+
+
+   .. py:method:: init_model(**kwargs)
+
+
+   .. py:method:: load_battery_state(**kwargs)
+
+
+   .. py:method:: compute_degradation(**kwargs)
+
+
+   .. py:method:: get_results(**kwargs)
+
+
+   .. py:method:: get_deg_series(k=None)
+
+      Getter of the specific value at step K, if specified, otherwise of the entire collection
+
+
+
+   .. py:method:: update_deg(value: float)
+
+
+.. py:class:: BolunModel(components_settings: dict, stress_models: dict, init_soc: int = 1)
+
+   Bases: :py:obj:`ernestogym.ernesto.energy_storage.battery_models.generic_models.AgingModel`
+
+
+   Bolun model (https://www.researchgate.net/publication/303890624_Modeling_of_Lithium-Ion_Battery_Degradation_for_Cell_Life_Assessment)
+
+
+   .. py:method:: get_f_cal_series(k=None)
+
+      Getter of the specific value at step K, if specified, otherwise of the entire collection
+
+
+
+   .. py:method:: get_f_cyc_series(k=None)
+
+      Getter of the specific value at step K, if specified, otherwise of the entire collection
+
+
+
+   .. py:method:: reset_model(**kwargs)
+
+
+   .. py:method:: init_model(**kwargs)
+
+
+   .. py:method:: compute_degradation(soc_history, temp_history, elapsed_time, k)
+
+      Computes the degradation of the Bolun aging model
+
+
+
+   .. py:method:: get_results(**kwargs)
+
+      Returns a dictionary with all final results
+      TODO: selection of results by label from config file?
+
+
+
+   .. py:class:: Streamflow(init_soc=0, subsample=False, interpolate='linear', expected_cycle_num=500, cycle_num_increment=500)
+
+      Implementation of our cycle counting algorithm, that is able to perform in an online manner without considering
+      every new sample the whole soc and temperature history. It's inspired to the rainflow cycle counting algorithm.
+
+
+      .. py:class:: Direction(*args, **kwds)
+
+         Bases: :py:obj:`enum.Enum`
+
+
+         Create a collection of name/value pairs.
+
+         Example enumeration:
+
+         >>> class Color(Enum):
+         ...     RED = 1
+         ...     BLUE = 2
+         ...     GREEN = 3
+
+         Access them by:
+
+         - attribute access::
+
+         >>> Color.RED
+         <Color.RED: 1>
+
+         - value lookup:
+
+         >>> Color(1)
+         <Color.RED: 1>
+
+         - name lookup:
+
+         >>> Color['RED']
+         <Color.RED: 1>
+
+         Enumerations can be iterated over, and know how many members they have:
+
+         >>> len(Color)
+         3
+
+         >>> list(Color)
+         [<Color.RED: 1>, <Color.BLUE: 2>, <Color.GREEN: 3>]
+
+         Methods can be added to enumerations, and members can have their own
+         attributes -- see the documentation for details.
+
+
+         .. py:attribute:: UP
+            :value: 1
+
+
+
+         .. py:attribute:: DOWN
+            :value: 2
+
+
+
+
+      .. py:method:: step(actual_value, expected_end, second_signal_value=None, return_valid_only=True, return_unvalidated_list=True)
+
+         :param actual_value ():
+         :param expected_end ():
+         :param second_signal_value ():
+         :param return_valid_only ():
+         :param return_unvalidated_list ():
+
+
+
+

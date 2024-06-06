@@ -1,0 +1,97 @@
+ernestogym.ernesto.energy_storage.preprocessing.schema
+======================================================
+
+.. py:module:: ernestogym.ernesto.energy_storage.preprocessing.schema
+
+
+Attributes
+----------
+
+.. autoapisummary::
+
+   ernestogym.ernesto.energy_storage.preprocessing.schema.logger
+   ernestogym.ernesto.energy_storage.preprocessing.schema.FILE_TYPES
+   ernestogym.ernesto.energy_storage.preprocessing.schema.schemas
+   ernestogym.ernesto.energy_storage.preprocessing.schema.string_pattern
+   ernestogym.ernesto.energy_storage.preprocessing.schema.path_pattern
+   ernestogym.ernesto.energy_storage.preprocessing.schema.class_pattern
+   ernestogym.ernesto.energy_storage.preprocessing.schema.var_pattern
+   ernestogym.ernesto.energy_storage.preprocessing.schema.label_pattern
+   ernestogym.ernesto.energy_storage.preprocessing.schema.unit_pattern
+   ernestogym.ernesto.energy_storage.preprocessing.schema.battery_param
+   ernestogym.ernesto.energy_storage.preprocessing.schema.bound_param
+   ernestogym.ernesto.energy_storage.preprocessing.schema.battery_options
+   ernestogym.ernesto.energy_storage.preprocessing.schema.battery
+   ernestogym.ernesto.energy_storage.preprocessing.schema.single_comp_hardcoded_lookup
+   ernestogym.ernesto.energy_storage.preprocessing.schema.single_comp_csv_lookup
+   ernestogym.ernesto.energy_storage.preprocessing.schema.thevenin
+   ernestogym.ernesto.energy_storage.preprocessing.schema.rc_thermal
+   ernestogym.ernesto.energy_storage.preprocessing.schema.r2c_thermal
+   ernestogym.ernesto.energy_storage.preprocessing.schema.mlp_thermal
+   ernestogym.ernesto.energy_storage.preprocessing.schema.bolun
+   ernestogym.ernesto.energy_storage.preprocessing.schema.stress_model_schema
+   ernestogym.ernesto.energy_storage.preprocessing.schema.model_schema
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   ernestogym.ernesto.energy_storage.preprocessing.schema.read_yaml
+
+
+Module Contents
+---------------
+
+.. py:data:: logger
+
+.. py:data:: FILE_TYPES
+   :value: ['battery_options', 'model']
+
+
+.. py:data:: schemas
+
+.. py:data:: string_pattern
+
+.. py:data:: path_pattern
+
+.. py:data:: class_pattern
+
+.. py:data:: var_pattern
+
+.. py:data:: label_pattern
+
+.. py:data:: unit_pattern
+
+.. py:data:: battery_param
+
+.. py:data:: bound_param
+
+.. py:data:: battery_options
+
+.. py:data:: battery
+
+.. py:data:: single_comp_hardcoded_lookup
+
+.. py:data:: single_comp_csv_lookup
+
+.. py:data:: thevenin
+
+.. py:data:: rc_thermal
+
+.. py:data:: r2c_thermal
+
+.. py:data:: mlp_thermal
+
+.. py:data:: bolun
+
+.. py:data:: stress_model_schema
+
+.. py:data:: model_schema
+
+.. py:function:: read_yaml(yaml_file: str, yaml_type: str, bypass_check: bool = False)
+
+   
+
+

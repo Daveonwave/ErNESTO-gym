@@ -1,0 +1,344 @@
+ernestogym.envs.single_agent.env
+================================
+
+.. py:module:: ernestogym.envs.single_agent.env
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   ernestogym.envs.single_agent.env.BatteryEnergyStorageSystem
+   ernestogym.envs.single_agent.env.PVGenerator
+   ernestogym.envs.single_agent.env.EnergyDemand
+   ernestogym.envs.single_agent.env.EnergyMarket
+   ernestogym.envs.single_agent.env.DummyGenerator
+   ernestogym.envs.single_agent.env.DummyMarket
+   ernestogym.envs.single_agent.env.MiniGridEnv
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   ernestogym.envs.single_agent.env.operational_cost
+   ernestogym.envs.single_agent.env.linearized_degradation
+
+
+Module Contents
+---------------
+
+.. py:function:: operational_cost(replacement_cost: float, C_rated: float, DoD_rated: float, L_rated: float, v_rated: float, p: float, r: float, K_rated: float, soc: float, is_discharging: bool) -> float
+
+   Compute the operational cost of using the battery depending on the replacement cost of the battery, the power used
+   to charge and discharge the system and the power losses occurring within the process.
+
+   Parameters:
+   ----------------
+   replacement_cost (float): The replacement cost of the battery.
+   C_rated (float): The rated capacity of the battery.
+   DoD_n (float): The rated depth of discharge (DoD) of the battery.
+   L_rated (float): The rated lifetime of the battery.
+   v_rated (float): The rated voltage of the battery.
+   p (float): The charge/discharged power of the battery.
+   r (float): The internal resistance of the battery.
+   K_rated (float): The polarization constant of the battery that corresponds to the R1 of the ECM.
+   soc (float): The current state of charge (SoC) of the battery.
+   is_discharging (bool): Whether the battery is discharging or charging.
+
+
+   Reference paper:
+   ----------------
+   T. A. Nguyen and M. L. Crow, "Stochastic Optimization of Renewable-Based Microgrid Operation Incorporating Battery
+   Operating Cost," in IEEE Transactions on Power Systems, vol. 31, no. 3, pp. 2289-2296, May 2016,
+   doi: 10.1109/TPWRS.2015.2455491.
+
+
+.. py:function:: linearized_degradation(replacement_cost: float, delta_deg: float, deg_limit: float) -> float
+
+   Compute the cost associated to a linearized degradation of the battery.
+
+   Parameters:
+   ----------------
+   replacement_cost (float): The replacement cost of the battery.
+   delta_deg (float): The step degradation of the battery.
+   deg_limit (float): The maximum degradation of the battery.
+
+   Reference: https://github.com/OscarPindaro/RLithium-0/tree/main
+
+
+.. py:class:: BatteryEnergyStorageSystem(models_config: list, battery_options: dict, input_var: str, check_soh_every=None, **kwargs)
+
+   Class representing the battery abstraction.
+   Here we select all the electrical, thermal and mathematical electrical to simulate the BESS behaviour.
+   #TODO: can be done with multi-threading (one for each submodel)?
+
+
+   .. py:property:: load_var
+
+
+   .. py:method:: get_v()
+
+
+   .. py:method:: get_i()
+
+
+   .. py:method:: get_p()
+
+
+   .. py:method:: get_temp()
+
+
+   .. py:method:: get_internal_resistance()
+
+
+   .. py:method:: get_polarization_resistance()
+
+
+   .. py:method:: get_internal_capacity()
+
+
+   .. py:method:: get_feasible_current(last_soc=None, dt=1)
+
+
+   .. py:method:: get_delta_degradation()
+
+
+   .. py:method:: reset(reset_info: dict = {})
+
+      
+
+
+
+   .. py:method:: init(init_info: dict = {})
+
+      Initialization of the battery simulation environment at t=0.
+
+
+
+   .. py:method:: step(load: float, dt: float, k: int)
+
+      :param load ():
+      :param dt ():
+      :param k ():
+
+
+
+   .. py:method:: get_status_table()
+
+      
+
+
+
+   .. py:method:: build_results_table()
+
+      
+
+
+
+.. py:class:: PVGenerator(data: pandas.DataFrame, timestep: int, data_usage: str = 'end')
+
+   .. py:property:: history
+
+
+   .. py:method:: get_idx_from_times(time: int)
+
+      Get index of generation history for given time.
+      :param time: time of generation history
+
+
+
+   .. py:method:: is_run_out_of_data()
+
+      Check if generation history is out-of-data.
+
+
+
+.. py:class:: EnergyDemand(data: pandas.DataFrame, timestep: int, test_profiles: list[str], data_usage: str = 'end')
+
+   Energy demand
+
+
+   .. py:property:: history
+
+
+   .. py:property:: times
+
+
+   .. py:property:: labels
+
+
+   .. py:property:: profile
+
+
+   .. py:method:: get_idx_from_times(time: int) -> int
+
+      Get index of demand history for given time.
+      :param time: time of demand history
+      :return: index of demand history
+
+
+
+   .. py:method:: use_test_profile(test_profile: str = None)
+
+
+   .. py:method:: is_run_out_of_data()
+
+      Check if demand history is out-of-data.
+
+
+
+.. py:class:: EnergyMarket(data: pandas.DataFrame, timestep: int, data_usage: str = 'end')
+
+   Class to represent an energy market.
+
+
+   .. py:property:: ask
+
+
+   .. py:property:: bid
+
+
+   .. py:method:: get_idx_from_times(time: int) -> int
+
+      Get index of market history for given time.
+      :param time: time of market history
+
+
+
+   .. py:method:: is_run_out_of_data()
+
+      Check if market history is out-of-data.
+
+
+
+.. py:class:: DummyGenerator(gen_value: float)
+
+   Dummy generator for testing purposes with fixed energy generation.
+
+
+   .. py:property:: history
+
+
+   .. py:method:: get_idx_from_times(time: int = None) -> int
+
+      Get index of generation history for given time.
+      :param time: time of generation history
+
+
+
+   .. py:method:: is_run_out_of_data()
+
+      Check if generation history is out-of-data.
+
+
+
+.. py:class:: DummyMarket(ask: float, bid: float)
+
+   Simpler version of EnergyMarket with fixed ask and bid values.
+
+
+   .. py:property:: ask
+
+
+   .. py:property:: bid
+
+
+   .. py:method:: get_idx_from_times(time: int = None) -> int
+
+      Get index of market history for given time. Useless in dummy market.
+
+
+
+   .. py:method:: is_run_out_of_data()
+
+      Check if market history is out-of-data.
+
+
+
+.. py:class:: MiniGridEnv(settings: dict[str, Any])
+
+   Bases: :py:obj:`gymnasium.Env`
+
+
+   
+
+
+   .. py:attribute:: SECONDS_PER_MINUTE
+      :value: 60
+
+
+
+   .. py:attribute:: SECONDS_PER_HOUR
+
+
+   .. py:attribute:: SECONDS_PER_DAY
+
+
+   .. py:attribute:: DAYS_PER_YEAR
+      :value: 365.25
+
+
+
+   .. py:method:: reset(seed=None, options=None)
+
+      
+
+
+
+   .. py:method:: step(action: numpy.ndarray)
+
+      
+
+
+
+   .. py:method:: render()
+      :abstractmethod:
+
+
+      Compute the render frames as specified by :attr:`render_mode` during the initialization of the environment.
+
+      The environment's :attr:`metadata` render modes (`env.metadata["render_modes"]`) should contain the possible
+      ways to implement the render modes. In addition, list versions for most render modes is achieved through
+      `gymnasium.make` which automatically applies a wrapper to collect rendered frames.
+
+      .. note::
+
+         As the :attr:`render_mode` is known during ``__init__``, the objects used to render the environment state
+         should be initialised in ``__init__``.
+
+      By convention, if the :attr:`render_mode` is:
+
+      - None (default): no render is computed.
+      - "human": The environment is continuously rendered in the current display or terminal, usually for human consumption.
+        This rendering should occur during :meth:`step` and :meth:`render` doesn't need to be called. Returns ``None``.
+      - "rgb_array": Return a single frame representing the current state of the environment.
+        A frame is a ``np.ndarray`` with shape ``(x, y, 3)`` representing RGB values for an x-by-y pixel image.
+      - "ansi": Return a strings (``str``) or ``StringIO.StringIO`` containing a terminal-style text representation
+        for each time step. The text can include newlines and ANSI escape sequences (e.g. for colors).
+      - "rgb_array_list" and "ansi_list": List based version of render modes are possible (except Human) through the
+        wrapper, :py:class:`gymnasium.wrappers.RenderCollection` that is automatically applied during ``gymnasium.make(..., render_mode="rgb_array_list")``.
+        The frames collected are popped after :meth:`render` is called or :meth:`reset`.
+
+      .. note:: Make sure that your class's :attr:`metadata` ``"render_modes"`` key includes the list of supported modes.
+
+      .. versionchanged:: 0.25.0
+
+          The render function was changed to no longer accept parameters, rather these parameters should be specified
+          in the environment initialised, i.e., ``gymnasium.make("CartPole-v1", render_mode="human")``
+
+
+
+   .. py:method:: close()
+      :abstractmethod:
+
+
+      After the user has finished using the environment, close contains the code necessary to "clean up" the environment.
+
+      This is critical for closing rendering windows, database or HTTP connections.
+      Calling ``close`` on an already closed environment has no effect and won't raise an error.
+
+
+

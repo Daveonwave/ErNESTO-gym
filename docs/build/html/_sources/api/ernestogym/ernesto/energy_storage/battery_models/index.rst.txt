@@ -1,0 +1,438 @@
+ernestogym.ernesto.energy_storage.battery_models
+================================================
+
+.. py:module:: ernestogym.ernesto.energy_storage.battery_models
+
+
+Subpackages
+-----------
+
+.. toctree::
+   :maxdepth: 1
+
+   /api/ernestogym/ernesto/energy_storage/battery_models/aging/index
+   /api/ernestogym/ernesto/energy_storage/battery_models/electrical/index
+   /api/ernestogym/ernesto/energy_storage/battery_models/parameters/index
+   /api/ernestogym/ernesto/energy_storage/battery_models/thermal/index
+
+
+Submodules
+----------
+
+.. toctree::
+   :maxdepth: 1
+
+   /api/ernestogym/ernesto/energy_storage/battery_models/generic_models/index
+   /api/ernestogym/ernesto/energy_storage/battery_models/soc_model/index
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   ernestogym.ernesto.energy_storage.battery_models.TheveninModel
+   ernestogym.ernesto.energy_storage.battery_models.TheveninFadingModel
+   ernestogym.ernesto.energy_storage.battery_models.DummyThermal
+   ernestogym.ernesto.energy_storage.battery_models.RCThermal
+   ernestogym.ernesto.energy_storage.battery_models.R2CThermal
+   ernestogym.ernesto.energy_storage.battery_models.BolunModel
+   ernestogym.ernesto.energy_storage.battery_models.SOCEstimator
+
+
+Package Contents
+----------------
+
+.. py:class:: TheveninModel(components_settings: dict, sign_convention='active', **kwargs)
+
+   Bases: :py:obj:`ernestogym.ernesto.energy_storage.battery_models.generic_models.ElectricalModel`
+
+
+   Class
+
+
+   .. py:method:: reset_model(**kwargs)
+
+
+   .. py:method:: init_model(**kwargs)
+
+      Initialize the model at t=0
+
+
+
+   .. py:method:: load_battery_state(temp=None, soc=None, soh=None)
+
+      Update the SoC and SoH for the current simulation step
+
+
+
+   .. py:method:: step_voltage_driven(v_load, dt, k)
+
+      CV mode
+
+
+
+   .. py:method:: step_current_driven(i_load, dt, k, p_load=None)
+
+      CC mode
+
+
+
+   .. py:method:: step_power_driven(p_load, dt, k)
+
+      CP mode: to simplify the power driven case, we pose I = P / V(t-1), having a little shift in computed data
+
+
+
+   .. py:method:: compute_generated_heat(k=-1)
+
+      Compute the generated heat that can be used to feed the thermal model (when required).
+      For Thevenin first order circuit it is: [P = V * I + V_rc * I_r1].
+
+      Inputs:
+      :param k: step for which compute the heat generation
+
+
+
+   .. py:method:: get_internal_resistance()
+
+
+   .. py:method:: get_polarization_resistance()
+
+
+   .. py:method:: get_internal_capacity()
+
+
+   .. py:method:: get_results(**kwargs)
+
+      Returns a dictionary with all final results
+      TODO: selection of results by label from config file?
+
+
+
+.. py:class:: TheveninFadingModel(components_settings: dict, sign_convention='active', **kwargs)
+
+   Bases: :py:obj:`ernestogym.ernesto.energy_storage.battery_models.generic_models.ElectricalModel`
+
+
+   Thevenin Equivalent Circuit Model with fading functions for internal parameters.
+
+   Reference:
+   ----------------
+   S. Barcellona, S. Colnago, E. Ferri and L. Piegari, "Evaluation of Dual-Chemistry Battery Storage System for
+   Electric Vehicles Charging Stations," 2023 IEEE Vehicle Power and Propulsion Conference (VPPC), Milan, Italy, 2023,
+   doi: 10.1109/VPPC60535.2023.10403281.
+
+
+   .. py:method:: reset_model(**kwargs)
+
+
+   .. py:method:: init_model(**kwargs)
+
+      Initialize the model at t=0
+
+
+
+   .. py:method:: load_battery_state(temp=None, soc=None, soh=None)
+
+      Update the SoC and SoH for the current simulation step
+
+
+
+   .. py:method:: step_voltage_driven(v_load, dt, k)
+
+      CV mode
+
+
+
+   .. py:method:: step_current_driven(i_load, dt, k, p_load=None)
+
+      CC mode
+
+
+
+   .. py:method:: step_power_driven(p_load, dt, k)
+
+      CP mode: to simplify the power driven case, we pose I = P / V(t-1), having a little shift in computed data
+
+
+
+   .. py:method:: compute_generated_heat(k=-1)
+
+      Compute the generated heat that can be used to feed the thermal model (when required).
+      For Thevenin first order circuit it is: [P = V * I + V_rc * I_r1].
+
+      Inputs:
+      :param k: step for which compute the heat generation
+
+
+
+   .. py:method:: compute_parameter_fading(k=-1)
+
+      Model of parameter fading hardcoded in this file within function 'capacity_fading' and 'resistor_fading'.
+
+
+
+   .. py:method:: get_internal_resistance()
+
+
+   .. py:method:: get_polarization_resistance()
+
+
+   .. py:method:: get_internal_capacity()
+
+
+   .. py:method:: get_results(**kwargs)
+
+      Returns a dictionary with all final results
+      TODO: selection of results by label from config file?
+
+
+
+.. py:class:: DummyThermal(**kwargs)
+
+   Bases: :py:obj:`ernestogym.ernesto.energy_storage.battery_models.generic_models.ThermalModel`
+
+
+   The Dummy Thermal model simply simulates the temperature of the battery by copying the ground temperature.
+   NOTE: this model cannot be employed to generate new data (what-if simulation)
+
+
+   .. py:property:: temps
+
+
+   .. py:method:: reset_model(**kwargs)
+
+
+   .. py:method:: init_model(**kwargs)
+
+      Initialize the model at timestep t=0 with an initial temperature equal to 25 degC (ambient temperature)
+
+
+
+   .. py:method:: compute_temp(**kwargs)
+
+
+.. py:class:: RCThermal(components_settings: dict)
+
+   Bases: :py:obj:`ernestogym.ernesto.energy_storage.battery_models.generic_models.ThermalModel`
+
+
+   Pellegrino paper (@reference [paper link])
+
+
+   .. py:property:: r_term
+
+
+   .. py:property:: c_term
+
+
+   .. py:method:: reset_model(**kwargs)
+
+
+   .. py:method:: init_model(**kwargs)
+
+      Initialize the model at timestep t=0 with an initial temperature equal to 2 degC (ambient temperature)
+
+
+
+   .. py:method:: compute_temp(q, T_amb, dt, k=-1, i=None)
+
+      Compute the current temperature with equation described in the aforementioned paper
+
+      Inputs:
+      :param q: power dissipated adopted as heat
+      :param T_amb: ambient temperature
+      :param dt: delta of time from last update
+      :param k: iteration
+      :param i: actual current in the circuit
+
+
+
+.. py:class:: R2CThermal(components_settings: dict, **kwargs)
+
+   Bases: :py:obj:`ernestogym.ernesto.energy_storage.battery_models.generic_models.ThermalModel`
+
+
+   Scarpelli-Fioriti paper
+   TODO: implement this class (which could be too dependent on cell physical factors)
+
+
+   .. py:property:: soc
+
+
+   .. py:property:: c_term
+
+
+   .. py:property:: r_cond
+
+
+   .. py:property:: r_conv
+
+
+   .. py:property:: dv_dT
+
+
+   .. py:method:: reset_model(**kwargs)
+
+
+   .. py:method:: init_model(**kwargs)
+
+      Initialize the model at timestep t=0 with an initial temperature equal to 25 degC (ambient temperature)
+
+
+
+   .. py:method:: load_battery_state(**kwargs)
+
+
+   .. py:method:: compute_temp(q, i, T_amb, dt, k=-1)
+
+      Compute the current temperature with equation described in the aforementioned paper
+      :param q: power dissipated adopted as heat
+      :type q: float
+      :param i: actual current in the circuit
+      :type i: float
+      :param T_amb: ambient temperature
+      :type T_amb: float
+      :param dt: delta of time from last update
+      :type dt: float
+      :param k: iteration
+      :type k: int
+
+
+
+.. py:class:: BolunModel(components_settings: dict, stress_models: dict, init_soc: int = 1)
+
+   Bases: :py:obj:`ernestogym.ernesto.energy_storage.battery_models.generic_models.AgingModel`
+
+
+   Bolun model (https://www.researchgate.net/publication/303890624_Modeling_of_Lithium-Ion_Battery_Degradation_for_Cell_Life_Assessment)
+
+
+   .. py:method:: get_f_cal_series(k=None)
+
+      Getter of the specific value at step K, if specified, otherwise of the entire collection
+
+
+
+   .. py:method:: get_f_cyc_series(k=None)
+
+      Getter of the specific value at step K, if specified, otherwise of the entire collection
+
+
+
+   .. py:method:: reset_model(**kwargs)
+
+
+   .. py:method:: init_model(**kwargs)
+
+
+   .. py:method:: compute_degradation(soc_history, temp_history, elapsed_time, k)
+
+      Computes the degradation of the Bolun aging model
+
+
+
+   .. py:method:: get_results(**kwargs)
+
+      Returns a dictionary with all final results
+      TODO: selection of results by label from config file?
+
+
+
+   .. py:class:: Streamflow(init_soc=0, subsample=False, interpolate='linear', expected_cycle_num=500, cycle_num_increment=500)
+
+      Implementation of our cycle counting algorithm, that is able to perform in an online manner without considering
+      every new sample the whole soc and temperature history. It's inspired to the rainflow cycle counting algorithm.
+
+
+      .. py:class:: Direction(*args, **kwds)
+
+         Bases: :py:obj:`enum.Enum`
+
+
+         Create a collection of name/value pairs.
+
+         Example enumeration:
+
+         >>> class Color(Enum):
+         ...     RED = 1
+         ...     BLUE = 2
+         ...     GREEN = 3
+
+         Access them by:
+
+         - attribute access::
+
+         >>> Color.RED
+         <Color.RED: 1>
+
+         - value lookup:
+
+         >>> Color(1)
+         <Color.RED: 1>
+
+         - name lookup:
+
+         >>> Color['RED']
+         <Color.RED: 1>
+
+         Enumerations can be iterated over, and know how many members they have:
+
+         >>> len(Color)
+         3
+
+         >>> list(Color)
+         [<Color.RED: 1>, <Color.BLUE: 2>, <Color.GREEN: 3>]
+
+         Methods can be added to enumerations, and members can have their own
+         attributes -- see the documentation for details.
+
+
+         .. py:attribute:: UP
+            :value: 1
+
+
+
+         .. py:attribute:: DOWN
+            :value: 2
+
+
+
+
+      .. py:method:: step(actual_value, expected_end, second_signal_value=None, return_valid_only=True, return_unvalidated_list=True)
+
+         :param actual_value ():
+         :param expected_end ():
+         :param second_signal_value ():
+         :param return_valid_only ():
+         :param return_unvalidated_list ():
+
+
+
+
+.. py:class:: SOCEstimator(nominal_capacity: float, estimation_mode='CC')
+
+   
+
+
+   .. py:method:: reset_soc(v, v_max, v_min)
+
+      :param v ():
+      :param v_max ():
+      :param v_min ():
+
+
+
+   .. py:method:: compute_soc(soc_, i, dt)
+
+      CC = Coulomb Counting
+
+
+
+   .. py:method:: get_feasible_current(soc_: float, dt: float)
+
+      Compute the maximum feasible current of the battery according to the soc.
+
+
+

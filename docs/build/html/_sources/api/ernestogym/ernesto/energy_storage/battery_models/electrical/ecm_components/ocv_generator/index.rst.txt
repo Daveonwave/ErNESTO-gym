@@ -1,0 +1,146 @@
+ernestogym.ernesto.energy_storage.battery_models.electrical.ecm_components.ocv_generator
+========================================================================================
+
+.. py:module:: ernestogym.ernesto.energy_storage.battery_models.electrical.ecm_components.ocv_generator
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   ernestogym.ernesto.energy_storage.battery_models.electrical.ecm_components.ocv_generator.ECMComponent
+   ernestogym.ernesto.energy_storage.battery_models.electrical.ecm_components.ocv_generator.Scalar
+   ernestogym.ernesto.energy_storage.battery_models.electrical.ecm_components.ocv_generator.LookupTableFunction
+   ernestogym.ernesto.energy_storage.battery_models.electrical.ecm_components.ocv_generator.OCVGenerator
+
+
+Module Contents
+---------------
+
+.. py:class:: ECMComponent(name)
+
+   Generic component of Thevenin equivalent circuits.
+
+   :param :
+   :type : param name: identifier of the component
+   :param :
+   :type : type name: str
+
+   .. attribute:: _v_series
+
+
+
+      :type: collection of all the past component voltages
+
+   .. attribute:: _t_series
+
+
+
+      :type: collection of all the past discrete steps of time
+
+   .. attribute:: Purpose
+
+
+
+   .. attribute:: -------
+
+
+
+   .. attribute:: This class builds a generic component of the Thevenin equivalent circuit and presents common attributes and
+
+
+
+   .. attribute:: collections that can be useful in each single element of the circuit (Resistor, RCParallel, V_OCV generator).
+
+
+
+
+   .. py:property:: name
+
+
+   .. py:property:: temp
+
+
+   .. py:property:: soc
+
+
+   .. py:property:: soh
+
+
+   .. py:method:: get_v_series(k=None)
+
+      Getter of the specific value at step K, if specified, otherwise of the entire collection
+
+
+
+   .. py:method:: reset_data()
+
+
+   .. py:method:: init_component(v=0)
+
+
+   .. py:method:: update_v(value: float)
+
+
+.. py:class:: Scalar(name: str, value: Union[int, float])
+
+   Bases: :py:obj:`GenericVariable`
+
+
+   
+
+
+   .. py:method:: get_value(input_vars: dict = None)
+
+
+   .. py:method:: set_value(new_value: float)
+
+
+.. py:class:: LookupTableFunction(name: str, y_values: list, x_names: list, x_values: list)
+
+   Bases: :py:obj:`GenericVariable`
+
+
+   
+
+
+   .. py:method:: get_value(input_vars: dict)
+
+      Retrieve the result of the interpolation function from the lookup table.
+
+
+
+   .. py:method:: get_y_values()
+
+      Get y_values from which is extracted the result of the interpolation function.
+
+
+
+   .. py:method:: set_value(new_values: numpy.ndarray)
+
+      Set the values of the lookup table
+
+
+
+   .. py:method:: render()
+
+
+.. py:class:: OCVGenerator(name, ocv_potential: Union[ernestogym.ernesto.energy_storage.battery_models.parameters.Scalar, ernestogym.ernesto.energy_storage.battery_models.parameters.LookupTableFunction])
+
+   Bases: :py:obj:`ernestogym.ernesto.energy_storage.battery_models.electrical.ecm_components.generic_component.ECMComponent`
+
+
+   Open Circuit Voltage (OCV) element for Thevenin equivalent circuits.
+
+
+
+   .. py:property:: ocv_potential
+
+
+   .. py:method:: init_component(v=None)
+
+      Initialize V_ocv component at t=0
+
+
+

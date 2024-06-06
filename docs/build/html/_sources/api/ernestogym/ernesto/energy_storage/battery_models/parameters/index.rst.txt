@@ -1,0 +1,85 @@
+ernestogym.ernesto.energy_storage.battery_models.parameters
+===========================================================
+
+.. py:module:: ernestogym.ernesto.energy_storage.battery_models.parameters
+
+
+Submodules
+----------
+
+.. toctree::
+   :maxdepth: 1
+
+   /api/ernestogym/ernesto/energy_storage/battery_models/parameters/data_checker/index
+   /api/ernestogym/ernesto/energy_storage/battery_models/parameters/units/index
+   /api/ernestogym/ernesto/energy_storage/battery_models/parameters/variables/index
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   ernestogym.ernesto.energy_storage.battery_models.parameters.Scalar
+   ernestogym.ernesto.energy_storage.battery_models.parameters.LookupTableFunction
+
+
+Functions
+---------
+
+.. autoapisummary::
+
+   ernestogym.ernesto.energy_storage.battery_models.parameters.instantiate_variables
+
+
+Package Contents
+----------------
+
+.. py:class:: Scalar(name: str, value: Union[int, float])
+
+   Bases: :py:obj:`GenericVariable`
+
+
+   
+
+
+   .. py:method:: get_value(input_vars: dict = None)
+
+
+   .. py:method:: set_value(new_value: float)
+
+
+.. py:class:: LookupTableFunction(name: str, y_values: list, x_names: list, x_values: list)
+
+   Bases: :py:obj:`GenericVariable`
+
+
+   
+
+
+   .. py:method:: get_value(input_vars: dict)
+
+      Retrieve the result of the interpolation function from the lookup table.
+
+
+
+   .. py:method:: get_y_values()
+
+      Get y_values from which is extracted the result of the interpolation function.
+
+
+
+   .. py:method:: set_value(new_values: numpy.ndarray)
+
+      Set the values of the lookup table
+
+
+
+   .. py:method:: render()
+
+
+.. py:function:: instantiate_variables(var_dict: dict) -> dict
+
+   # TODO: cambiare configurazione dati in ingresso (esempio: LookupTable passata con un csv)
+
+

@@ -1,0 +1,42 @@
+ernestogym.ernesto.energy_storage.battery_models.soc_model
+==========================================================
+
+.. py:module:: ernestogym.ernesto.energy_storage.battery_models.soc_model
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   ernestogym.ernesto.energy_storage.battery_models.soc_model.SOCEstimator
+
+
+Module Contents
+---------------
+
+.. py:class:: SOCEstimator(nominal_capacity: float, estimation_mode='CC')
+
+   
+
+
+   .. py:method:: reset_soc(v, v_max, v_min)
+
+      :param v ():
+      :param v_max ():
+      :param v_min ():
+
+
+
+   .. py:method:: compute_soc(soc_, i, dt)
+
+      CC = Coulomb Counting
+
+
+
+   .. py:method:: get_feasible_current(soc_: float, dt: float)
+
+      Compute the maximum feasible current of the battery according to the soc.
+
+
+
