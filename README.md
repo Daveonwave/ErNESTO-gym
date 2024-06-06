@@ -6,6 +6,22 @@ The framework is grounded on the [ErNESTO digital twin](https://github.com/Daveo
 
 This project comes from the collaboration of [Politecnico di Milano](https://www.polimi.it) and [RSE](https://www.rse-web.it).
 
+## Folder structure
+
+```
+docs/                       # website and documentation
+examples/                   # example code for running the environment
+ernestogym/                 # main Python package
+    ernesto/
+        energy_storage/     # simulator of the energy storage
+        data/               # exogenous data of the environment
+        {}/                 # demand, generation and market objects
+    envs/
+        {env}/              # Gymnasium environment of the micro grid
+    algorithms/
+        {}/                 # algorithms already implemented within the framework
+```
+
 ## :hammer_and_wrench: Installation
 
 In order to use this codebase you need to work with a Python version >= 3.11.
