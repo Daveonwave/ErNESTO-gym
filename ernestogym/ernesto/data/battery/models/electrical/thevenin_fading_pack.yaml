@@ -9,8 +9,13 @@
 # ############################################################################
 
 type: electrical
-class_name: TheveninModel
-use_fading: False
+class_name: TheveninFadingModel
+use_fading: True
+
+alpha_fading: 0.00066667
+beta_fading: 0.000000166667
+#beta_fading: 0.001666666666667
+
 
 # ----------------------------------------------------------------------------
 # Components can be instantiated in 3 different ways:
@@ -26,7 +31,7 @@ components:
         scalar: 10.
         # function: To be implemented, maybe useless!
         lookup:
-            table: 'r0_cell.csv'
+            table: 'r0_pack.csv'
             inputs:
                 - var: 'temperature'
                   label: 'temp'
@@ -45,7 +50,7 @@ components:
         scalar: 10.
         # function: To be implemented, maybe useless!
         lookup:
-            table: 'r1_cell.csv'
+            table: 'r1_pack.csv'
             inputs:
                 -   var: 'temperature'
                     label: 'temp'
@@ -64,7 +69,7 @@ components:
         scalar: 10.
         # function: To be implemented, maybe useless!
         lookup:
-            table: 'c_cell.csv'
+            table: 'c_pack.csv'
             inputs:
                 -   var: 'temperature'
                     label: 'temp'
@@ -84,7 +89,7 @@ components:
         scalar: 10.
         # function: To be implemented, maybe useless!
         lookup:
-            table: 'voc_cell.csv'
+            table: 'voc_pack.csv'
             inputs:
                 -   var: 'temperature'
                     label: 'temp'

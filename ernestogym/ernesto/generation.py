@@ -1,38 +1,96 @@
 import pandas as pd
 
 
-class EnergyGeneration:
-    def __init__(self, data: pd.DataFrame, timestep: int):
-        self.timestep = timestep
+class PVGenerator:
+    def __init__(self, data: pd.DataFrame, timestep: int, data_usage: str = 'end'):
+        assert data_usage in ['end', 'circular'], "'data_usage' of generation must be 'end' or 'circular'."
 
-        self._times = data['timestamp'].tolist()
-        self._delta_times = data['delta_time'].tolist()
-        self._history = data['PV'].tolist()
+        self.timestep = timestep
+        self._timestamps = data['timestamp'].to_numpy()
+        self._times = data['delta_time'].to_numpy()
+        self._delta_times = self._times - self._times[0]
+        self._history = data['PV'].to_numpy()
+
+        # Variables used to handle terminating conditions
+        self._data_usage = data_usage
+        self._first_idx = None
+        self._last_idx = None
+
+        # Max value for reward normalization
+        self.max_gen = self._history.max()
+        self.min_gen = self._history.min()
 
     @property
     def history(self):
         return self._history
 
     def __len__(self):
-        return len(self._history)
+        return self._timestamps.shape[0]
 
     def __getitem__(self, idx):
-        assert 0 <= idx < len(self._history), f"Index {idx} out of range for energy generation"
-        return self._times[idx], self._delta_times[idx], self._history[idx]
+        assert 0 <= idx < len(self), f"Index {idx} out of range for energy generation"
+        return self._timestamps[idx], self._times[idx], self._history[idx]
 
-    def get_idx_from_time(self, time: int):
+    def get_idx_from_times(self, time: int):
         """
         Get index of generation history for given time.
         :param time: time of generation history
         """
-        assert self._delta_times[0] < time < self._delta_times[-1], ("Cannot be retrieve an index of a time exceeding "
-                                                                     "the time range of the generation history")
-        # Value already in the list
-        if time in self._delta_times:
-            idx = self._delta_times.index(time)
-        # If the value doesn't belong to the list, then take the next bigger value
-        else:
-            closer = min(self._delta_times, key=lambda x: abs(x - time))
-            idx = self._times.index(closer)
+        if self._data_usage is None:
+            assert self._delta_times[0] < time < self._delta_times[-1], \
+                "Cannot be retrieve an index of the generation exceeding the time's range at the first iteration!"
 
+        time = time % self._delta_times[-1]
+        idx = int(time // self.timestep)
+
+        if self._first_idx is None:
+            self._first_idx = idx
+
+        self._last_idx = idx
         return idx
+
+    def is_run_out_of_data(self):
+        """
+        Check if generation history is out-of-data.
+        """
+        if self._data_usage == 'end':
+            if self._last_idx == len(self) - 1:
+                print("Generation history is run out-of-data: end of dataset reached.")
+                return True
+        else:
+            if self._last_idx == self._first_idx - 1:
+                print("Generation history is run out-of-data: circular termination reached.")
+                return True
+
+        return False
+
+
+class DummyGenerator:
+    """
+    Dummy generator for testing purposes with fixed energy generation.
+    """
+    def __init__(self, gen_value: float):
+        self._gen_value = gen_value
+
+    @property
+    def history(self):
+        return self._gen_value
+
+    def __len__(self):
+        raise AttributeError("The length of a dummy market is undefined since 'ask' and 'bid' are fixed.")
+
+    def __getitem__(self, idx):
+        return None, None, self._gen_value
+
+    def get_idx_from_times(self, time: int = None) -> int:
+        """
+        Get index of generation history for given time.
+        :param time: time of generation history
+        """
+        return 0
+
+    def is_run_out_of_data(self):
+        """
+        Check if generation history is out-of-data.
+        """
+        return False
