@@ -1,81 +1,83 @@
-import numpy as np
-import pandas as pd
+import os
+import json
 from tqdm import tqdm
+
 from ernestogym.envs.single_agent.env import MicroGridEnv
-from ernestogym.envs.single_agent.utils import parameter_generator
 from stable_baselines3 import SAC
 from stable_baselines3.sac import MlpPolicy
 from stable_baselines3.common.callbacks import CheckpointCallback
 
-pack_options = "ernestogym/ernesto/data/battery/pack.yaml"
-ecm = "ernestogym/ernesto/data/battery/models/electrical/thevenin_fading_pack.yaml"
-# ecm = "ernestogym/ernesto/data/battery/models/electrical/thevenin_pack.yaml"
-r2c = "ernestogym/ernesto/data/battery/models/thermal/r2c_thermal_pack.yaml"
-bolun = "ernestogym/ernesto/data/battery/models/aging/bolun_pack.yaml"
-world = "ernestogym/envs/single_agent/world_fading.yaml"
-#world = "ernestogym/envs/single_agent/world_deg.yaml"
 
-# Save a checkpoint every 1000 steps
-checkpoint_callback = CheckpointCallback(
-    save_freq=100000,
-    save_path="./logs/sac/models",
-    name_prefix="sac",
-    save_replay_buffer=True,
-    save_vecnormalize=True,
-)
+def train_sac(envs, args):
+    print("######## SAC is running... ########")
+    
+    logdir = "./logs/" + args['exp_name']
+    os.makedirs(logdir, exist_ok=True)
+    
+    # Save a checkpoint every 1000 steps
+    checkpoint_callback = CheckpointCallback(
+        save_freq=100000,
+        save_path="./logs/{}/models/".format(args['exp_name']),
+        name_prefix="sac",
+        save_replay_buffer=True,
+        save_vecnormalize=True
+        )
+    
+    model = SAC(MlpPolicy, 
+                envs, 
+                verbose=args['verbose'], 
+                gamma=args['gamma'], 
+                tensorboard_log="./logs/tensorboard/{}/sac/".format(args['exp_name']))
 
-test_profiles = ['70', '71', '72', '73', '74']
-# test_profiles = ['70', '71', '72']
-logdir = "./logs/fading/"
-# logdir = "./logs/degradation/"
-
-
-def run_sac():
-    comparison_dict = {
-        'actual_reward': {},
-        'weighted_reward': {},
-        'total_reward': {}
-    }
-
-    params = parameter_generator(battery_options=pack_options,
-                                 electrical_model=ecm,
-                                 thermal_model=r2c,
-                                 aging_model=bolun,
-                                 world_options=world
-                                 )
-
-    env = MicroGridEnv(settings=params)
-    # env = Monitor(env, logdir, allow_early_resets=True)
-
-    model = SAC(MlpPolicy, env, verbose=0, tensorboard_log="./logs/sac/tensorboard/")
-
-    for _ in range(10):
-        model.learn(total_timesteps=len(env.demand),
+    for i in range(args['n_episodes']):
+        model.learn(total_timesteps=len(envs.get_attr("demand")[0]) * args['n_envs'],
                     progress_bar=True,
-                    # log_interval=5000,
-                    # tb_log_name="fading_no_norm_clip_penalty",
+                    log_interval=args['log_rate'],
+                    tb_log_name="ep_{}".format(i),
                     callback=[checkpoint_callback],
                     reset_num_timesteps=False,
                     )
-    print("################TRAINING is Done############")
-
-    test_rewards = np.zeros(len(test_profiles))
+        
+    print("######## TRAINING is Done ########")
+    del model
+    
+    
+def eval_sac(env_params, args, test_profile, model_file="",):
+    
+    env = MicroGridEnv(settings=env_params)
+    
+    comparison_dict = {
+        'test': test_profile,
+        'pure_reward': {},
+        'actual_reward': {},
+        'weighted_reward': {},
+        'total_reward': 0
+    }
+    
+    logdir = "./logs/{}/results/sac/".format(args['exp_name'])
+    os.makedirs(logdir, exist_ok=True)
+    
+    if not model_file:    
+        folder = "./logs/{}/models/".format(args['exp_name'])
+        result_files = [f for f in os.listdir(folder) if os.path.isfile(os.path.join(folder, f)) and f.startswith("sac")]
+        model_file = sorted(result_files)[-1]
+        
+    model = SAC.load(path=folder + model_file, env=env)
     vec_env = model.get_env()
 
-    for i in range(len(test_profiles)):
-        vec_env.set_options({'eval_profile': test_profiles[i]})
-        obs = vec_env.reset()
+    vec_env.set_options({'eval_profile': test_profile})
+    obs = vec_env.reset()
 
-        for _ in tqdm(range(len(env.demand))):
-            action, _states = model.predict(obs)
-            obs, rewards, dones, info = vec_env.step(action)
-        test_rewards[i] = env.total_reward
+    for _ in tqdm(range(len(env.demand))):
+        action, _states = model.predict(obs)
+        obs, rewards, dones, info = vec_env.step(action)
+    
+    comparison_dict['total_reward'] = env.total_reward
+    comparison_dict['pure_reward'] = env.pure_reward_list
+    comparison_dict['norm_reward'] = env.norm_reward_list
+    comparison_dict['weighted_reward'] = env.weighted_reward_list
 
-        comparison_dict['total_reward'][test_profiles[i]] = env.total_reward
-        comparison_dict['actual_reward'][test_profiles[i]] = env.actual_reward_list
-        comparison_dict['weighted_reward'][test_profiles[i]] = env.weighted_reward_list
+    output_file = logdir + 'test_{}.json'.format(test_profile)
 
-    df = pd.DataFrame.from_dict(comparison_dict)
-    df.to_json(logdir + 'sac.json')
-
-
+    with open(output_file, 'w', encoding ='utf8') as f: 
+        json.dump(comparison_dict, f, allow_nan=False) 

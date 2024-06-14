@@ -9,4 +9,4 @@ __pycache__
 logs
 docs
 examples/dataset
-*./plots/
+examples/*/plots/
