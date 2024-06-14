@@ -3,93 +3,104 @@ from ernestogym.envs.single_agent.utils import parameter_generator
 from tqdm import tqdm
 import pandas as pd
 import os
-
-pack_options = "ernestogym/ernesto/data/battery/pack.yaml"
-ecm = "ernestogym/ernesto/data/battery/models/electrical/thevenin_fading_pack.yaml"
-# ecm = "ernestogym/ernesto/data/battery/models/electrical/thevenin_pack.yaml"
-r2c = "ernestogym/ernesto/data/battery/models/thermal/r2c_thermal_pack.yaml"
-bolun = "ernestogym/ernesto/data/battery/models/aging/bolun_pack.yaml"
-world = "ernestogym/envs/single_agent/world_fading.yaml"
-# world = "ernestogym/envs/single_agent/world_deg.yaml"
-
-test_profiles = ['70', '71', '72', '73', '74']
-# test_profiles = ['70', '71', '72']
-logdir = "./logs/fading_norm_weights_trained_clip/"
-# logdir = "./logs/degradation/"
-
-os.makedirs(logdir, exist_ok=True)
-
-weights = {"trading_coeff": 0.9, "operational_cost_coeff": 0.05, "degradation_coeff": 0, "clip_action_coeff": 0.05}
-
-params = parameter_generator(battery_options=pack_options,
-                             electrical_model=ecm,
-                             thermal_model=r2c,
-                             aging_model=bolun,
-                             world_options=world,
-                             use_reward_normalization=True,
-                             reward_coeff=weights
-                             )
-
-env = MicroGridEnv(settings=params)
+import json
 
 
-def random_action_policy(num_steps: int = None, filename='random'):
+
+def run_baseline(env_params, args, test_profile, model_file=''):
+    
+    env = MicroGridEnv(settings=env_params)
+    
+    if args['algo'][0] == 'random':
+        random_action_policy(env, args['exp_name'], test_profile)
+    
+    elif args['algo'][0] == 'only_market':
+        deterministic_action_policy(env, action=0., algo_name=args['algo'][0], exp_name=args['exp_name'], test_profile=test_profile)
+    
+    elif args['algo'][0] == 'battery_first':
+        deterministic_action_policy(env, action=1., algo_name=args['algo'][0], exp_name=args['exp_name'], test_profile=test_profile)
+    
+    elif args['algo'][0] == '20-80':
+        deterministic_action_policy(env, action=0.2, algo_name=args['algo'][0], exp_name=args['exp_name'], test_profile=test_profile)
+    
+    elif args['algo'][0] == '50-50':
+        deterministic_action_policy(env, action=0.5, algo_name=args['algo'][0], exp_name=args['exp_name'], test_profile=test_profile)
+    
+    elif args['algo'][0] == 'all_baselines':
+        random_action_policy(env, args['exp_name'], test_profile)
+        deterministic_action_policy(env, action=0., algo_name="only_market", exp_name=args['exp_name'], test_profile=test_profile)
+        deterministic_action_policy(env, action=1., algo_name="battery_first", exp_name=args['exp_name'], test_profile=test_profile)
+        deterministic_action_policy(env, action=0.2, algo_name="20-80", exp_name=args['exp_name'], test_profile=test_profile)
+        deterministic_action_policy(env, action=0.5, algo_name="50-50", exp_name=args['exp_name'], test_profile=test_profile)
+
+    else:
+        print("Chosen baseline is not implemented or not existent!")
+        exit(1)
+
+
+def random_action_policy(env, exp_name, test_profile):
+    
+    print("######## RANDOM policy is running... ########")
+    
     comparison_dict = {
+        'test': test_profile,
         'pure_reward': {},
-        'actual_reward': {},
+        'norm_reward': {},
         'weighted_reward': {},
-        'total_reward': {}
+        'total_reward': 0
     }
+    
+    logdir = "./logs/{}/results/random/".format(exp_name)
+    os.makedirs(logdir, exist_ok=True)
 
-    if num_steps is None:
-        num_steps = len(env.demand)
+    env.reset(options={'eval_profile': test_profile})
 
-    for profile in test_profiles:
-        env.reset(options={'eval_profile': profile})
+    for _ in tqdm(range(len(env.demand))):
+        act = env.action_space.sample()  # Randomly select an action
+        obs, reward, terminated, truncated, _ = env.step(act)  # Return observation and reward
 
-        for _ in tqdm(range(num_steps)):
-            act = env.action_space.sample()  # Randomly select an action
-            obs, reward, terminated, truncated, _ = env.step(act)  # Return observation and reward
+    comparison_dict['total_reward'] = env.total_reward
+    comparison_dict['pure_reward'] = env.pure_reward_list
+    comparison_dict['norm_reward'] = env.norm_reward_list
+    comparison_dict['weighted_reward'] = env.weighted_reward_list
+    comparison_dict['actions'] = [action.tolist() for action in env.action_list]
+    comparison_dict['states'] = [state.tolist() for state in env.state_list]
 
-            comparison_dict['pure_reward'][profile] = env.pure_reward_list
-            comparison_dict['total_reward'][profile] = env.total_reward
-            comparison_dict['actual_reward'][profile] = env.actual_reward_list
-            comparison_dict['weighted_reward'][profile] = env.weighted_reward_list
+    output_file = logdir + 'test_{}.json'.format(test_profile)
 
-    df = pd.DataFrame.from_dict(comparison_dict)
-    df.to_json(logdir + filename + '.json')
-
-    del comparison_dict
-    del df
+    with open(output_file, 'w', encoding ='utf8') as f: 
+        json.dump(comparison_dict, f, allow_nan=False) 
 
 
-def deterministic_action_policy(action:float, filename: str, num_steps: int = None):
+def deterministic_action_policy(env, action:float, algo_name: str, exp_name: str, test_profile):
     assert 0 <= action <= 1, "The deterministic action must be between 0 and 1."
 
+    print("######## {} policy is running... ########".format(algo_name.upper()))
+    
     comparison_dict = {
+        'test': test_profile,
         'pure_reward': {},
-        'actual_reward': {},
         'weighted_reward': {},
-        'total_reward': {}
+        'total_reward': 0
     }
+    
+    logdir = "./logs/{}/results/{}/".format(exp_name, algo_name)
+    os.makedirs(logdir, exist_ok=True)
 
-    if num_steps is None:
-        num_steps = len(env.demand)
+    env.reset(options={'eval_profile': test_profile})
 
-    for profile in test_profiles:
-        env.reset(options={'eval_profile': profile})
+    for _ in tqdm(range(len(env.demand))):
+        act = [action]  # Randomly select an action
+        obs, reward, terminated, truncated, _ = env.step(act)  # Return observation and reward
 
-        for _ in tqdm(range(num_steps)):
-            act = [action]  # Randomly select an action
-            obs, reward, terminated, truncated, _ = env.step(act)  # Return observation and reward
+    comparison_dict['total_reward'] = env.total_reward
+    comparison_dict['pure_reward'] = env.pure_reward_list
+    comparison_dict['norm_reward'] = env.norm_reward_list
+    comparison_dict['weighted_reward'] = env.weighted_reward_list
+    comparison_dict['states'] = [state.tolist() for state in env.state_list]
 
-            comparison_dict['pure_reward'][profile] = env.pure_reward_list
-            comparison_dict['total_reward'][profile] = env.total_reward
-            comparison_dict['actual_reward'][profile] = env.actual_reward_list
-            comparison_dict['weighted_reward'][profile] = env.weighted_reward_list
 
-    df = pd.DataFrame.from_dict(comparison_dict)
-    df.to_json(logdir + filename + '.json')
+    output_file = logdir + 'test_{}.json'.format(test_profile)
 
-    del comparison_dict
-    del df
+    with open(output_file, 'w', encoding ='utf8') as f: 
+        json.dump(comparison_dict, f, allow_nan=False) 
