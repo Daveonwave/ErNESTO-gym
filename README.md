@@ -15,11 +15,14 @@ ernestogym/                 # main Python package
     ernesto/
         energy_storage/     # simulator of the energy storage
         data/               # exogenous data of the environment
-        {}/                 # demand, generation and market objects
+        ./                  # demand, generation and market objects
     envs/
         {env}/              # Gymnasium environment of the micro grid
     algorithms/
-        {}/                 # algorithms already implemented within the framework
+        ./                  # algorithms already implemented within the framework
+scripts/
+    *.sh                    # scripts to run experiments
+launch_env.py               # entry point of the environment
 ```
 
 ## :hammer_and_wrench: Installation
@@ -43,18 +46,19 @@ export PYTHONPATH=$(pwd)
 
 #### Reproducibility
 
-To reproduce the experiments, a `bash` file must be run in the main folder. For example:
+To reproduce the experiments, a `bash` file contained in the `scripts/` folder must be run from the root directory. For example:
 
 ```bash
-python launch_env.py
+./scripts/baseline.sh
 ```
 
+Edit the bash files to choose different configuration files or models. The possible options can be retrieved by running `python launch_env.py --help`.
 Notice that `yaml` configuration files, contained in `ernestogym/ernesto/data/battery/` folder, have to adhere to a standard formatting, validated within the script [schema.py](./ernestogym/ernesto/preprocessing/schema.py).
 Follow the formatting of the already provided configuration file to generate new ones.
 
 #### Results visualization
 
-Experiment results can be visualized in the jupyter notebooks files.
+Experiment results can be visualized in the [notebooks](./examples/single_agent/).
 
 ## :triangular_flag_on_post: Roadmap
 
