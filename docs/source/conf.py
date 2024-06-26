@@ -2,9 +2,9 @@
 
 # -- Project information
 
-project = 'Lumache'
-copyright = '2021, Graziella'
-author = 'Graziella'
+project = 'ErNESTO-gym'
+copyright = '2024, Salaorni'
+author = 'Davide Salaorni'
 
 release = '0.1'
 version = '0.1.0'
@@ -15,6 +15,7 @@ extensions = [
     'sphinx.ext.duration',
     'sphinx.ext.doctest',
     'sphinx.ext.autodoc',
+    'sphinx.ext.napoleon',  # For Google and NumPy style docstrings
     'sphinx.ext.autosummary',
     'sphinx.ext.intersphinx',
 ]
