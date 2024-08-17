@@ -1,1 +1,0 @@
-python launch_env.py --algo sac --n_envs 4 --exp_name "prova_sac" --train --verbose 

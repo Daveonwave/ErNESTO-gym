@@ -49,7 +49,7 @@ def eval_sac(env_params, args, test_profile, model_file="",):
     comparison_dict = {
         'test': test_profile,
         'pure_reward': {},
-        'actual_reward': {},
+        'norm_reward': {},
         'weighted_reward': {},
         'total_reward': 0
     }
@@ -57,12 +57,14 @@ def eval_sac(env_params, args, test_profile, model_file="",):
     logdir = "./logs/{}/results/sac/".format(args['exp_name'])
     os.makedirs(logdir, exist_ok=True)
     
+    model_folder = "./logs/{}/models/".format(args['exp_name'])
+    
     if not model_file:    
-        folder = "./logs/{}/models/".format(args['exp_name'])
-        result_files = [f for f in os.listdir(folder) if os.path.isfile(os.path.join(folder, f)) and f.startswith("sac")]
+        #folder = "./logs/{}/models/".format(args['exp_name'])
+        result_files = [f for f in os.listdir(model_folder) if os.path.isfile(os.path.join(folder, f)) and f.startswith("sac")]
         model_file = sorted(result_files)[-1]
         
-    model = SAC.load(path=folder + model_file, env=env)
+    model = SAC.load(path=model_folder + model_file, env=env)
     vec_env = model.get_env()
 
     vec_env.set_options({'eval_profile': test_profile})
@@ -76,6 +78,8 @@ def eval_sac(env_params, args, test_profile, model_file="",):
     comparison_dict['pure_reward'] = env.pure_reward_list
     comparison_dict['norm_reward'] = env.norm_reward_list
     comparison_dict['weighted_reward'] = env.weighted_reward_list
+    comparison_dict['actions'] = [action.tolist() for action in env.action_list]
+    comparison_dict['states'] = [state.tolist() for state in env.state_list]
 
     output_file = logdir + 'test_{}.json'.format(test_profile)
 

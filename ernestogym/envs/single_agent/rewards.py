@@ -51,7 +51,18 @@ def operational_cost(replacement_cost: float,
         h_bat = (1**-3 * (r + K_rated / (0.9 - soc)) / v_rated**2 * p**2 +
                  1**-3 * C * K_rated * (1 - soc) / (soc * v_rated**2) * p)
 
+    #print("c_bat: ", c_bat)
+    #print("h_bat: ", h_bat)
     return c_bat * h_bat
+
+
+# c_bat = 3000 / (60 * 0.8 * (0.9 * 3000 - 0.1)) = 0.023149005518722912
+
+# i_max = (0.8-0.2) / 1 * 60 * 3600 
+# p_loss = (1**-3 * (0.19 + 0.7 / 0.2) i_max * v_max/ 350.4**2 * i_max * v_max**2 + 1**-3 * 60 * 0.7 * (1 - 0.2) / (0.2 * 350.4**2) * max_gen)
+# h_bat = abs(max_gen) + p_loss
+# max_discharge = h_bat * c_bat 
+
 
 
 def soh_cost(replacement_cost: float, delta_soh: float, soh_limit: float) -> float:

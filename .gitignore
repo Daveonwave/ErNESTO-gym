@@ -10,3 +10,6 @@ logs
 docs
 examples/dataset
 examples/*/plots/
+ernestogym/ernesto/data/market/ita2010wh_*
+ernestogym/ernesto/data/generation/pv_dataset_*
+
