@@ -1,5 +1,5 @@
 python launch_env.py \
-    --algo ppo \
+    --algo a2c \
     --n_envs 4 \
     --gamma 0.9 \
     --exp_name "rev3_final_noclip" \

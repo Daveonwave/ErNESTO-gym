@@ -63,6 +63,8 @@ class MicroGridEnv(Env):
         self._deg_coeff = settings['reward']['degradation_coeff'] if 'degradation_coeff' in settings['reward'] else 0
         self._clip_action_coeff = settings['reward']['clip_action_coeff'] if 'clip_action_coeff' in settings['reward'] else 0
         self._use_reward_normalization = settings['use_reward_normalization']
+        self._trad_norm_term = None
+        self._max_op_cost = None
 
         # To distinguish between learning and testing
         self.is_eval = False
@@ -217,6 +219,8 @@ class MicroGridEnv(Env):
         self.weighted_reward_list: list = {'r_trad': [], 'r_op': [], 'r_deg':[], 'r_clip': []}
 
         self.total_reward = 0
+        self._trad_norm_term = None
+        self._max_op_cost = None
 
         self.elapsed_time = 0
         self.iterations = 0
@@ -360,8 +364,19 @@ class MicroGridEnv(Env):
                                  soc=self._battery.soc_series[-1],
                                  is_discharging=bool(self._battery.get_p() <= 0))
             )
-
-        # print("COST: ", op_cost_term)
+            
+        if self._max_op_cost is None: 
+            self._max_op_cost = operational_cost(replacement_cost=self._battery.nominal_cost,
+                                                 C_rated=self._battery.nominal_capacity * self._battery.nominal_voltage / 1000,
+                                                 C=self._battery.nominal_capacity * self._battery.nominal_voltage / 1000,
+                                                 DoD_rated=self._battery.nominal_dod,
+                                                 L_rated=self._battery.nominal_lifetime,
+                                                 v_rated=self._battery.nominal_voltage,
+                                                 K_rated=self._battery.get_polarization_resistance(),
+                                                 p=self._battery.get_feasible_current(last_soc=self._battery.soc_min, dt=1)[0] * self._battery.v_max / 1000,
+                                                 r=self._battery.get_internal_resistance(),
+                                                 soc=self._battery.soc_min,
+                                                 is_discharging=True)
 
         return op_cost_term, deg_term
 
@@ -370,12 +385,27 @@ class MicroGridEnv(Env):
         Min-max normalization of reward values.
         """
         if self._use_reward_normalization:
-            min_trading = -self.demand.max_demand * self.market.max_ask
+            if self._trad_norm_term is None:
+                self._trad_norm_term = max(self.generation.max_gen * self.market.max_bid, self.demand.max_demand * self.market.max_ask)
+        
+            # OlD NORMALIZATION of r_trad
+            #min_trading = -self.demand.max_demand * self.market.max_ask
             #max_trading = self._battery.v_max * (0.6 * self._battery.nominal_capacity) * self.market.max_bid
-            max_trading = self.generation.max_gen * self.market.max_bid
-            rewards[0] = -1 + 2 * (rewards[0] - min_trading) / (max_trading - min_trading)
-
-            rewards[1] = rewards[1] / 40 / 21
+            #max_trading = self.generation.max_gen * self.market.max_bid
+            #rewards[0] = -1 + 2 * (rewards[0] - min_trading) / (max_trading - min_trading)
+            
+            rewards[0] = rewards[0] / self._trad_norm_term
+            #rewards[1] = rewards[1] / 40 / 21
+            #print("before:", rewards[1])
+            #print("MAX:", self._max_op_cost)
+            
+            rewards[1] = rewards[1] / self._max_op_cost
+            #rewards[1] = rewards[1] / 410
+            
+            #print("after:", rewards[1])
+            #exit()
+            
+            #rewards[3] = rewards[3] / max(self.demand.max_demand, self.generation.max_gen)
             rewards[3] = rewards[3] / self.demand.max_demand
 
         return rewards
