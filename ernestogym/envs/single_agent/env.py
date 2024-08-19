@@ -405,8 +405,8 @@ class MicroGridEnv(Env):
             #print("after:", rewards[1])
             #exit()
             
-            #rewards[3] = rewards[3] / max(self.demand.max_demand, self.generation.max_gen)
-            rewards[3] = rewards[3] / self.demand.max_demand
+            rewards[3] = rewards[3] / max(self.demand.max_demand, self.generation.max_gen)
+            #rewards[3] = rewards[3] / self.demand.max_demand
 
         return rewards
     

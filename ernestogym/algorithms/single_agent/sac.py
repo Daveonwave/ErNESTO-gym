@@ -61,7 +61,7 @@ def eval_sac(env_params, args, test_profile, model_file="",):
     
     if not model_file:    
         #folder = "./logs/{}/models/".format(args['exp_name'])
-        result_files = [f for f in os.listdir(model_folder) if os.path.isfile(os.path.join(folder, f)) and f.startswith("sac")]
+        result_files = [f for f in os.listdir(model_folder) if os.path.isfile(os.path.join(model_folder, f)) and f.startswith("sac")]
         model_file = sorted(result_files)[-1]
         
     model = SAC.load(path=model_folder + model_file, env=env)
