@@ -222,11 +222,18 @@ class ThermalModel(GenericModel):
                 raise IndexError("Dissipated heat of thermal model at step K not computed yet")
         return self._heat_series
 
-    def update_temp(self, value: float):
+    def _update_temp(self, value: float):
         self._temp_series.append(value)
 
-    def update_heat(self, value: float):
+    def _update_heat(self, value: float):
         self._heat_series.append(value)
+    
+    def update(self, **kwargs):
+        """
+        Update the thermal model with new values
+        """
+        self._update_temp(kwargs['temp']) if 'temp' in kwargs else None
+        self._update_heat(kwargs['heat']) if 'heat' in kwargs else None
 
 
 class AgingModel(GenericModel):

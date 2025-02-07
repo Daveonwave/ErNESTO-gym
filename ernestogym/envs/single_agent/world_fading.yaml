@@ -14,6 +14,11 @@ generation:
   timestep: 60 # seconds
   data_usage: "end" # "circular/end"
 
+temp_amb:
+  path: "ernestogym/ernesto/data/temp_amb/temp_amb_daily_2010.csv"
+  timestep: 86400 # seconds
+  data_usage: "end" # "circular/end"
+
 market:
   path: "ernestogym/ernesto/data/market/ita2010wh.csv"
   timestep: 3600 # seconds

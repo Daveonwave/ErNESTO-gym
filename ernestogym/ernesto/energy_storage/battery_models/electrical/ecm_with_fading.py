@@ -271,13 +271,13 @@ class TheveninFadingModel(ElectricalModel):
         #print('R0: ', self.r0.resistance,  'R1: ', self.rc.resistance, 'C: ', new_capacity)
         return new_capacity
 
-    def get_internal_resistance(self, nominal:bool=True):
+    def get_internal_resistance(self, nominal:bool=False):
         if nominal:
             return self.r0.nominal_resistance
         else:
             return self.r0.resistance
 
-    def get_polarization_resistance(self, nominal:bool=True):
+    def get_polarization_resistance(self, nominal:bool=False):
         if nominal:
             return self.rc.nominal_resistance
         else:

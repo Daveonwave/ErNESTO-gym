@@ -1,10 +1,17 @@
 python launch_env.py \
     --algo ppo \
     --n_envs 4 \
-    --gamma 0.9 \
-    --exp_name "rev3_final_noclip" \
-    --n_episodes 5 \
+    --gamma 0.99 \
+    --exp_name "REPLACEMENT_COST_2000" \
+    --spread_factor 1 \
+    --save_model_as "ppo_final" \
+    --n_episodes 100 \
     --weight_trading 1 \
-    --weight_operational_cost 1 \
-    --weight_clipping 0 \
-    --train 
+    --weight_operational_cost 0 \
+    --weight_degradation 1 \
+    --weight_clipping 0.1 \
+    --train \
+    --log_rate 5 \
+    --world_settings ernestogym/envs/single_agent/ijcnn_deg_train.yaml \
+    --electrical_model ernestogym/ernesto/data/battery/models/electrical/thevenin_pack.yaml \
+    --aging_model ernestogym/ernesto/data/battery/models/aging/bolun_pack.yaml 

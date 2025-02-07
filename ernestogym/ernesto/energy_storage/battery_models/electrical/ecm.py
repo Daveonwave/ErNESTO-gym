@@ -189,11 +189,17 @@ class TheveninModel(ElectricalModel):
             self.rc.get_r1_series(k=k) * self.rc.get_i_r1_series(k=k)**2
         # return self.r0.get_r0_series(k=k) * self.get_i_series(k=k) ** 2
 
-    def get_internal_resistance(self):
-        return self.r0.resistance
+    def get_internal_resistance(self, nominal:bool=False):
+        if nominal:
+            return self.r0.nominal_resistance
+        else:
+            return self.r0.resistance
 
-    def get_polarization_resistance(self):
-        return self.rc.resistance
+    def get_polarization_resistance(self, nominal:bool=False):
+        if nominal:
+            return self.rc.nominal_resistance
+        else:
+            return self.rc.resistance
 
     def get_internal_capacity(self):
         return self.rc.capacity

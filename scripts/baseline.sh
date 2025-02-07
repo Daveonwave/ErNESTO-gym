@@ -1,8 +1,29 @@
 python launch_env.py \
-    --algo all_baselines \
+    --algo battery_first \
     --n_cores 5 \
-    --exp_name "rev1_market_ask_noise" \
+    --exp_name "REPLACEMENT_COST_200" \
+    --replacement_cost 200 \
+    --spread_factor 1 \
     --weight_trading 1 \
-    --weight_operational_cost 1 \
+    --weight_operational_cost 0 \
+    --weight_degradation 1 \
     --weight_clipping 0.1 \
-    --test 
+    --test \
+    --world_settings ernestogym/envs/single_agent/ijcnn_deg_test.yaml \
+    --electrical_model ernestogym/ernesto/data/battery/models/electrical/thevenin_pack.yaml \
+    --aging_model ernestogym/ernesto/data/battery/models/aging/bolun_pack.yaml;
+
+python launch_env.py \
+    --algo only_market \
+    --n_cores 5 \
+    --exp_name "REPLACEMENT_COST_200" \
+    --replacement_cost 200 \
+    --spread_factor 1 \
+    --weight_trading 1 \
+    --weight_operational_cost 0 \
+    --weight_degradation 1 \
+    --weight_clipping 0.1 \
+    --test \
+    --world_settings ernestogym/envs/single_agent/ijcnn_deg_test.yaml \
+    --electrical_model ernestogym/ernesto/data/battery/models/electrical/thevenin_pack.yaml \
+    --aging_model ernestogym/ernesto/data/battery/models/aging/bolun_pack.yaml;

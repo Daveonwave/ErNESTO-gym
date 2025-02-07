@@ -6,12 +6,16 @@ class EnergyMarket:
     """
     Class to represent an energy market.
     """
-    def __init__(self, data: pd.DataFrame, timestep: int, data_usage: str = 'end'):
+    def __init__(self, data: pd.DataFrame, timestep: int, data_usage: str = 'end', spread_factor: float = 1.0):
         assert data_usage in ['end', 'circular'], "'data_usage' of market must be 'end' or 'circular'."
 
         self.timestep = timestep
         self._ask = data['ask'].to_numpy()
         self._bid = data['bid'].to_numpy()
+        
+        self._ask *= spread_factor
+        self._bid *= spread_factor
+                
         self._timestamps = data['timestamp'].to_numpy()
         self._times = data['delta_time'].to_numpy()
         self._delta_times = self._times - self._times[0]
@@ -78,9 +82,15 @@ class DummyMarket:
     """
     Simpler version of EnergyMarket with fixed ask and bid values.
     """
-    def __init__(self, ask: float, bid: float):
+    def __init__(self, ask: float, bid: float, spread_factor: float = 1.0):
         self._ask = ask
         self._bid = bid
+        
+        self._ask *= spread_factor
+        self._bid *= spread_factor
+        
+        self.max_ask = ask
+        self.max_bid = bid
 
     @property
     def ask(self):
@@ -93,7 +103,7 @@ class DummyMarket:
     def __len__(self):
         raise AttributeError("The length of a dummy market is undefined since 'ask' and 'bid' are fixed.")
 
-    def __getitem__(self, idx):
+    def __getitem__(self, idx=None):
         return None, None, self._ask, self._bid
 
     def get_idx_from_times(self, time: int = None) -> int:

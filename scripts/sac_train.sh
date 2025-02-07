@@ -1,10 +1,15 @@
 python launch_env.py \
     --algo sac \
     --n_envs 4 \
-    --gamma 0.9 \
-    --exp_name "rev3_final" \
-    --n_episodes 1 \
+    --gamma 0.99 \
+    --exp_name "2015-2020_deg_askx4_new-norm_clip2_socmax_gamma0_99" \
+    --n_episodes 100 \
     --weight_trading 1 \
-    --weight_operational_cost 1 \
-    --weight_clipping 0.1 \
-    --train 
+    --weight_operational_cost 0 \
+    --weight_degradation 1 \
+    --weight_clipping 2 \
+    --train \
+    --log_rate 1 \
+    --world_settings ernestogym/envs/single_agent/ijcnn_deg_train.yaml \
+    --electrical_model ernestogym/ernesto/data/battery/models/electrical/thevenin_pack.yaml \
+    --aging_model ernestogym/ernesto/data/battery/models/aging/bolun_pack.yaml 

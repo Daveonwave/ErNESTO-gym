@@ -1,7 +1,7 @@
 import pandas as pd
 
 
-class PVGenerator:
+class AmbientTemperature:
     def __init__(self, data: pd.DataFrame, timestep: int, data_usage: str = 'end'):
         assert data_usage in ['end', 'circular'], "'data_usage' of generation must be 'end' or 'circular'."
 
@@ -9,16 +9,16 @@ class PVGenerator:
         self._timestamps = data['timestamp'].to_numpy()
         self._times = data['delta_time'].to_numpy()
         self._delta_times = self._times - self._times[0]
-        self._history = data['PV'].to_numpy()
-        
+        self._history = data['temp_amb'].to_numpy()
+
         # Variables used to handle terminating conditions
         self._data_usage = data_usage
         self._first_idx = None
         self._last_idx = None
 
         # Max value for reward normalization
-        self.max_gen = self._history.max()
-        self.min_gen = self._history.min()
+        self.max_temp = self._history.max()
+        self.min_temp = self._history.min()
 
     @property
     def history(self):
@@ -55,32 +55,32 @@ class PVGenerator:
         """
         if self._data_usage == 'end':
             if self._last_idx == len(self) - 1:
-                print("Generation history is run out-of-data: end of dataset reached.")
+                print("Ambient temperature history is run out-of-data: end of dataset reached.")
                 return True
         else:
             if self._last_idx == self._first_idx - 1:
-                print("Generation history is run out-of-data: circular termination reached.")
+                print("Ambient temperature history is run out-of-data: circular termination reached.")
                 return True
 
         return False
 
 
-class DummyGenerator:
+class DummyAmbientTemperature:
     """
     Dummy generator for testing purposes with fixed energy generation.
     """
-    def __init__(self, gen_value: float):
-        self._gen_value = gen_value
+    def __init__(self, temp_value: float):
+        self._temp_value = temp_value
 
     @property
     def history(self):
-        return self._gen_value
+        return self._temp_value
 
     def __len__(self):
-        raise AttributeError("The length of a dummy market is undefined since 'ask' and 'bid' are fixed.")
+        raise AttributeError("The length of ambient temperature is undefined since 't_amb' is fixed.")
 
-    def __getitem__(self, idx):
-        return None, None, self._gen_value
+    def __getitem__(self, idx=None):
+        return None, None, self._temp_value
 
     def get_idx_from_times(self, time: int = None) -> int:
         """

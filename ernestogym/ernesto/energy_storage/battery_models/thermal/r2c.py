@@ -9,7 +9,7 @@ class R2CThermal(ThermalModel):
     """
     def __init__(self, components_settings: dict, **kwargs):
         super().__init__(name='R2C_thermal')
-
+        
         self._init_components = instantiate_variables(components_settings)
         self._c_term = self._init_components['c_term']
         self._r_cond = self._init_components['r_cond']
@@ -75,6 +75,7 @@ class R2CThermal(ThermalModel):
 
     def reset_model(self, **kwargs):
         self._temp_series = []
+        self._heat_series = []
 
     def init_model(self, **kwargs):
         """
@@ -82,9 +83,8 @@ class R2CThermal(ThermalModel):
         """
         temp = kwargs['temperature'] if 'temperature' in kwargs else 298.15
         heat = kwargs['dissipated_heat'] if 'dissipated_heat' in kwargs else 0
-
-        self.update_temp(temp)
-        self.update_heat(heat)
+        super()._update_temp(temp)
+        super()._update_heat(heat)
 
     def load_battery_state(self, **kwargs):
         self._soc = kwargs['soc']
