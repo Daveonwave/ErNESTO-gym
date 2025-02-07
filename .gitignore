@@ -10,6 +10,10 @@ logs
 docs
 examples/dataset
 examples/*/plots/
-ernestogym/ernesto/data/market/ita2010wh_*
-ernestogym/ernesto/data/generation/pv_dataset_*
+examples/*/models/
+ernestogym/ernesto/data/market/*
+ernestogym/ernesto/data/generation/*
+ernestogym/ernesto/data/demand/*
+ernestogym/ernesto/data/temp_amb/*
 
+returns_for_test_profile.csv

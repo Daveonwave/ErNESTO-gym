@@ -3,14 +3,13 @@ from joblib import Parallel, delayed
 
 from stable_baselines3.common.env_util import make_vec_env
 from ernestogym.envs.single_agent.utils import parameter_generator
-from ernestogym.envs.single_agent.env import MicroGridEnv
 from ernestogym.algorithms.single_agent.ppo import train_ppo, eval_ppo
 from ernestogym.algorithms.single_agent.a2c import train_a2c, eval_a2c
 from ernestogym.algorithms.single_agent.sac import train_sac, eval_sac
 from ernestogym.algorithms.single_agent.baselines import run_baseline
 
 
-algo_choices = ['ppo', 'a2c', 'sac', 'random', 'only_market', 'battery_first', '20-80', '50-50', 'all_baselines']
+algo_choices = ['ppo', 'a2c', 'sac', 'random', 'only_market', 'battery_first', '20-80', '50-50', '80-20', 'all_baselines']
 
 def get_args():
     parser = argparse.ArgumentParser(description="ErNESTO-gym",
@@ -22,10 +21,15 @@ def get_args():
     parser.add_argument("--n_envs", action="store", type=int, default=1)
     parser.add_argument("--n_episodes", action="store", type=int, default=1)
     parser.add_argument("--gamma", action="store", type=float, default=0.99)
+    parser.add_argument("--learning_rate", action="store", type=float, default=0.001)
     parser.add_argument("--train", action="store_true")
     parser.add_argument("--test", action="store_true")
     parser.add_argument("--n_cores", action="store", type=int, default=1)
     parser.add_argument("--load_model", action="store", type=str, default='')
+    parser.add_argument("--save_model_as", action="store", type=str, default='')
+    parser.add_argument("--save_results_as", action="store", type=str, default='')
+    parser.add_argument("--spread_factor", action="store", type=float, default=1)
+    parser.add_argument("--replacement_cost", action="store", type=float)
     
     # Environment configuration
     parser.add_argument("--battery_options", action="store", default="ernestogym/ernesto/data/battery/pack.yaml", help="")
@@ -73,21 +77,23 @@ if __name__ == '__main__':
                                  aging_model=args['aging_model'],
                                  world_options=args['world_settings'],
                                  use_reward_normalization=True,
-                                 reward_coeff=weights
+                                 reward_coeff=weights,
+                                 spread_factor=args['spread_factor'],
+                                 replacement_cost=args['replacement_cost'] if 'replacement_cost' in args else None,
                                  )
     
     if args['train']:  
         if args['algo'][0] == 'ppo':   
             envs = make_vec_env("ernestogym/micro_grid-v0", n_envs=args["n_envs"], env_kwargs={'settings':params})
-            train_ppo(envs, args)
+            train_ppo(envs, args, params, model_file=args['load_model'] if args['load_model'] else None)
             
         elif args["algo"][0] == 'a2c':
             envs = make_vec_env("ernestogym/micro_grid-v0", n_envs=args["n_envs"], env_kwargs={'settings':params})
-            train_a2c(envs, args)
+            train_a2c(envs, args, model_file=args['load_model'] if args['load_model'] else None)
         
         elif args['algo'][0] == 'sac':
             envs = make_vec_env("ernestogym/micro_grid-v0", n_envs=args["n_envs"], env_kwargs={'settings':params})
-            train_sac(envs, args)
+            train_sac(envs, args, model_file=args['load_model'] if args['load_model'] else None)
     
         else:
             print("Algorithm not implemented!")
@@ -107,6 +113,6 @@ if __name__ == '__main__':
         else:
             eval_func = run_baseline
 
-        test_profiles = ['70', '71', '72', '73', '74']
+        test_profiles = [str(i) for i in range(370, 398)]
         n_cores = len(test_profiles) if args['n_cores'] >= len(test_profiles) else args['n_cores']
         Parallel(n_jobs=n_cores)(delayed(eval_func)(params, args, test, args['load_model']) for test in test_profiles)    

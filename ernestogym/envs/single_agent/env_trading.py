@@ -48,9 +48,9 @@ class MicroGridEnv(Env):
         self.generation = PVGenerator(**settings["generation"]) if 'generation' in settings \
             else DummyGenerator(gen_value=settings['dummy']['generation'])
         self.market = EnergyMarket(**settings["market"]) if 'market' in settings \
-            else DummyMarket(**settings['dummy']["market"])
+            else DummyMarket(ask=settings['dummy']['market']['ask'], bid=settings['dummy']['market']['bid'])
         self.temp_amb = AmbientTemperature(**settings["temp_amb"]) if 'temp_amb' in settings \
-            else DummyAmbientTemperature(temp_value=settings['dummy']['temp_amb'])
+            else DummyAmbientTemperature(gen_value=settings['dummy']['temp_amb'])
 
         # Timing variables of the simulation
         self.timeframe = 0
@@ -133,12 +133,12 @@ class MicroGridEnv(Env):
 
         lows = [self.spaces[key]['low'] for key in self.spaces.keys()]
         highs = [self.spaces[key]['high'] for key in self.spaces.keys()]
-
+        
         # Observation Space
         self.observation_space = Box(low=np.array(lows), high=np.array(highs), dtype=np.float32)
 
         # Action Space: percentage of generated energy to store
-        self.action_space = Box(low=0., high=1., dtype=np.float32, shape=(1,))
+        self.action_space = Box(low=0.2, high=1., dtype=np.float32, shape=(1,))
 
     def _get_obs(self) -> dict[str, Any]:
         """
@@ -187,7 +187,7 @@ class MicroGridEnv(Env):
 
                 case _:
                     raise KeyError(f'Unknown observation variable: {key}')
-
+            
         return obs
 
     def _get_info(self):
@@ -287,20 +287,22 @@ class MicroGridEnv(Env):
         self.timeframe += self._env_step
 
         # Compute the fraction of energy to store/use and the fraction to sell/buy
-        margin = info_pre_step['generation'] - info_pre_step['demand']
-
+        net_power = info_pre_step['generation'] - info_pre_step['demand']
+                
         last_v = self._battery.get_v()
-        i_max, i_min = self._battery.get_feasible_current(last_soc=self._battery.soc_series[-1], dt=self._env_step)
-
-        # Clip the chosen action so that it won't exceed the SoC limits
-        to_load = np.clip(a=margin * action[0], a_min=last_v * i_min, a_max=last_v * i_max)
-        to_trade = margin - to_load
+        i = (action[0] - self._battery.soc_series[-1]) * self._battery.get_c_max() * 3600 / self._env_step
+        to_load = last_v * i
+        
+        if net_power < 0:
+            to_trade = net_power + to_load 
+        else:
+            to_trade = net_power - to_load
         
         self.traded_energy.append(to_trade)
 
         # Current ambient temperature
         idx = self.temp_amb.get_idx_from_times(time=self.timeframe)
-        _, _, t_amb = self.temp_amb[idx]        
+        _, _, t_amb = self.temp_amb[idx]
                 
         # Step of the battery model and update of internal state
         self._battery.step(load=to_load, dt=self._env_step, k=self.iterations, t_amb=t_amb)
@@ -323,16 +325,14 @@ class MicroGridEnv(Env):
         # Trading reward with market and cost of degradation
         r_trading = to_trade * obs_pre_step['ask'] if to_trade < 0 else to_trade * obs_pre_step['bid']
 
-        # Clipping penalty from unfeasible actions
-        r_clipping = -abs(margin * action[0] - to_load)
-
         # Operational cost penalty and degradation penalty
         r_operation, r_deg = self._optional_reward()
         
-        pure_reward_terms = [r_trading, r_operation, r_deg, r_clipping]
+        pure_reward_terms = [r_trading, r_operation, r_deg]
         normalized_reward_terms = self._normalize_reward(deepcopy(pure_reward_terms))
-        weighted_reward_terms = [self._trading_coeff * normalized_reward_terms[0], self._op_cost_coeff * normalized_reward_terms[1],
-                                 self._deg_coeff * normalized_reward_terms[2], self._clip_action_coeff * normalized_reward_terms[3]]
+        weighted_reward_terms = [self._trading_coeff * normalized_reward_terms[0], 
+                                 self._op_cost_coeff * normalized_reward_terms[1],
+                                 self._deg_coeff * normalized_reward_terms[2]]
 
         self._update_reward_collections(pure_reward_terms, normalized_reward_terms, weighted_reward_terms)
 
@@ -343,7 +343,7 @@ class MicroGridEnv(Env):
         self._state = np.array(list(self._get_obs().values()), dtype=np.float32)
         self.state_list.append(self._state)
         info = self._get_info()
-        
+                
         if truncated or terminated:
             info['total_reward'] = self.total_reward
             info['pure_reward_list'] = self.pure_reward_list
@@ -422,16 +422,11 @@ class MicroGridEnv(Env):
             #rewards[1] = rewards[1] / self._max_op_cost
             rewards[1] = rewards[1] / self._battery.nominal_cost
             #rewards[1] = rewards[1] / 410            
-            
-            #rewards[3] = rewards[3] / max(self.demand.max_demand, self.generation.max_gen)
-            rewards[3] = rewards[3] / max(abs(self.demand.max_demand - self.generation.min_gen), 
-                                          abs(self.generation.max_gen - self.demand.min_demand))            
-            #rewards[3] = rewards[3] / self.demand.max_demand
 
         return rewards
     
     def _update_reward_collections(self, pure_terms: list, norm_terms: list, weighted_terms: list):
-        labels = ['r_trad', 'r_op', 'r_deg', 'r_clip']
+        labels = ['r_trad', 'r_op', 'r_deg']
         
         for i, label in enumerate(labels):
             self.pure_reward_list[label].append(pure_terms[i])

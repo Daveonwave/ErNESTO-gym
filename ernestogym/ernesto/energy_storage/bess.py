@@ -1,4 +1,4 @@
-from .battery_models import TheveninModel, TheveninFadingModel, DummyThermal, RCThermal, R2CThermal, BolunModel, SOCEstimator
+from .battery_models import *
 
 
 class BatteryEnergyStorageSystem:
@@ -84,11 +84,11 @@ class BatteryEnergyStorageSystem:
     def get_temp(self):
         return self._thermal_model.get_temp_series(k=-1)
 
-    def get_internal_resistance(self):
-        return self._electrical_model.get_internal_resistance()
+    def get_internal_resistance(self, nominal:bool=False):
+        return self._electrical_model.get_internal_resistance(nominal=nominal)
 
-    def get_polarization_resistance(self):
-        return self._electrical_model.get_polarization_resistance()
+    def get_polarization_resistance(self, nominal:bool=False):
+        return self._electrical_model.get_polarization_resistance(nominal=nominal)
 
     def get_internal_capacity(self):
         return self._electrical_model.get_internal_capacity()
@@ -140,16 +140,17 @@ class BatteryEnergyStorageSystem:
         # Instantiation of battery state estimators
         self._soc_model = SOCEstimator(capacity=self._c_max, soc_max=self.soc_max, soc_min=self.soc_min)
 
-    def reset(self, reset_info: dict = {}):
+    def reset(self):
         """
 
         """
         self.soc_series = []
         self.soh_series = []
         self.t_series = []
+        self._c_max = self.nominal_capacity
 
         for model in self.models:
-            model.reset_model(**reset_info)
+            model.reset_model()
 
     def init(self, init_info: dict = {}):
         """
@@ -159,17 +160,16 @@ class BatteryEnergyStorageSystem:
         self.soc_series.append(init_info['soc'])
         self.soh_series.append(init_info['soh'])
         self.temp_ambient = init_info['temp_ambient'] if 'temp_ambient' in init_info.keys() else None
-
+        
         init_info['q_moved_charge'] = 0
 
         for model in self.models:
             model.load_battery_state(temp=init_info['temperature'],
                                      soc=init_info['soc'],
                                      soh=init_info['soh'])
-
             model.init_model(**init_info)
 
-    def step(self, load: float, dt: float, k: int):
+    def step(self, load: float, dt: float, k: int, t_amb: float = None):
         """
 
         Args:
@@ -177,65 +177,122 @@ class BatteryEnergyStorageSystem:
             dt ():
             k ():
         """
+        v, i, soc = self._step_electrical(load=load, dt=dt)
+        self.soc_series.append(soc)
+        
+        # Thermal model step if present
+        if self._thermal_model is not None:
+            t_amb = self.temp_ambient if t_amb is None else t_amb
+            temp, heat = self._step_thermal(i=i, t_amb=t_amb, dt=dt)
+            self._thermal_model.update(**{'temp':temp, 'heat':heat})
+        else:
+            temp = self._init_conditions['temperature']
+                
+        # Aging model step if present
+        if self._aging_model is not None:
+            soh = self._step_aging(k=k)
+            self._c_max = soh * self.nominal_capacity
+        else:
+            soh = self._c_max / self.nominal_capacity
+        self.soh_series.append(soh)
+                
+        # Forward SoC, SoH and temperature to models and their components
+        for model in self.models:
+            model.load_battery_state(temp=temp, soc=soc, soh=soh)
+            
+        # Reset the SoC estimation to avoid an error drift of the SoC estimation. 
+        if self._reset_soc_every is not None and k % self._reset_soc_every == 0:
+            self.soc_series[-1] = self._soc_model.reset_soc(v=v, v_max=self.v_max, v_min=self.v_min)
+
+    def _step_electrical(self, load: float, dt: float):
+        """
+        Perform a step of the electrical model of the battery.
+
+        Args:
+            load (float): value of the load to apply to the battery.
+            dt (float): delta of time between the current and the previous sample.
+
+        Returns:
+            tuple: voltage, current and state of charge of the battery.
+        
+        Raises:
+            Exception: if the provided battery simulation mode doesn't exist or is just not implemented.
+        """
         if self._load_var == 'current':
-            v_out, _ = self._electrical_model.step_current_driven(i_load=load, dt=dt, k=k)
+            v, _ = self._electrical_model.step_current_driven(i_load=load, dt=dt, k=-1)
             i = load
-
         elif self._load_var == 'voltage':
-            _, i_out = self._electrical_model.step_voltage_driven(v_load=load, dt=dt, k=k)
-            i = i_out
-            v_out = load
-
+            _, i = self._electrical_model.step_voltage_driven(v_load=load, dt=dt, k=-1)
+            v = load
         elif self._load_var == 'power':
-            v_out, i_out = self._electrical_model.step_power_driven(p_load=load, dt=dt, k=k)
-            i = i_out
-
+            v, i = self._electrical_model.step_power_driven(p_load=load, dt=dt, k=-1)
         else:
             raise Exception("The provided battery simulation mode {} doesn't exist or is just not implemented!"
                             "Choose among the provided ones: Voltage, Current or Power.".format(self._load_var))
-
-        # Compute the SoC through the SoC estimator and update the state of the circuit
-        dissipated_heat = self._electrical_model.compute_generated_heat()
+        
         self._c_max = self._electrical_model.compute_parameter_fading(self.nominal_capacity)
         self._soc_model.c_max = self._c_max
-
-        curr_temp = self._thermal_model.compute_temp(q=dissipated_heat, i=i, T_amb=self.temp_ambient, dt=dt, k=k)
-        curr_soc = self._soc_model.compute_soc(soc_=self.soc_series[-1], i=i, dt=dt)
-
-        self._thermal_model.update_temp(value=curr_temp)
-        self._thermal_model.update_heat(value=dissipated_heat)
-        self.soc_series.append(curr_soc)
-
-        # Compute SoH of the system if a model has been selected, SoH=constant otherwise
-        curr_soh = self.soh_series[-1]
-        if self._aging_model is not None and k % self._check_soh_every == 0:
-            curr_soh = self.soh_series[0] - self._aging_model.compute_degradation(
-                soc_history=self.soc_series,
-                temp_history=self._thermal_model.get_temp_series(),
-                elapsed_time=self.t_series[-1],
-                k=k
-            )
-
-        # Forward SoC, SoH and temperature to models and their components (currently used only by electrical model)
-        for model in self.models:
-            model.load_battery_state(temp=curr_temp, soc=curr_soc, soh=curr_soh)
-
-        self.soh_series.append(curr_soh)
-
-        if self._reset_soc_every is not None and k % self._reset_soc_every == 0:
-            self.soc_series[-1] = self._soc_model.reset_soc(v=v_out, v_max=self.v_max, v_min=self.v_min)
-
-    def get_status_table(self):
+        soc = self._soc_model.compute_soc(soc_=self.soc_series[-1], i=i, dt=dt)
+        return v, i, soc
+        
+    def _step_thermal(self, i: float, t_amb: float, dt: float):
         """
+        Perform a step of the thermal model of the battery
 
+        Args:
+            i (float): current flowing through the battery.
+            t_amb (float): ambient temperature.
+            dt (float): delta of time between the current and the previous sample.
+            ground_temp (float): temperature of the ground (used only with dummy model).
+        
+        Returns:
+            tuple: temperature and heat generated by the battery.
         """
-        status_dict = {'time': self.t_series[-1], 'soc': self.soc_series[-1], 'soh': self.soh_series[-1]}
+        heat = self._electrical_model.compute_generated_heat()
+        temp = self._thermal_model.compute_temp(q=heat, i=i, T_amb=t_amb, dt=dt, k=-1)
+        return temp, heat
+    
+    def _step_aging(self, k: int):
+        """
+        Perform a step of the aging model of the battery.
+
+        Args:
+            k (int): k-th iteration of the simulation.
+
+        Returns:
+            float: state of health of the battery.
+        """
+        if self._aging_model.name == 'Bolun':
+            if k % self._check_soh_every == 0:
+                return self.soh_series[0] - self._aging_model.compute_degradation(soc_history=self.soc_series,
+                                                                                  temp_history=self._thermal_model.get_temp_series(),
+                                                                                  elapsed_time=self.t_series[-1],
+                                                                                  k=k)
+            else:
+                return self.soh_series[-1]
+        
+        # BOLUN DROPFLOW MODEL
+        elif self._aging_model.name == 'BolunDropflow':
+            return self.soh_series[0] - self._aging_model.compute_degradation(soc=self.soc_series[-1],
+                                                                              temp=self._thermal_model.get_temp_series(k=-1),
+                                                                              elapsed_time=self.t_series[-1],
+                                                                              k=k,
+                                                                              do_check=(k % self._check_soh_every == 0))        
+        else:
+            raise Exception("The provided aging model {} doesn't exist or is just not implemented!".format(self._aging_model.name))
+    
+    def get_snapshot(self):
+        """
+        Collect the status of the battery and its components at the current time step.
+        Used to update the queues of the writer.
+        """
+        status_dict = {'time': self.t_series[-1], 'soc': self.soc_series[-1], 'soh': self.soh_series[-1], 'c_max': self.c_max_series[-1]}
 
         for model in self.models:
             status_dict.update(model.get_results(**{'k': -1}))
 
         return status_dict
-
+    
     def build_results_table(self):
         """
         """

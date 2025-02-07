@@ -43,17 +43,16 @@ def operational_cost(replacement_cost: float,
 
     # P_loss depending on P charged or discharged
     if is_discharging:
-        p_loss = (1**-3 * (r + K_rated / soc) / v_rated**2 * p**2 +
-                  1**-3 * C * K_rated * (1 - soc) / (soc * v_rated**2) * p)
+        p_loss = (1 * (r + K_rated / soc) / v_rated**2 * p**2 +
+                  1 * C * K_rated * (1 - soc) / (soc * v_rated**2) * p)
         h_bat = abs(p) + p_loss
 
     else:
-        h_bat = (1**-3 * (r + K_rated / (0.9 - soc)) / v_rated**2 * p**2 +
-                 1**-3 * C * K_rated * (1 - soc) / (soc * v_rated**2) * p)
+        h_bat = (1 * (r + K_rated / (0.9 - soc)) / v_rated**2 * p**2 +
+                 1 * C * K_rated * (1 - soc) / (soc * v_rated**2) * p)
 
-    #print("c_bat: ", c_bat)
-    #print("h_bat: ", h_bat)
-    return c_bat * h_bat
+    # Dividing by 1e3 to convert because it is in €/kWh, to get the cost in €/Wh
+    return c_bat * h_bat / 1e3
 
 
 # c_bat = 3000 / (60 * 0.8 * (0.9 * 3000 - 0.1)) = 0.023149005518722912
@@ -77,8 +76,8 @@ def soh_cost(replacement_cost: float, delta_soh: float, soh_limit: float) -> flo
 
         Reference: https://github.com/OscarPindaro/RLithium-0/tree/main
         """
-    assert 0 <= delta_soh < 1, "Reward error: 'delta_soh' be within [0, 1]"
-    assert 0 <= soh_limit < 1, "Reward error: 'soh_limit' should be be within [0, 1]"
+    assert 0 <= delta_soh < 1, "Reward error: 'delta_soh' be within [0, 1], instead of {}".format(delta_soh)
+    assert 0 <= soh_limit < 1, "Reward error: 'soh_limit' should be be within [0, 1], instead of {}".format(soh_limit)
     assert replacement_cost >= 0, "Reward error: battery replacement cost should be non-negative"
 
     return delta_soh * replacement_cost / (1 - soh_limit)

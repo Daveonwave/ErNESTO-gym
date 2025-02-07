@@ -13,7 +13,6 @@ INPUT_VAR = 'power'     # 'power'/'current'/'voltage'
 ECM = "ernestogym/ernesto/data/battery/models/electrical/thevenin_cell.yaml"
 R2C_THERMAL = "ernestogym/ernesto/data/battery/models/thermal/r2c_thermal_cell.yaml"
 BOLUN_MODEL = "ernestogym/ernesto/data/battery/models/aging/bolun_cell.yaml"
-
 WORLD = "ernestogym/envs/single_agent/world_fading.yaml"
 
 ureg = UnitRegistry(autoconvert_offset_to_baseunit=True)
@@ -36,6 +35,8 @@ def parameter_generator(battery_options: str = BATTERY_OPTIONS,
                         reward_coeff: dict[str, float] = None,
                         use_reward_normalization: bool = None,
                         bypass_yaml_schema: bool = False,
+                        spread_factor: float = 1.0,
+                        replacement_cost: float = 3000.0
                         ) -> dict:
     """
     Generates the parameters dict for `EnergyStorageEnv`.
@@ -58,22 +59,33 @@ def parameter_generator(battery_options: str = BATTERY_OPTIONS,
                          'timestep': world_settings['demand']['timestep'],
                          'test_profiles': world_settings['demand']['test_profiles'],
                          'data_usage': world_settings['demand']['data_usage']}}
+    
+    if replacement_cost is not None:
+        params['battery']['params']['nominal_cost'] = replacement_cost
+    
+    params['soh'] = True if 'soh' in world_settings['observations'] else False
 
     # Exogenous variables data
-
     if 'generation' in world_settings['observations']:
         params['generation'] = {'data': read_csv(world_settings['generation']['path']),
                                 'timestep': world_settings['generation']['timestep'],
                                 'data_usage': world_settings['generation']['data_usage']}
 
-    if 'market' in world_settings['observations']:
+    if 'market' in world_settings:
         params['market'] = {'data': read_csv(world_settings['market']['path']),
                             'timestep': world_settings['market']['timestep'],
-                            'data_usage': world_settings['market']['data_usage']}
+                            'data_usage': world_settings['market']['data_usage'],
+                            'spread_factor': spread_factor}
+    
+    if 'temp_amb' in world_settings:
+        params['temp_amb'] = {'data': read_csv(world_settings['temp_amb']['path']),
+                            'timestep': world_settings['temp_amb']['timestep'],
+                            'data_usage': world_settings['temp_amb']['data_usage']}
 
     # Dummy information about world behavior
     params['dummy'] = world_settings['dummy']
-
+    params['dummy']['market']['spread_factor'] = spread_factor
+    
     # Time info among observations
     params['day_of_year'] = True if 'day_of_year' in world_settings['observations'] else False
     params['seconds_of_day'] = True if 'seconds_of_day' in world_settings['observations'] else False

@@ -17,7 +17,7 @@ def train_a2c(envs, args):
     
     # Save a checkpoint every 1000 steps
     checkpoint_callback = CheckpointCallback(
-        save_freq=525000,
+        save_freq=525600,
         save_path="./logs/{}/models/".format(args['exp_name']),
         name_prefix="a2c",
         save_replay_buffer=True,
@@ -28,10 +28,12 @@ def train_a2c(envs, args):
                 envs, 
                 verbose=args['verbose'], 
                 gamma=args['gamma'], 
-                tensorboard_log="./logs/tensorboard/{}/a2c/".format(args['exp_name']))
+                tensorboard_log="./logs/tensorboard/{}/a2c/".format(args['exp_name']),
+                ent_coef=0.01,
+                stats_window_size=1)
 
     for i in range(args['n_episodes']):
-        model.learn(total_timesteps=len(envs.get_attr("demand")[0]) * args['n_envs'],
+        model.learn(total_timesteps=envs.get_attr("termination")[0]['max_iterations'] * args['n_envs'],
                     progress_bar=True,
                     log_interval=args['log_rate'],
                     tb_log_name="ep_{}".format(i),

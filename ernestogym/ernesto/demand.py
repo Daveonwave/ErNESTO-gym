@@ -7,7 +7,9 @@ class EnergyDemand:
     """
     Energy demand
     """
-    def __init__(self, data: pd.DataFrame, timestep: int, test_profiles: list[str],
+    def __init__(self, data: pd.DataFrame, 
+                 timestep: int, 
+                 test_profiles: list[str],
                  data_usage: str = 'end'):
         assert data_usage in ['end', 'circular'], "'data_usage' of demand must be 'end' or 'circular'."
 

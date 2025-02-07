@@ -3,7 +3,7 @@ import rainflow
 from enum import Enum
 
 from ernestogym.ernesto.energy_storage.battery_models.generic_models import AgingModel
-from . import bolun_stress_functions
+from ernestogym.ernesto.energy_storage.battery_models.aging import stress_functions
 
 
 class BolunModel(AgingModel):
@@ -230,7 +230,7 @@ class BolunModel(AgingModel):
 
         # For each defined stress model we get the stress function with relative parameters
         for factor in self._calendar_factors.keys():
-            stress_func = getattr(bolun_stress_functions, factor + '_stress')
+            stress_func = getattr(stress_functions, factor + '_stress')
             sim_variables = {}
 
             if factor == 'time':
@@ -267,7 +267,7 @@ class BolunModel(AgingModel):
 
         # For each defined stress model we get the stress function with relative parameters
         for factor in self._cyclic_factors.keys():
-            stress_func = getattr(bolun_stress_functions, factor + '_stress')
+            stress_func = getattr(stress_functions, factor + '_stress')
             sim_variables = {}
 
             if factor == 'dod_bolun':
