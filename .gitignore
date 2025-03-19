@@ -10,7 +10,6 @@ logs
 docs
 examples/dataset
 examples/*/plots/
-examples/*/models/
 ernestogym/ernesto/data/market/*
 ernestogym/ernesto/data/generation/*
 ernestogym/ernesto/data/demand/*
