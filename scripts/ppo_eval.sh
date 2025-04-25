@@ -1,7 +1,7 @@
 python launch_env.py \
     --algo ppo \
     --n_cores 5 \
-    --exp_name "REPLACEMENT_COST_200" \
+    --exp_name "PPO_experiment" \
     --replacement_cost 200 \
     --spread_factor 1 \
     --load_model "ppo_final" \
