@@ -6,6 +6,8 @@ The framework is grounded on the [ErNESTO digital twin](https://github.com/Daveo
 
 This project comes from the collaboration of [Politecnico di Milano](https://www.polimi.it) and [RSE](https://www.rse-web.it).
 
+The related paper is available [here](https://arxiv.org/abs/2506.22995).
+
 ## Folder structure
 
 ```
