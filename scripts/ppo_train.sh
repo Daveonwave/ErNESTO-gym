@@ -2,7 +2,7 @@ python launch_env.py \
     --algo ppo \
     --n_envs 4 \
     --gamma 0.99 \
-    --exp_name "PPO_experiment" \
+    --exp_name "prova_RSE" \
     --spread_factor 1 \
     --save_model_as "ppo_final" \
     --n_episodes 100 \

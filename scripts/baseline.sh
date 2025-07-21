@@ -1,8 +1,7 @@
 python launch_env.py \
     --algo battery_first \
     --n_cores 5 \
-    --exp_name "REPLACEMENT_COST_200" \
-    --replacement_cost 200 \
+    --exp_name "ijcnn_presentation" \
     --spread_factor 1 \
     --weight_trading 1 \
     --weight_operational_cost 0 \
@@ -16,8 +15,7 @@ python launch_env.py \
 python launch_env.py \
     --algo only_market \
     --n_cores 5 \
-    --exp_name "REPLACEMENT_COST_200" \
-    --replacement_cost 200 \
+    --exp_name "ijcnn_presentation" \
     --spread_factor 1 \
     --weight_trading 1 \
     --weight_operational_cost 0 \
