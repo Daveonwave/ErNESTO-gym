@@ -6,6 +6,8 @@ The framework is grounded on the [ErNESTO digital twin](https://github.com/Daveo
 
 This project comes from the collaboration of [Politecnico di Milano](https://www.polimi.it) and [RSE](https://www.rse-web.it).
 
+The related paper is available [here](https://arxiv.org/abs/2506.22995).
+
 ## Folder structure
 
 ```
@@ -73,5 +75,13 @@ storage system, but a broader Smart Grid. To reach this goal, further steps have
 ## :paperclip: Citing
 
 ```
-
+@misc{salaorni2025reinforcementlearningapproachoptimal,
+      title={A Reinforcement Learning Approach for Optimal Control in Microgrids}, 
+      author={Davide Salaorni and Federico Bianchi and Francesco Trovò and Marcello Restelli},
+      year={2025},
+      eprint={2506.22995},
+      archivePrefix={arXiv},
+      primaryClass={cs.LG},
+      url={https://arxiv.org/abs/2506.22995}, 
+}
 ```
