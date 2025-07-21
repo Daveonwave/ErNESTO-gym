@@ -58,8 +58,10 @@ class BatteryEnergyStorageSystem:
         self._c_max = battery_options['params']['nominal_capacity']
         self.soc_series = []
         self.soh_series = []
-        # self.temp_series = []
         self.t_series = []
+        
+        #Inital soh
+        self._init_soh = battery_options['init']['soh'] if 'soh' in battery_options['init'].keys() else 1.0 
 
         # Instantiate models
         self._build_models()
@@ -230,7 +232,9 @@ class BatteryEnergyStorageSystem:
             raise Exception("The provided battery simulation mode {} doesn't exist or is just not implemented!"
                             "Choose among the provided ones: Voltage, Current or Power.".format(self._load_var))
         
-        self._c_max = self._electrical_model.compute_parameter_fading(self.nominal_capacity)
+        if self._aging_model is None:
+            self._c_max = self._electrical_model.compute_parameter_fading(self.nominal_capacity)
+        
         self._soc_model.c_max = self._c_max
         soc = self._soc_model.compute_soc(soc_=self.soc_series[-1], i=i, dt=dt)
         return v, i, soc
@@ -264,7 +268,7 @@ class BatteryEnergyStorageSystem:
         """
         if self._aging_model.name == 'Bolun':
             if k % self._check_soh_every == 0:
-                return self.soh_series[0] - self._aging_model.compute_degradation(soc_history=self.soc_series,
+                return self._init_soh - self._aging_model.compute_degradation(soc_history=self.soc_series,
                                                                                   temp_history=self._thermal_model.get_temp_series(),
                                                                                   elapsed_time=self.t_series[-1],
                                                                                   k=k)
@@ -273,7 +277,7 @@ class BatteryEnergyStorageSystem:
         
         # BOLUN DROPFLOW MODEL
         elif self._aging_model.name == 'BolunDropflow':
-            return self.soh_series[0] - self._aging_model.compute_degradation(soc=self.soc_series[-1],
+            return self._init_soh - self._aging_model.compute_degradation(soc=self.soc_series[-1],
                                                                               temp=self._thermal_model.get_temp_series(k=-1),
                                                                               elapsed_time=self.t_series[-1],
                                                                               k=k,
