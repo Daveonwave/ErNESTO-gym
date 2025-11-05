@@ -27,6 +27,7 @@ def parameter_generator(battery_options: str = BATTERY_OPTIONS,
                         use_degradation: bool = None,
                         use_fading: bool = None,
                         step: int = None,
+                        step_model: int = None,
                         random_battery_init: bool = None,
                         random_data_init: bool = None,
                         seed: int = None,
@@ -93,6 +94,8 @@ def parameter_generator(battery_options: str = BATTERY_OPTIONS,
     params['energy_level'] = True if 'energy_level' in world_settings['observations'] else False
 
     params['step'] = step if step is not None else world_settings['step']
+    if 'step_model' in world_settings:
+        params['step_model'] = step_model if step_model is not None else world_settings['step_model']
     params['seed'] = seed if seed is not None else world_settings['seed']
     params['random_battery_init'] = random_battery_init if random_battery_init is not None else world_settings['random_battery_init']
     params['random_data_init'] = random_data_init if random_data_init is not None else world_settings['random_data_init']

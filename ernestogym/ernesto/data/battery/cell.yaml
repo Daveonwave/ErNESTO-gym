@@ -48,6 +48,10 @@ battery:
             var: 'temperature'
             value: 298.15
             unit: 'K'
+        nominal_cost:
+            var: "cost"
+            value: 10.5
+            unit: null
 
     bounds:
         voltage:

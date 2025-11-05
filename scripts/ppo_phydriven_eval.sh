@@ -1,0 +1,18 @@
+python launch_env_phydriven.py \
+    --algo ppo \
+    --n_cores 1 \
+    --exp_name "PPO_experiment" \
+    --replacement_cost 200 \
+    --spread_factor 1 \
+    --load_model "ppo_final" \
+    --save_results_as "ppo" \
+    --gamma 0.99 \
+    --weight_trading 1 \
+    --weight_operational_cost 0 \
+    --weight_degradation 1 \
+    --weight_clipping 0.1 \
+    --test \
+    --world_settings ernestogym/envs/single_agent/ijcnn_deg_test_phydriven.yaml \
+    --electrical_model ernestogym/ernesto/data/battery/models/electrical/phydriven_cell.yaml \
+    --thermal_model ernestogym/ernesto/data/battery/models/thermal/r2c_thermal_cell.yaml\
+    --aging_model ernestogym/ernesto/data/battery/models/aging/bolun_cell.yaml

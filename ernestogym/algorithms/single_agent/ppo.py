@@ -4,12 +4,13 @@ from tqdm import tqdm
 from typing import Callable
 
 from ernestogym.envs.single_agent.env import MicroGridEnv
+from ernestogym.envs.single_agent.env_phydriven import MicroGridEnvPhyDriven
 from stable_baselines3 import PPO
 from stable_baselines3.ppo import MlpPolicy
 from stable_baselines3.common.callbacks import CheckpointCallback, StopTrainingOnMaxEpisodes, EvalCallback
 from stable_baselines3.common.callbacks import BaseCallback
 from stable_baselines3.common.logger import TensorBoardOutputFormat
-
+import time
 
 def linear_schedule(initial_value: float) -> Callable[[float], float]:
     """
@@ -139,4 +140,76 @@ def eval_ppo(env_params, args, test_profile, model_file=""):
 
     with open(output_file, 'w', encoding ='utf8') as f: 
         json.dump(comparison_dict, f, allow_nan=False) 
+
+def eval_ppo_phydriven(env_params, args, test_profile, model_file=""):
+    
+    env = MicroGridEnvPhyDriven(settings=env_params)
+        
+    comparison_dict = {
+        'test': test_profile,
+        'pure_reward': {},
+        'norm_reward': {},
+        'weighted_reward': {},
+        'total_reward': 0
+    }
+    
+    logdir = "./logs/{}/results/{}/".format(args['exp_name'], args['save_results_as'])
+    os.makedirs(logdir, exist_ok=True)
+    
+    model_folder = "./logs/{}/models/".format(args['exp_name'])
+
+    if not model_file:   
+        # Load the more recent model (last in alphabetical order) 
+        result_files = [f for f in os.listdir(model_folder) if os.path.isfile(os.path.join(model_folder, f)) and f.startswith("ppo")]
+        model_file = sorted(result_files)[-1]    
+        
+    model = PPO.load(path=model_folder + model_file, env=env)
+    vec_env = model.get_env()
+    
+    vec_env.set_options({'eval_profile': test_profile})
+    obs = vec_env.reset()
+    
+    done = False
+    pbar = tqdm(total=len(vec_env.get_attr("generation")[0]))
+
+
+    dt_cycle = env_params['step_model']
+    dt_RL = env_params['step']
+    # # Compute number of cycles (ensure integer multiple)
+    # ratio = dt_RL / dt_cycle
+    # assert abs(ratio - round(ratio)) < 1e-9, "dt must be a multiple of dt_cycle"
+    # iter_cycles = int(round(ratio))
+
+    while not done:
+        ''' Scelta dell'azione'''
+        action, _states = model.predict(obs)
+
+        '''Applicazione dell'azione per un tempo dt_RL'''
+        end_time = time.time() + 0.5
+        while time.time() < end_time:
+            # start_it_time = time.time()
+            obs, rewards, dones, info = vec_env.step(action)
+            if dones[0]:
+                done = True
+                break
+
+        # vec_env.timeframe += dt_RL
+        pbar.update(1)
+    env._battery._electrical_model._cycler.stop_follow_P()
+    env._battery._electrical_model._cycler.exit_communications()
+
+    comparison_dict['total_reward'] = info[0]['total_reward']
+    comparison_dict['pure_reward'] = info[0]['pure_reward_list']
+    comparison_dict['norm_reward'] = info[0]['norm_reward_list']
+    comparison_dict['weighted_reward'] = info[0]['weighted_reward_list']
+    comparison_dict['actions'] = info[0]['actions']
+    comparison_dict['states'] = info[0]['states']
+    comparison_dict['traded_energy'] = info[0]['traded_energy']
+    comparison_dict['soh'] = info[0]['soh']
+
+    output_file = logdir + 'test_{}.json'.format(test_profile)
+
+    with open(output_file, 'w', encoding ='utf8') as f: 
+        json.dump(comparison_dict, f, allow_nan=False) 
+
 

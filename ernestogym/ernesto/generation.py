@@ -2,7 +2,11 @@ import pandas as pd
 
 
 class PVGenerator:
-    def __init__(self, data: pd.DataFrame, timestep: int, data_usage: str = 'end'):
+    def __init__(self, 
+                data: pd.DataFrame, 
+                timestep: int, 
+                data_usage: str = 'end'
+                ):
         assert data_usage in ['end', 'circular'], "'data_usage' of generation must be 'end' or 'circular'."
 
         self.timestep = timestep

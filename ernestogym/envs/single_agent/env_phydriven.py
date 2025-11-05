@@ -7,11 +7,10 @@ from datetime import timedelta
 from gymnasium import Env
 from gymnasium.spaces import Box
 from .rewards import operational_cost, linearized_degradation, soh_cost
-from ernestogym.ernesto.energy_storage.bess import BatteryEnergyStorageSystem
+from ernestogym.ernesto.energy_storage.bessPhyDriven import BatteryEnergyStorageSystemPhyDriven
 from ernestogym.ernesto import PVGenerator, EnergyDemand, EnergyMarket, DummyGenerator, DummyMarket, AmbientTemperature, DummyAmbientTemperature
 
-
-class MicroGridEnv(Env):
+class MicroGridEnvPhyDriven(Env):
     """
     """
     SECONDS_PER_MINUTE = 60
@@ -28,11 +27,12 @@ class MicroGridEnv(Env):
         metadata = {"render_modes": None}
         
         # Build the battery object
-        self._battery = BatteryEnergyStorageSystem(
+        self._battery = BatteryEnergyStorageSystemPhyDriven(
             models_config=settings['models_config'],
             battery_options=settings['battery'],
             input_var=settings['input_var']
         )
+
 
         # Save the initialization bounds for environment parameters from which we will sample at reset time
         self._reset_params = settings['battery']['init']
@@ -56,7 +56,8 @@ class MicroGridEnv(Env):
         self.timeframe = 0
         self.elapsed_time = 0
         self.iterations = 0
-        self._env_step = settings['step']
+        '''Changed the _env_step in order to use dt_cycle and not dt'''
+        self._env_step = settings['step_model']
         self.termination = settings['termination']
         self.termination['max_iterations'] = len(self.generation) - 1 if self.termination['max_iterations'] is None else self.termination['max_iterations']
 
@@ -247,6 +248,8 @@ class MicroGridEnv(Env):
         else:
             gen_idx = np.random.randint(low=1, high=len(self.generation) - 1)
         
+        '''Note to self: self.generation.__getitem__ require an index 
+        and returns self_timestamps[idx], self._times[idx], self._history[idx]'''
         _, sampled_time, _ = self.generation[gen_idx]
         self.timeframe = sampled_time % (self.SECONDS_PER_DAY * self.DAYS_PER_YEAR)
         
@@ -256,9 +259,15 @@ class MicroGridEnv(Env):
                          self._params_bounds.items()}
         else:
             init_info = {key: value for key, value in self._reset_params.items()}
+            # init_info['voltage'] = self._battery.get_v()
             idx = self.temp_amb.get_idx_from_times(time=self.timeframe)
-            _, _, init_info['temperature'] = self.temp_amb[idx]
-            _, _, init_info['temp_ambient'] = self.temp_amb[idx]
+            # _, _, init_info['temperature'] = self.temp_amb[idx]
+            # _, _, init_info['temp_ambient'] = self.temp_amb[idx]
+            init_info['temp_ambient'] = 21.0+273.15
+            init_info['temperature'] = init_info['temp_ambient']
+
+
+
 
         # Initialize the battery object
         self._battery.reset()
@@ -284,9 +293,13 @@ class MicroGridEnv(Env):
         # Retrieve the actual amount of demand, generation and market
         obs_pre_step, info_pre_step = self._get_obs(), self._get_info()
 
+        # '''Brought the increase in the timeframe outside of the while:
+        #   this way keep the external world fixed in order to mantain 
+        #   the same exogenous causes and do not risk to slip to the next'''
         self.timeframe += self._env_step
 
         # Compute the fraction of energy to store/use and the fraction to sell/buy
+
         margin = info_pre_step['generation'] - info_pre_step['demand']
 
         last_v = self._battery.get_v()
@@ -299,13 +312,17 @@ class MicroGridEnv(Env):
         self.traded_energy.append(to_trade)
 
         # Current ambient temperature
-        idx = self.temp_amb.get_idx_from_times(time=self.timeframe)
-        _, _, t_amb = self.temp_amb[idx]        
+        '''TO DO: WHEN T SENSOR ARE AVAILABLE'''
+        # idx = self.temp_amb.get_idx_from_times(time=self.timeframe)
+        # _, _, t_amb = self.temp_amb[idx]        
+        t_amb = 21.0+273.15
                 
         # Step of the battery model and update of internal state
-        '''Qui fare for per chiamare D.T. su un dt piu piccolo e poi chiamare self._battery.get_i()'''
         # for dtpiccolo:
+
         self._battery.step(load=to_load, dt=self._env_step, k=self.iterations, t_amb=t_amb)
+        #     get_i()
+
         self._battery.t_series.append(self.elapsed_time)
         self.elapsed_time += self._env_step
         self.iterations += 1
@@ -323,7 +340,7 @@ class MicroGridEnv(Env):
         )
 
         # Trading reward with market and cost of degradation
-        r_trading = to_trade * obs_pre_step['ask'] * self._env_step/3600 if to_trade < 0 else to_trade * obs_pre_step['bid'] * self._env_step/3600
+        r_trading = to_trade * obs_pre_step['ask'] if to_trade < 0 else to_trade * obs_pre_step['bid']
 
         # Clipping penalty from unfeasible actions
         r_clipping = -abs(margin * action[0] - to_load)
@@ -354,8 +371,7 @@ class MicroGridEnv(Env):
             info['actions'] = [action.tolist() for action in self.action_list]
             info['states'] = [state.tolist() for state in self.state_list]
             info['traded_energy'] = self.traded_energy
-            info['soh'] = self._battery.soh_series
-            
+            info['soh'] = self._battery.soh_series  
         return self._state, reward, terminated, truncated, info
 
     def _optional_reward(self):

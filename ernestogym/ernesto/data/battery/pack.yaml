@@ -82,5 +82,5 @@ battery:
     power: 0.
     temperature: 293.15
     temp_ambient: 293.15
-    soc: .2
+    soc: 1.
     soh: 1.
