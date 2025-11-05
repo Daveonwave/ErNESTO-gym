@@ -3,7 +3,7 @@ from joblib import Parallel, delayed
 
 from stable_baselines3.common.env_util import make_vec_env
 from ernestogym.envs.single_agent.utils import parameter_generator
-from ernestogym.algorithms.single_agent.ppo import train_ppo, eval_ppo, eval_ppo_phydriven
+from ernestogym.algorithms.single_agent.ppo_new import train_ppo, eval_ppo, eval_ppo_phydriven
 from ernestogym.algorithms.single_agent.a2c import train_a2c, eval_a2c
 from ernestogym.algorithms.single_agent.sac import train_sac, eval_sac
 from ernestogym.algorithms.single_agent.baselines import run_baseline
