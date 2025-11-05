@@ -171,7 +171,35 @@ class BatteryEnergyStorageSystem:
                                      soh=init_info['soh'])
             model.init_model(**init_info)
 
-    def step(self, load: float, dt: float, k: int, t_amb: float = None):
+    def repeat_el_step(self, v_old: float, soc_old: float, load: float, dt: float, k: int, t_amb: float = None):
+        i = load / v_old
+        r0 = self._electrical_model.r0.resistance
+        r1 = self._electrical_model.rc.resistance
+        c = self._electrical_model.rc.capacity
+        v_ocv = self._electrical_model.ocv_gen.ocv_potential
+        if self._sign_convention == 'passive':
+            i = -i
+
+        # Compute V_r0 and V_rc
+        v_r0 = i * r0
+        v_rc = (v_old/ dt + i / c) / (1/dt + 1 / (c*r1))
+        
+        # Compute V
+        v = v_ocv - v_r0 - v_rc
+
+        # Compute soc
+        soc = soc_old + i / (self._c_max * 3600) * dt
+        
+        # Crop soc
+        if soc < 0:
+            soc = 0
+
+        if soc > 1:
+            soc = 1
+
+        return v, soc
+
+    def step(self, load: float, dt_RL: float, dt_DT: float, k: int, n_iter_el: int, t_amb: float = None):
         """
 
         Args:
@@ -179,13 +207,20 @@ class BatteryEnergyStorageSystem:
             dt ():
             k ():
         """
-        v, i, soc = self._step_electrical(load=load, dt=dt)
+        '''Mettere for'''
+        v = self.get_v()
+        soc = self.soc_series[-1]
+        for it in range(n_iter_el-1):
+            v, soc = self.repeat_el_step(v_old=v, soc_old=soc, load=load, dt=dt_DT, k=k, t_amb = t_amb)
+            self._electrical_model.load_battery_state(temp=t_amb, soc=soc, soh=self.soh_series[-1])
+
+        v, i, soc = self._step_electrical(load=load, dt=dt_RL)
         self.soc_series.append(soc)
         
         # Thermal model step if present
         if self._thermal_model is not None:
             t_amb = self.temp_ambient if t_amb is None else t_amb
-            temp, heat = self._step_thermal(i=i, t_amb=t_amb, dt=dt)
+            temp, heat = self._step_thermal(i=i, t_amb=t_amb, dt=dt_RL)
             self._thermal_model.update(**{'temp':temp, 'heat':heat})
         else:
             temp = self._init_conditions['temperature']
@@ -278,10 +313,10 @@ class BatteryEnergyStorageSystem:
         # BOLUN DROPFLOW MODEL
         elif self._aging_model.name == 'BolunDropflow':
             return self._init_soh - self._aging_model.compute_degradation(soc=self.soc_series[-1],
-                                                                          temp=self._thermal_model.get_temp_series(k=-1),
-                                                                          elapsed_time=self.t_series[-1],
-                                                                          k=k,
-                                                                          do_check=(k % self._check_soh_every == 0))        
+                                                                              temp=self._thermal_model.get_temp_series(k=-1),
+                                                                              elapsed_time=self.t_series[-1],
+                                                                              k=k,
+                                                                              do_check=(k % self._check_soh_every == 0))        
         else:
             raise Exception("The provided aging model {} doesn't exist or is just not implemented!".format(self._aging_model.name))
     

@@ -220,7 +220,7 @@ class MicroGridEnv(Env):
         """
         super().reset(seed=seed, options=options)
 
-        print('Resetting the environment...')
+        # print('Resetting the environment...')
         
         # Initialize the episode counter
         self.state_list = []
@@ -246,7 +246,7 @@ class MicroGridEnv(Env):
             self.demand.profile = self.eval_profile
         else:
             self.demand.profile = np.random.choice(self.demand.labels)
-        print("profile: ", self.demand.profile)
+        # print("profile: ", self.demand.profile)
 
         # If seed is -1 we take datasets from the beginning
         if not self._random_data_init:
@@ -312,9 +312,9 @@ class MicroGridEnv(Env):
 
         # Step of the battery model and update of internal state
         '''Qui fare for per chiamare D.T. su un dt piu piccolo e poi chiamare self._battery.get_i()'''
-        for i in range(self.n_repeat_action):
-            self._battery.step(load=to_load, dt=self._DT_step, k=self.iterations*self.n_repeat_action+i, t_amb=t_amb)
-            self._battery.t_series.append(self.elapsed_time +i*self._DT_step)
+        # for i in range(self.n_repeat_action):
+        self._battery.step(load=to_load, dt_RL=self._env_step, dt_DT=self._DT_step, k=self.iterations, n_iter_el = self.n_repeat_action, t_amb=t_amb)
+        self._battery.t_series.append(self.elapsed_time)
 
         self.elapsed_time += self._env_step
         self.iterations += 1
