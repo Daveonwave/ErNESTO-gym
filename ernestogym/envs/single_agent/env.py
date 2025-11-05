@@ -26,12 +26,17 @@ class MicroGridEnv(Env):
 
         """
         metadata = {"render_modes": None}
-        
+
+        self._env_step = settings['step']
+        self._DT_step = settings['step_model']
+        self.n_repeat_action = self._env_step//self._DT_step
+
         # Build the battery object
         self._battery = BatteryEnergyStorageSystem(
             models_config=settings['models_config'],
             battery_options=settings['battery'],
-            input_var=settings['input_var']
+            input_var=settings['input_var'],
+            check_soh_every=self.n_repeat_action
         )
 
         # Save the initialization bounds for environment parameters from which we will sample at reset time
@@ -56,7 +61,6 @@ class MicroGridEnv(Env):
         self.timeframe = 0
         self.elapsed_time = 0
         self.iterations = 0
-        self._env_step = settings['step']
         self.termination = settings['termination']
         self.termination['max_iterations'] = len(self.generation) - 1 if self.termination['max_iterations'] is None else self.termination['max_iterations']
 
@@ -301,12 +305,13 @@ class MicroGridEnv(Env):
         # Current ambient temperature
         idx = self.temp_amb.get_idx_from_times(time=self.timeframe)
         _, _, t_amb = self.temp_amb[idx]        
-                
+
         # Step of the battery model and update of internal state
         '''Qui fare for per chiamare D.T. su un dt piu piccolo e poi chiamare self._battery.get_i()'''
-        # for dtpiccolo:
-        self._battery.step(load=to_load, dt=self._env_step, k=self.iterations, t_amb=t_amb)
-        self._battery.t_series.append(self.elapsed_time)
+        for i in range(self.n_repeat_action):
+            self._battery.step(load=to_load, dt=self._DT_step, k=self.iterations*self.n_repeat_action+i, t_amb=t_amb)
+            self._battery.t_series.append(self.elapsed_time +i*self._DT_step)
+
         self.elapsed_time += self._env_step
         self.iterations += 1
                                 

@@ -37,7 +37,7 @@ components:
 
   # Choose between rainflow or streamflow
   cycle_counting_mode: streamflow
-  #compute_every: 1314390
+  # compute_every: 1314390
 
 stress_models:
   time:
