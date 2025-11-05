@@ -6,7 +6,7 @@ python launch_env.py \
     --save_results_as "ppo_rse" \
     --gamma 0.99 \
     --n_episodes 1 \
-    --policy_network "[64,32]" \
+    --policy_network 64 32 \
     --log_std_init -1 \
     --batch_size 256 \
     --n_steps 4096 \

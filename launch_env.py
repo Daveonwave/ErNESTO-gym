@@ -3,7 +3,7 @@ from joblib import Parallel, delayed
 
 from stable_baselines3.common.env_util import make_vec_env
 from ernestogym.envs.single_agent.utils import parameter_generator
-from ernestogym.algorithms.single_agent.ppo import train_ppo, eval_ppo
+from ernestogym.algorithms.single_agent.ppo_new import train_ppo, eval_ppo
 from ernestogym.algorithms.single_agent.a2c import train_a2c, eval_a2c
 from ernestogym.algorithms.single_agent.sac import train_sac, eval_sac
 from ernestogym.algorithms.single_agent.baselines import run_baseline
@@ -49,7 +49,7 @@ def get_args():
     
     # RL algorithms hyperparameters
     parser.add_argument("--learning_rate", action='store', type=float, default=0.00005)
-    parser.add_argument("--policy_network", action='store', type=list, default=[64, 32])
+    parser.add_argument("--policy_network", nargs="+", type=int, default=[64, 32])
     parser.add_argument("--log_std_init", action='store', type=float, default=-1)
     parser.add_argument("--batch_size", action='store', type=int, default=256)
     parser.add_argument("--n_steps", action='store', type=int, default=4096)

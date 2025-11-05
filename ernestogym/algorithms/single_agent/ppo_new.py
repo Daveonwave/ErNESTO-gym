@@ -63,9 +63,11 @@ class RewardLoggerCallback(BaseCallback):
     
     def _on_step(self) -> bool:
         info = self.locals["infos"][0]  # SB3 returns list of infos
-        self.logger.record("custom/reward_trading", info["pure_rewards"]["r_trad"])
-        self.logger.record("custom/reward_degradation", info["pure_rewards"]["r_deg"])
-        self.logger.record("custom/reward_clipping", info["pure_rewards"]["r_clip"])
+        if "pure_reward_list" in info:
+            pr = info["pure_reward_list"]
+            self.logger.record("custom/reward_trading", pr['r_trad'][-1])
+            self.logger.record("custom/reward_degradation", pr['r_deg'][-1])
+            self.logger.record("custom/reward_clipping", pr['r_clip'][-1])
         return True
 
 
@@ -131,7 +133,7 @@ def train_ppo(envs, args, eval_env_params, model_file=None):
         model.set_env(envs)
         print('Loaded model from: {}'.format(model_file))
 
-    model.learn(total_timesteps=len(envs.get_attr("max_termination")[0]['max_iterations']) * args['n_envs'] * args['n_episodes'],
+    model.learn(total_timesteps=envs.get_attr("termination")[0]['max_iterations'] * args['n_envs'] * args['n_episodes'],
                 progress_bar=True,
                 log_interval=args['log_rate'],
                 tb_log_name="ppo_{}".format(args['exp_name']),
