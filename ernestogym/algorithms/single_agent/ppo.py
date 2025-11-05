@@ -1,137 +1,83 @@
 import os
 import json
-import itertools
 from tqdm import tqdm
 from typing import Callable
-import numpy as np
 
 from ernestogym.envs.single_agent.env import MicroGridEnv
 from ernestogym.envs.single_agent.env_phydriven import MicroGridEnvPhyDriven
-
-from gymnasium import Wrapper
-from stable_baselines3.common.vec_env import VecNormalize, DummyVecEnv
 from stable_baselines3 import PPO
-from stable_baselines3.common.monitor import Monitor
 from stable_baselines3.ppo import MlpPolicy
 from stable_baselines3.common.callbacks import CheckpointCallback, StopTrainingOnMaxEpisodes, EvalCallback
 from stable_baselines3.common.callbacks import BaseCallback
 from stable_baselines3.common.logger import TensorBoardOutputFormat
-import math
 import time
 
-
-def cosine_schedule(initial_lr, total_timesteps):
+def linear_schedule(initial_value: float) -> Callable[[float], float]:
     """
-    Returns a cosine annealing learning rate schedule function.
-    The LR will start at `initial_lr` and decay to 0 using cosine annealing.
+    Linear learning rate schedule.
+
+    :param initial_value: Initial learning rate.
+    :return: schedule that computes
+      current learning rate depending on remaining progress
     """
-    def schedule(progress_remaining):
-        # SB3 passes progress_remaining from 1.0 (start) to 0.0 (end)
-        current_step = (1.0 - progress_remaining) * total_timesteps
-        lr = initial_lr * 0.5 * (1 + math.cos(math.pi * current_step / total_timesteps))
-        return lr
+    def func(progress_remaining: float) -> float:
+        """
+        Progress will decrease from 1 (beginning) to 0.
 
-    return schedule
+        :param progress_remaining:
+        :return: current learning rate
+        """
+        return progress_remaining * initial_value
 
+    return func
 
-class ProfileInjectionEvalEnv(Wrapper):
-    def __init__(self, env, demand_profiles, mode="cycle"):
-        super().__init__(env)
-        self.demand_profiles = demand_profiles
-        self.mode = mode
-        if mode == "cycle":
-            self.profile_iterator = itertools.cycle(demand_profiles)
-
-    def reset(self, **kwargs):
-        # Select a profile
-        if self.mode == "cycle":
-            profile = next(self.profile_iterator)
-        elif self.mode == "random":
-            profile = np.random.choice(self.demand_profiles)
-        else:
-            raise ValueError(f"Unknown mode: {self.mode}")
-
-        # Inject it via the options dict
-        options = kwargs.pop("options", {})
-        options["eval_profile"] = profile
-        return self.env.reset(options=options, **kwargs)
-
-
-class RewardLoggerCallback(BaseCallback):
-    def __init__(self, verbose=0):
-        super().__init__(verbose)
-    
-    def _on_step(self) -> bool:
-        info = self.locals["infos"][0]  # SB3 returns list of infos
-        self.logger.record("custom/reward_trading", info["pure_rewards"]["r_trad"])
-        self.logger.record("custom/reward_degradation", info["pure_rewards"]["r_deg"])
-        self.logger.record("custom/reward_clipping", info["pure_rewards"]["r_clip"])
-        return True
 
 
 def train_ppo(envs, args, eval_env_params, model_file=None):
     print("######## PPO is running... ########")
     
-    envs = VecNormalize(envs, norm_obs=True, norm_reward=False)
-    
     logdir = "./logs/" + args['exp_name']
     os.makedirs(logdir, exist_ok=True)
     model_folder = "./logs/{}/models/".format(args['exp_name'])
     
-    callback_max_episodes = StopTrainingOnMaxEpisodes(max_episodes=args['n_episodes'], verbose=1)
-    callback_reward = RewardLoggerCallback()
-    
-    # Wrap the raw eval env in DummyVecEnv, then VecNormalize
-    def make_eval_env():
-        base_env = lambda: ProfileInjectionEvalEnv(
-            env=Monitor(MicroGridEnv(settings=eval_env_params)),
-            demand_profiles=[str(i) for i in range(370, 380)],
-            mode="cycle"
+    # Save a checkpoint every 1000 steps
+    checkpoint_callback = CheckpointCallback(
+        save_freq=35000*5,
+        save_path="./logs/{}/models/".format(args['exp_name']),
+        name_prefix="ppo",
+        save_replay_buffer=True,
+        save_vecnormalize=True
         )
-        return VecNormalize(DummyVecEnv([base_env]), training=False, norm_obs=True, norm_reward=True)
     
-    eval_env = make_eval_env()
-    eval_env.obs_rms = envs.obs_rms  # Sync normalization stats
-    eval_env.ret_rms = envs.ret_rms  # (Optional) sync returns normalization
-    eval_env.training = False        # Ensure no stats update during eval
-    eval_env.norm_reward = False     # Often preferred during evaluation
+    callback_max_episodes = StopTrainingOnMaxEpisodes(max_episodes=args['n_episodes'], verbose=1)
     
+    eval_env = MicroGridEnv(settings=eval_env_params)
     eval_callback = EvalCallback(eval_env, 
                                  best_model_save_path="./logs/{}/models/eval/".format(args['exp_name']),
-                                 log_path="./logs/{}/".format(args['exp_name']), 
-                                 eval_freq=8760*4,
-                                 n_eval_episodes=10,
+                                 log_path="./logs/", 
+                                 eval_freq=8760*5,
+                                 n_eval_episodes=3,
                                  deterministic=True, 
                                  render=False)
-    
-    callbacks = [callback_max_episodes, eval_callback, callback_reward]
-    
+    #stop_train_callback = StopTrainingOnNoModelImprovement(max_no_improvement_evals=3, min_evals=5, verbose=1)
+    callbacks = [callback_max_episodes,]# eval_callback] # stop_train_callback]
+
     if model_file is None:
+        model = PPO(policy=MlpPolicy, 
+                    env=envs, 
+                    verbose=args['verbose'], 
+                    gamma=args['gamma'], 
+                    tensorboard_log="./logs/tensorboard/ppo/{}".format(args['exp_name']),
+                    ent_coef=0.01,
+                    stats_window_size=1,
+                    learning_rate=args['learning_rate']
+                    )
+    else:
         model = PPO.load(path=model_folder + model_file, env=envs)
         model.set_env(envs)
         print('Loaded model from: {}'.format(model_file))
-    else:
-        model = PPO("MlpPolicy", 
-                    env=envs, 
-                    gamma=args['gamma'], 
-                    policy_kwargs=dict(net_arch=args['policy_network'], log_std_init=args['log_std_init']),
-                    batch_size=args['batch_size'],
-                    n_steps=args['n_steps'],
-                    n_epochs=args['n_epochs'],
-                    gae_lambda=args['gae_lambda'],
-                    clip_range=args['clip_range'],
-                    ent_coef=args['ent_coef'],
-                    vf_coef=args['vf_coef'],
-                    max_grad_norm=args['max_grad_norm'],
-                    tensorboard_log="./logs/tensorboard/ppo/".format(args['exp_name']),
-                    #stats_window_size=1,
-                    learning_rate=cosine_schedule(args['learning_rate'], envs.get_attr("termination")[0]['max_iteration'] * args['n_envs'] * args['n_episodes']),
-                    verbose=args['verbose']
-                    )
-        model.set_env(envs)
-        print('Loaded model from: {}'.format(model_file))
 
-    model.learn(total_timesteps=len(envs.get_attr("max_termination")[0]['max_iteration']) * args['n_envs'] * args['n_episodes'],
+    model.learn(total_timesteps=len(envs.get_attr("generation")[0]) * args['n_envs'] * args['n_episodes'],
                 progress_bar=True,
                 log_interval=args['log_rate'],
                 tb_log_name="ppo_{}".format(args['exp_name']),
@@ -140,7 +86,9 @@ def train_ppo(envs, args, eval_env_params, model_file=None):
                 )
         
     model.save("./logs/{}/models/{}".format(args['exp_name'], args['save_model_as']))
+        
     print("######## TRAINING is Done ########")
+    del model
     
     
 def eval_ppo(env_params, args, test_profile, model_file=""):
