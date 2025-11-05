@@ -12,8 +12,6 @@ from ernestogym.ernesto import PVGenerator, EnergyDemand, EnergyMarket, DummyGen
 
 
 class MicroGridEnv(Env):
-    """
-    """
     SECONDS_PER_MINUTE = 60
     SECONDS_PER_HOUR = 60 * 60
     SECONDS_PER_DAY = 60 * 60 * 24
@@ -23,13 +21,19 @@ class MicroGridEnv(Env):
                  settings: dict[str, Any],
                  ):
         """
+        Initialize the MicroGrid environment.
 
-        """
+        This method sets up the environment, including the battery system, exogenous variables, 
+        observation and action spaces, and reward coefficients.
+
+        Args:
+            settings (dict[str, Any]): A dictionary containing configuration settings for the environment.
+        """        
         metadata = {"render_modes": None}
-
+        
         self._env_step = settings['step']
         self._DT_step = settings['step_model']
-        self.n_repeat_action = self._env_step//self._DT_step
+        self.n_repeat_action = self._env_step // self._DT_step
 
         # Build the battery object
         self._battery = BatteryEnergyStorageSystem(
@@ -63,7 +67,7 @@ class MicroGridEnv(Env):
         self.iterations = 0
         self.termination = settings['termination']
         self.termination['max_iterations'] = len(self.generation) - 1 if self.termination['max_iterations'] is None else self.termination['max_iterations']
-
+        
         # Reward coefficients
         self._trading_coeff = settings['reward']['trading_coeff'] if 'trading_coeff' in settings['reward'] else 0
         self._op_cost_coeff = settings['reward']['operational_cost_coeff'] if 'operational_cost_coeff' in settings['reward'] else 0
@@ -191,7 +195,7 @@ class MicroGridEnv(Env):
 
                 case _:
                     raise KeyError(f'Unknown observation variable: {key}')
-
+        
         return obs
 
     def _get_info(self):
@@ -287,7 +291,7 @@ class MicroGridEnv(Env):
 
         # Retrieve the actual amount of demand, generation and market
         obs_pre_step, info_pre_step = self._get_obs(), self._get_info()
-
+        
         self.timeframe += self._env_step
 
         # Compute the fraction of energy to store/use and the fraction to sell/buy

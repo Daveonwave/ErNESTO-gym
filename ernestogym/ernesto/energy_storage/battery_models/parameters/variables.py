@@ -1,6 +1,7 @@
 from typing import Union
 
 import numpy as np
+from functools import lru_cache
 from scipy.interpolate import interp1d, LinearNDInterpolator, NearestNDInterpolator
 from ernestogym.ernesto.energy_storage.preprocessing.utils import _validate_data_unit
 import pandas as pd
@@ -84,11 +85,23 @@ class ParametricFunction(GenericVariable):
             degrees = [deg for deg in range(len(self.coefficients[j]))]
 
 
+class FittedFunction(GenericVariable):
+    """
+
+    """
+
+    def __init__(self, name: str, x_names: list, model_name):
+        super().__init__(name)
+        self._model = scikit_learn_model_loader(model_name)
+
+    def get_value(self, **params):
+        return self._model.predict(params)
+
+
 class LookupTableFunction(GenericVariable):
     """
 
     """
-
     def __init__(self, name: str, y_values: list, x_names: list, x_values: list):
         super().__init__(name)
         self.y_values = y_values
@@ -109,7 +122,7 @@ class LookupTableFunction(GenericVariable):
                                                           y=np.array(self.y_values, dtype=np.float32))
         else:
             raise Exception("Too many variables to interpolate, not implemented yet!")
-
+    
     def get_value(self, input_vars: dict):
         """
         Retrieve the result of the interpolation function from the lookup table.

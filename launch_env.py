@@ -7,6 +7,7 @@ from ernestogym.algorithms.single_agent.ppo import train_ppo, eval_ppo
 from ernestogym.algorithms.single_agent.a2c import train_a2c, eval_a2c
 from ernestogym.algorithms.single_agent.sac import train_sac, eval_sac
 from ernestogym.algorithms.single_agent.baselines import run_baseline
+import cProfile, pstats, functools
 
 
 algo_choices = ['ppo', 'a2c', 'sac', 'random', 'only_market', 'battery_first', '20-80', '50-50', '80-20', 'all_baselines']
@@ -21,7 +22,6 @@ def get_args():
     parser.add_argument("--n_envs", action="store", type=int, default=1)
     parser.add_argument("--n_episodes", action="store", type=int, default=1)
     parser.add_argument("--gamma", action="store", type=float, default=0.99)
-    parser.add_argument("--learning_rate", action="store", type=float, default=0.0001)
     parser.add_argument("--train", action="store_true")
     parser.add_argument("--test", action="store_true")
     parser.add_argument("--n_cores", action="store", type=int, default=1)
@@ -47,11 +47,23 @@ def get_args():
     parser.add_argument("--random_battery_init", action='store_true')
     parser.add_argument("--random_data_init", action='store_true')
     
+    # RL algorithms hyperparameters
+    parser.add_argument("--learning_rate", action='store', type=float, default=0.00005)
+    parser.add_argument("--policy_network", action='store', type=list, default=[64, 32])
+    parser.add_argument("--log_std_init", action='store', type=float, default=-1)
+    parser.add_argument("--batch_size", action='store', type=int, default=256)
+    parser.add_argument("--n_steps", action='store', type=int, default=4096)
+    parser.add_argument("--n_epochs", action='store', type=int, default=10)
+    parser.add_argument("--clip_range", action='store', type=float, default=0.2)
+    parser.add_argument("--gae_lambda", action='store', type=float, default=0.95)
+    parser.add_argument("--ent_coef", action='store', type=float, default=0.0)
+    parser.add_argument("--vf_coef", action='store', type=float, default=0.5)
+    parser.add_argument("--max_grad_norm", action='store', type=float, default=0.5)
+    
     # Reward coefficients and normalization
     parser.add_argument("--weight_trading", action='store', type=float, default=1)
-    parser.add_argument("--weight_operational_cost", action='store', type=float, default=1)
-    parser.add_argument("--weight_degradation", action='store', type=float, default=0)
-    parser.add_argument("--weight_clipping", action='store', type=float, default=1)
+    parser.add_argument("--weight_degradation", action='store', type=float, default=1)
+    parser.add_argument("--weight_clipping", action='store', type=float, default=0.1)
     parser.add_argument("--use_reward_normalization", action='store_true')
     
     # Utils
@@ -63,10 +75,13 @@ def get_args():
 
 if __name__ == '__main__':
     
+    # Profiler setup
+    # profiler = cProfile.Profile()
+    # profiler.enable()
+    
     args = get_args()
     
     weights = {"trading_coeff": args['weight_trading'], 
-               "operational_cost_coeff": args['weight_operational_cost'], 
                "degradation_coeff": args['weight_degradation'], 
                "clip_action_coeff": args['weight_clipping']
                }
@@ -116,3 +131,8 @@ if __name__ == '__main__':
         test_profiles = [str(i) for i in range(370, 398)]
         n_cores = len(test_profiles) if args['n_cores'] >= len(test_profiles) else args['n_cores']
         Parallel(n_jobs=n_cores)(delayed(eval_func)(params, args, test, args['load_model']) for test in test_profiles)    
+        
+    # Profiler teardown
+    # profiler.disable()
+    # stats = pstats.Stats(profiler).sort_stats('cumulative')
+    # stats.dump_stats('microgrid.prof')
