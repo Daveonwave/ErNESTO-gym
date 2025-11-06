@@ -8,7 +8,8 @@ from ernestogym.algorithms.single_agent.a2c import train_a2c, eval_a2c
 from ernestogym.algorithms.single_agent.sac import train_sac, eval_sac
 from ernestogym.algorithms.single_agent.baselines import run_baseline
 import cProfile, pstats, functools
-
+from warnings import filterwarnings
+filterwarnings(action='ignore')
 
 algo_choices = ['ppo', 'a2c', 'sac', 'random', 'only_market', 'battery_first', '20-80', '50-50', '80-20', 'all_baselines']
 
