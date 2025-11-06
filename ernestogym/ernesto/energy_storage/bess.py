@@ -1,3 +1,4 @@
+import numpy as np
 from .battery_models import *
 
 
@@ -171,33 +172,38 @@ class BatteryEnergyStorageSystem:
                                      soh=init_info['soh'])
             model.init_model(**init_info)
 
-    def repeat_el_step(self, v_old: float, soc_old: float, load: float, dt: float, k: int, t_amb: float = None):
-        i = load / v_old
+    def repeat_el_step(self, v_old: float, soc_old: float, p_load: float, dt: float, v_rc_old: float = None):
+        """
+        Iterative update of the battery voltage and soc at a higher frequency to ensure alignment.
+
+        Args:
+            v_old (float): old value of V
+            soc_old (float): old value of SOC
+            load (float): power load
+            dt (float): delta time
+            v_rc_old (float): old value of V_rc
+        """
+        i = p_load / v_old
         r0 = self._electrical_model.r0.resistance
         r1 = self._electrical_model.rc.resistance
         c = self._electrical_model.rc.capacity
         v_ocv = self._electrical_model.ocv_gen.ocv_potential
+        v_rc_old = self._electrical_model.rc.get_v_series(-1)
+        
         if self._sign_convention == 'passive':
             i = -i
 
         # Compute V_r0 and V_rc
         v_r0 = i * r0
-        v_rc = (v_old/ dt + i / c) / (1/dt + 1 / (c*r1))
+        v_rc = (v_rc_old/ dt + i / c) / (1/dt + 1 / (c*r1))
         
         # Compute V
         v = v_ocv - v_r0 - v_rc
 
         # Compute soc
         soc = soc_old + i / (self._c_max * 3600) * dt
-        
-        # Crop soc
-        if soc < 0:
-            soc = 0
-
-        if soc > 1:
-            soc = 1
-
-        return v, soc
+        soc = np.clip(soc, 0, 1)
+        return v, soc, v_rc
 
     def step(self, load: float, dt_RL: float, dt_DT: float, k: int, n_iter_el: int, t_amb: float = None):
         """
@@ -207,14 +213,16 @@ class BatteryEnergyStorageSystem:
             dt ():
             k ():
         """
-        '''Mettere for'''
         v = self.get_v()
         soc = self.soc_series[-1]
-        for it in range(n_iter_el-1):
-            v, soc = self.repeat_el_step(v_old=v, soc_old=soc, load=load, dt=dt_DT, k=k, t_amb = t_amb)
+        v_rc_old = None
+        
+        for _ in range(n_iter_el-1):
+            v, soc, v_rc_old = self.repeat_el_step(v_old=v, soc_old=soc, p_load=load, dt=dt_DT, v_rc_old=v_rc_old)
             self._electrical_model.load_battery_state(temp=t_amb, soc=soc, soh=self.soh_series[-1])
-
-        v, i, soc = self._step_electrical(load=load, dt=dt_RL)
+        
+        # TODO: QUI HO MODIFICATO PERCHE' BISOGNA PASSARE ULTIMO CALCOLATO, NON QUELLO DEL PRECEDENTE dt_RL
+        v, i, soc = self._step_electrical(load=load, dt=dt_DT, **{'v_old': v, 'v_rc_old': v_rc_old})
         self.soc_series.append(soc)
         
         # Thermal model step if present
@@ -241,7 +249,7 @@ class BatteryEnergyStorageSystem:
         if self._reset_soc_every is not None and k % self._reset_soc_every == 0:
             self.soc_series[-1] = self._soc_model.reset_soc(v=v, v_max=self.v_max, v_min=self.v_min)
 
-    def _step_electrical(self, load: float, dt: float):
+    def _step_electrical(self, load: float, dt: float, **kwargs):
         """
         Perform a step of the electrical model of the battery.
 
@@ -256,13 +264,13 @@ class BatteryEnergyStorageSystem:
             Exception: if the provided battery simulation mode doesn't exist or is just not implemented.
         """
         if self._load_var == 'current':
-            v, _ = self._electrical_model.step_current_driven(i_load=load, dt=dt, k=-1)
+            v, _ = self._electrical_model.step_current_driven(i_load=load, dt=dt, k=-1, **kwargs)
             i = load
         elif self._load_var == 'voltage':
-            _, i = self._electrical_model.step_voltage_driven(v_load=load, dt=dt, k=-1)
+            _, i = self._electrical_model.step_voltage_driven(v_load=load, dt=dt, k=-1, **kwargs)
             v = load
         elif self._load_var == 'power':
-            v, i = self._electrical_model.step_power_driven(p_load=load, dt=dt, k=-1)
+            v, i = self._electrical_model.step_power_driven(p_load=load, dt=dt, k=-1, **kwargs)
         else:
             raise Exception("The provided battery simulation mode {} doesn't exist or is just not implemented!"
                             "Choose among the provided ones: Voltage, Current or Power.".format(self._load_var))

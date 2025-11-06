@@ -37,8 +37,7 @@ class EnergyDemand:
 
     @profile.setter
     def profile(self, profile_id: str):
-        assert str(profile_id) in self.labels, \
-            "'profile_id' of demand must be a label within the columns of the dataframe."
+        assert profile_id in self.labels, "'profile_id' of demand must be a label within the columns of the dataframe."
         self._current_profile = profile_id
 
     def __len__(self):

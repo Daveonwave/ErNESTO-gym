@@ -1,6 +1,6 @@
 python launch_env.py \
     --algo ppo \
-    --n_envs 8 \
+    --n_envs 1 \
     --exp_name "PPO_experiment" \
     --spread_factor 1 \
     --save_results_as "ppo_rse" \
@@ -18,8 +18,11 @@ python launch_env.py \
     --max_grad_norm 0.5 \
     --learning_rate 0.00005 \
     --log_rate 5 \
+    --eval_freq 8760 \
+    --n_eval_episodes 1 \
     --world_settings ernestogym/envs/single_agent/ijcnn_deg_train_cell.yaml \
     --electrical_model ernestogym/ernesto/data/battery/models/electrical/thevenin_cell.yaml \
     --thermal_model ernestogym/ernesto/data/battery/models/thermal/r2c_thermal_cell.yaml\
     --aging_model ernestogym/ernesto/data/battery/models/aging/bolun_cell.yaml \
+    --eval_world_settings ernestogym/envs/single_agent/ijcnn_deg_test_cell.yaml \
     --train

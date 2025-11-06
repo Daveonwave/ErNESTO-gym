@@ -81,7 +81,7 @@ class TheveninModel(ElectricalModel):
         # self.r0.soc(value=soc) -> I'll probably need to do this one day
         # self.rc.soc(value=soc)
 
-    def step_voltage_driven(self, v_load, dt, k):
+    def step_voltage_driven(self, v_load, dt, k, **kwargs):
         """
         CV mode
         """
@@ -90,9 +90,10 @@ class TheveninModel(ElectricalModel):
         r1 = self.rc.resistance
         c = self.rc.capacity
         v_ocv = self.ocv_gen.ocv_potential
+        v_rc_ = kwargs.get('v_rc_old', self.rc.get_v_series(k=k))
 
         # Compute V_c with finite difference method
-        term_1 = self.rc.get_v_series(k=-1) / dt
+        term_1 = v_rc_ / dt
         term_2 = (v_ocv - v_load) / (r0 * c)
         denominator = 1/dt + 1/(r0 * c) + 1/(r1 * c)
 
@@ -122,7 +123,7 @@ class TheveninModel(ElectricalModel):
 
         return v_load, i
 
-    def step_current_driven(self, i_load, dt, k, p_load=None):
+    def step_current_driven(self, i_load, dt, k, p_load=None, **kwargs):
         """
         CC mode
         """
@@ -131,13 +132,14 @@ class TheveninModel(ElectricalModel):
         r1 = self.rc.resistance
         c = self.rc.capacity
         v_ocv = self.ocv_gen.ocv_potential
+        v_rc_ = kwargs.get('v_rc_old', self.rc.get_v_series(k=k))
 
         if self._sign_convention == 'passive':
             i_load = -i_load
 
         # Compute V_r0 and V_rc
         v_r0 = self.r0.compute_v(i=i_load)
-        v_rc = (self.rc.get_v_series(k=-1) / dt + i_load / c) / (1/dt + 1 / (c*r1))
+        v_rc = (v_rc_ / dt + i_load / c) / (1/dt + 1 / (c*r1))
 
         # Compute V
         v = v_ocv - v_r0 - v_rc
@@ -167,14 +169,16 @@ class TheveninModel(ElectricalModel):
 
         return v, i_load
 
-    def step_power_driven(self, p_load, dt, k):
+    def step_power_driven(self, p_load, dt, k, **kwargs):
         """
         CP mode: to simplify the power driven case, we pose I = P / V(t-1), having a little shift in computed data
         """
+        v_ = kwargs.get('v_old', self._v_load_series[-1])
+        
         if self._sign_convention == 'passive':
-            return self.step_current_driven(i_load=p_load / self._v_load_series[-1], dt=dt, k=k, p_load=p_load)
+            return self.step_current_driven(i_load=p_load / v_, dt=dt, k=k, p_load=p_load, **kwargs)
         else:
-            return self.step_current_driven(i_load=p_load / self._v_load_series[-1], dt=dt, k=k, p_load=p_load)
+            return self.step_current_driven(i_load=p_load / v_, dt=dt, k=k, p_load=-p_load, **kwargs)
 
     def compute_generated_heat(self, k=-1):
         """

@@ -5,7 +5,7 @@ from tqdm import tqdm
 from typing import Callable
 import numpy as np
 
-from ernestogym.envs.single_agent.env import MicroGridEnv
+from ernestogym.envs.single_agent.env_new import MicroGridEnv
 from ernestogym.envs.single_agent.env_phydriven import MicroGridEnvPhyDriven
 
 from gymnasium import Wrapper
@@ -72,8 +72,7 @@ class RewardLoggerCallback(BaseCallback):
 
 
 def train_ppo(envs, args, eval_env_params, model_file=None):
-    print("######## PPO is running... ########")
-    
+    print("######## PPO is running... ########") 
     envs = VecNormalize(envs, norm_obs=True, norm_reward=False)
     
     logdir = "./logs/" + args['exp_name']
@@ -101,8 +100,8 @@ def train_ppo(envs, args, eval_env_params, model_file=None):
     eval_callback = EvalCallback(eval_env, 
                                  best_model_save_path="./logs/{}/models/eval/".format(args['exp_name']),
                                  log_path="./logs/{}/".format(args['exp_name']), 
-                                 eval_freq=8760*4,
-                                 n_eval_episodes=10,
+                                 eval_freq=args['eval_freq'],
+                                 n_eval_episodes=args['n_eval_episodes'],
                                  deterministic=True, 
                                  render=False)
     
@@ -131,7 +130,6 @@ def train_ppo(envs, args, eval_env_params, model_file=None):
                     verbose=args['verbose']
                     )
         model.set_env(envs)
-        print('Loaded model from: {}'.format(model_file))
 
     model.learn(total_timesteps=envs.get_attr("termination")[0]['max_iterations'] * args['n_envs'] * args['n_episodes'],
                 progress_bar=True,

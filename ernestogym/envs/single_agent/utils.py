@@ -100,22 +100,6 @@ def parameter_generator(battery_options: str = BATTERY_OPTIONS,
     params['random_battery_init'] = random_battery_init if random_battery_init is not None else world_settings['random_battery_init']
     params['random_data_init'] = random_data_init if random_data_init is not None else world_settings['random_data_init']
 
-    # Aging settings
-    params['aging_options'] = {'degradation': use_degradation if use_degradation is not None else world_settings['aging_options']['degradation'],
-                               'fading': use_fading if use_fading is not None else world_settings['aging_options']['fading']}
-
-    assert not (params['aging_options']['degradation'] and params['aging_options']['fading']), \
-        ("Degradation model and fading model cannot be used together (at the moment) since they depend on different "
-         "variables.")
-
-    if params['aging_options']['fading']:
-        assert models_config[0]['use_fading'], ("The selected electrical model ({}) doesn't support parameter fading."
-                                                .format(models_config[0]['class_name']))
-    if params['aging_options']['degradation']:
-        assert not models_config[0]['use_fading'], ("The selected electrical model is not compatible with the aging "
-                                                    "model since it implements fading mechanisms.")
-        models_config.append(read_yaml(aging_model, yaml_type='model', bypass_check=bypass_yaml_schema))
-
     # Reward settings
     params['reward'] = reward_coeff if reward_coeff is not None else world_settings['reward']
     params['use_reward_normalization'] = use_reward_normalization if use_reward_normalization is not None else world_settings['use_reward_normalization']

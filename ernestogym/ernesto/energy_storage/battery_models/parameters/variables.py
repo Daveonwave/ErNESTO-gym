@@ -85,17 +85,17 @@ class ParametricFunction(GenericVariable):
             degrees = [deg for deg in range(len(self.coefficients[j]))]
 
 
-class FittedFunction(GenericVariable):
-    """
+# class FittedFunction(GenericVariable):
+#     """
 
-    """
+#     """
 
-    def __init__(self, name: str, x_names: list, model_name):
-        super().__init__(name)
-        self._model = scikit_learn_model_loader(model_name)
+#     def __init__(self, name: str, x_names: list, model_name):
+#         super().__init__(name)
+#         self._model = scikit_learn_model_loader(model_name)
 
-    def get_value(self, **params):
-        return self._model.predict(params)
+#     def get_value(self, **params):
+#         return self._model.predict(params)
 
 
 class LookupTableFunction(GenericVariable):

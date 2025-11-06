@@ -25,7 +25,7 @@ def get_args():
     parser.add_argument("--train", action="store_true")
     parser.add_argument("--test", action="store_true")
     parser.add_argument("--n_cores", action="store", type=int, default=1)
-    parser.add_argument("--load_model", action="store", type=str, default='')
+    parser.add_argument("--load_model", action="store", type=str, default=None)
     parser.add_argument("--save_model_as", action="store", type=str, default='')
     parser.add_argument("--save_results_as", action="store", type=str, default='')
     parser.add_argument("--spread_factor", action="store", type=float, default=1)
@@ -40,6 +40,8 @@ def get_args():
     parser.add_argument("--aging_model", action="store", default="ernestogym/ernesto/data/battery/models/aging/bolun_pack.yaml",
                         type=str, help="")
     parser.add_argument("--world_settings", action="store", default="ernestogym/envs/single_agent/world_fading.yaml",
+                        type=str, help="")
+    parser.add_argument("--eval_world_settings", action="store", default="ernestogym/envs/single_agent/world_fading.yaml",
                         type=str, help="")
     
     parser.add_argument("--step", action='store', type=int)
@@ -59,6 +61,10 @@ def get_args():
     parser.add_argument("--ent_coef", action='store', type=float, default=0.0)
     parser.add_argument("--vf_coef", action='store', type=float, default=0.5)
     parser.add_argument("--max_grad_norm", action='store', type=float, default=0.5)
+    
+    # Evaluation arguments
+    parser.add_argument("--eval_freq", action='store', type=int, default=8760)
+    parser.add_argument("--n_eval_episodes", action='store', type=int, default=10)
     
     # Reward coefficients and normalization
     parser.add_argument("--weight_trading", action='store', type=float, default=1)
@@ -86,22 +92,26 @@ if __name__ == '__main__':
                "clip_action_coeff": args['weight_clipping']
                }
     
-    params = parameter_generator(battery_options=args['battery_options'],
+    params = parameter_generator(world_options=args['world_settings'],
+                                 battery_options=args['battery_options'],
                                  electrical_model=args['electrical_model'],
                                  thermal_model=args['thermal_model'],
                                  aging_model=args['aging_model'],
-                                 world_options=args['world_settings'],
                                  use_reward_normalization=True,
                                  reward_coeff=weights,
                                  spread_factor=args['spread_factor'],
                                  replacement_cost=args['replacement_cost'] if 'replacement_cost' in args else None,
                                  )
     
+    eval_params = parameter_generator(world_options=args['eval_world_settings'],
+                                      min_soh=0.6,
+                                      use_reward_normalization=False)
+    
     if args['train']:  
         if args['algo'][0] == 'ppo':   
-            envs = make_vec_env("ernestogym/micro_grid-v0", n_envs=args["n_envs"], env_kwargs={'settings':params})
-            train_ppo(envs, args, params, model_file=args['load_model'] if args['load_model'] else None)
-            
+            envs = make_vec_env("ernestogym/micro_grid-v1", n_envs=args["n_envs"], env_kwargs={'settings':params})
+            train_ppo(envs, args, eval_env_params=eval_params, model_file=args['load_model'] if args['load_model'] else None)
+           
         elif args["algo"][0] == 'a2c':
             envs = make_vec_env("ernestogym/micro_grid-v0", n_envs=args["n_envs"], env_kwargs={'settings':params})
             train_a2c(envs, args, model_file=args['load_model'] if args['load_model'] else None)
