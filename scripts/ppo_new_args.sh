@@ -1,11 +1,11 @@
 python launch_env.py \
     --algo ppo \
-    --n_envs 60 \
+    --n_envs 30 \
     --exp_name "PPO_experiment" \
     --spread_factor 1 \
     --save_results_as "ppo_rse" \
     --gamma 0.99 \
-    --n_episodes 7 \
+    --n_episodes 20 \
     --policy_network 64 32 \
     --log_std_init -1 \
     --batch_size 256 \

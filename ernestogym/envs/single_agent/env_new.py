@@ -31,6 +31,7 @@ class MicroGridEnv(Env):
             settings (dict[str, Any]): A dictionary containing configuration settings for the environment.
         """        
         metadata = {"render_modes": [None]}
+        print('++++++ INITIALIZING ENV +++++++')
         
         self._env_step = settings['step']
         self._DT_step = settings['step_model']

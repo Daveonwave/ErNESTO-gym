@@ -1,3 +1,7 @@
+import os
+# Suppress oneDNN and CPU info logs
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'  # 0=all, 1=INFO, 2=INFO+WARNING, 3=INFO+WARNING+ERROR
+os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'  # disables oneDNN optimizations messages
 import argparse
 from joblib import Parallel, delayed
 
@@ -9,6 +13,8 @@ from ernestogym.algorithms.single_agent.sac import train_sac, eval_sac
 from ernestogym.algorithms.single_agent.baselines import run_baseline
 import cProfile, pstats, functools
 from warnings import filterwarnings
+from stable_baselines3.common.vec_env import SubprocVecEnv
+
 filterwarnings(action='ignore')
 
 algo_choices = ['ppo', 'a2c', 'sac', 'random', 'only_market', 'battery_first', '20-80', '50-50', '80-20', 'all_baselines']
@@ -110,7 +116,7 @@ if __name__ == '__main__':
     
     if args['train']:  
         if args['algo'][0] == 'ppo':   
-            envs = make_vec_env("ernestogym/micro_grid-v1", n_envs=args["n_envs"], env_kwargs={'settings':params})
+            envs = make_vec_env("ernestogym/micro_grid-v1", n_envs=args["n_envs"], env_kwargs={'settings':params}, vec_env_cls=SubprocVecEnv)
             train_ppo(envs, args, eval_env_params=eval_params, model_file=args['load_model'] if args['load_model'] else None)
            
         elif args["algo"][0] == 'a2c':
