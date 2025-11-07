@@ -258,10 +258,13 @@ class MicroGridEnv(Env):
         self._trad_norm_term = None
         self.elapsed_time = 0
         self.iterations = 0
-        
+        # self.iseval = False
+        # self.cumulated_reward = 0
+
         # Randomly sample a profile within the dataset
         if options is not None and 'eval_profile' in options:
             self.demand.profile = options['eval_profile']
+            # self.iseval = True
         else:
             self.demand.profile = np.random.choice(self.demand.labels)
             
@@ -362,9 +365,17 @@ class MicroGridEnv(Env):
 
         # Combining reward terms
         reward = sum(self.weighted_rewards.values())
+        # if self.iseval:
+        #     self.cumulated_reward += reward
+        #     idx = self.demand.get_idx_from_times(time=self.timeframe)
+        #     print(self.demand.profile, idx)
+            # print(settings["generation"])
         
         state = np.array(list(self._get_obs().values()), dtype=np.float32)
         info = self._get_info(to_trade=to_trade)
+
+        # if truncated or terminated:
+            # print(self.cumulated_reward)
         
         return state, reward, terminated, truncated, info
 

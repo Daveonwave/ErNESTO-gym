@@ -43,7 +43,7 @@ observations:
   # - energy_level
 
 step: 3600 # in seconds
-step_model: 30 # in seconds
+step_model: 120 # in seconds
 random_battery_init: False # battery state initialization: if True it is randomized between declared bounds
 random_data_init: True # timeseries starting point: if True the timeseries starting point is randomly sampled
 seed: 42 # to sample user's demand profile (also initial data and initial battery state if enabled)

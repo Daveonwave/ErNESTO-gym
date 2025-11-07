@@ -1,7 +1,7 @@
 python launch_env.py \
     --algo ppo \
     --n_envs 10 \
-    --exp_name "Weekly_experiment" \
+    --exp_name "Weekly_experiment_20250711_1" \
     --spread_factor 1 \
     --save_results_as "ppo_rse" \
     --gamma 0.99 \
@@ -19,7 +19,7 @@ python launch_env.py \
     --learning_rate 0.00005 \
     --log_rate 5 \
     --eval_freq 672 \
-    --n_eval_episodes 1 \
+    --n_eval_episodes 10 \
     --seed 11 \
     --world_settings ernestogym/envs/single_agent/ijcnn_deg_train_cell.yaml \
     --electrical_model ernestogym/ernesto/data/battery/models/electrical/thevenin_cell.yaml \
