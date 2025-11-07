@@ -1,7 +1,7 @@
 python launch_env.py \
     --algo ppo \
     --n_envs 10 \
-    --exp_name "PPO_experiment" \
+    --exp_name "Weekly_experiment" \
     --spread_factor 1 \
     --save_results_as "ppo_rse" \
     --gamma 0.99 \

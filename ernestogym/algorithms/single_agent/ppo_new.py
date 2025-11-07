@@ -99,7 +99,7 @@ def train_ppo(envs, args, eval_env_params, model_file=None):
     
     eval_callback = EvalCallback(eval_env, 
                                  best_model_save_path="./logs/{}/models/eval/seed_{}/".format(args['exp_name'],args['seed']),
-                                 log_path="./logs/{}/".format(args['exp_name']), 
+                                 log_path="./logs/{}/seed_{}/".format(args['exp_name'],args['seed']), 
                                  eval_freq=args['eval_freq'],
                                  n_eval_episodes=args['n_eval_episodes'],
                                  deterministic=True, 
@@ -124,7 +124,7 @@ def train_ppo(envs, args, eval_env_params, model_file=None):
                     ent_coef=args['ent_coef'],
                     vf_coef=args['vf_coef'],
                     max_grad_norm=args['max_grad_norm'],
-                    tensorboard_log="./logs/tensorboard/ppo/seed_{}/".format(args['exp_name'],args['seed']),
+                    tensorboard_log="./logs/tensorboard/{}/ppo/".format(args['exp_name']),
                     #stats_window_size=1,
                     learning_rate=cosine_schedule(args['learning_rate'], envs.get_attr("termination")[0]['max_iterations'] * args['n_envs'] * args['n_episodes']),
                     verbose=args['verbose']
@@ -134,12 +134,12 @@ def train_ppo(envs, args, eval_env_params, model_file=None):
     model.learn(total_timesteps=envs.get_attr("termination")[0]['max_iterations'] * args['n_envs'] * args['n_episodes'],
                 progress_bar=True,
                 log_interval=args['log_rate'],
-                tb_log_name="ppo_{}".format(args['exp_name']),
+                tb_log_name="seed_{}".format(args['seed']),
                 callback=callbacks,
                 reset_num_timesteps=True,
                 )
         
-    model.save("./logs/{}/models/{}".format(args['exp_name'], args['save_model_as']))
+    model.save("./logs/{}/{}/models/{}".format(args['exp_name'], args['seed'], args['save_model_as']))
     print("######## TRAINING is Done ########")
     
     
