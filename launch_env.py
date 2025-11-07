@@ -4,7 +4,7 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'  # 0=all, 1=INFO, 2=INFO+WARNING, 3=INF
 os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'  # disables oneDNN optimizations messages
 import argparse
 from joblib import Parallel, delayed
-
+from copy import deepcopy
 from stable_baselines3.common.env_util import make_vec_env
 from ernestogym.envs.single_agent.utils import parameter_generator
 from ernestogym.algorithms.single_agent.ppo_new import train_ppo, eval_ppo
@@ -14,6 +14,8 @@ from ernestogym.algorithms.single_agent.baselines import run_baseline
 import cProfile, pstats, functools
 from warnings import filterwarnings
 from stable_baselines3.common.vec_env import SubprocVecEnv
+import gymnasium as gym
+
 
 filterwarnings(action='ignore')
 
@@ -108,17 +110,28 @@ if __name__ == '__main__':
                                  reward_coeff=weights,
                                  spread_factor=args['spread_factor'],
                                  replacement_cost=args['replacement_cost'] if 'replacement_cost' in args else None,
+                                 seed=args['seed']
                                  )
     
     eval_params = parameter_generator(world_options=args['eval_world_settings'],
                                       min_soh=0.6,
                                       use_reward_normalization=False)
     
+    base_seed = args.get("seed", 42)
+    
+    def make_env(rank):
+        def _init():
+            env_params = deepcopy(params)
+            env_params["seed"] = int(base_seed) + int(rank)
+            return gym.make("ernestogym/micro_grid-v1", settings=env_params)
+        return _init
+ 
     if args['train']:  
         if args['algo'][0] == 'ppo':   
-            envs = make_vec_env("ernestogym/micro_grid-v1", n_envs=args["n_envs"], env_kwargs={'settings':params}, vec_env_cls=SubprocVecEnv)
+            envs = SubprocVecEnv([make_env(i) for i in range(args["n_envs"])])
+            #envs = make_vec_env("ernestogym/micro_grid-v1", n_envs=args["n_envs"], env_kwargs={'settings': params}, vec_env_cls=SubprocVecEnv)
             train_ppo(envs, args, eval_env_params=eval_params, model_file=args['load_model'] if args['load_model'] else None)
-           
+            
         elif args["algo"][0] == 'a2c':
             envs = make_vec_env("ernestogym/micro_grid-v0", n_envs=args["n_envs"], env_kwargs={'settings':params})
             train_a2c(envs, args, model_file=args['load_model'] if args['load_model'] else None)

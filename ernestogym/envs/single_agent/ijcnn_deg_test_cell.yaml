@@ -10,7 +10,7 @@ demand:
   data_usage: "end" # "circular/end"
 
 generation:
-  path: "ernestogym/ernesto/data/generation/pv_ninja_2019-2020_3kW_test_cell.csv"
+  path: "ernestogym/ernesto/data/generation/pv_ninja_2019-2020_3kW_NoLeap_test_cell.csv"
   timestep: 3600 # seconds
   data_usage: "end" # "circular/end"
 
@@ -45,11 +45,11 @@ observations:
 step: 3600 # in seconds
 step_model: 30 # in seconds
 random_battery_init: False # battery state initialization: if True it is randomized between declared bounds
-random_data_init: False # timeseries starting point: if True the timeseries starting point is randomly sampled
+random_data_init: True # timeseries starting point: if True the timeseries starting point is randomly sampled
 seed: 1234 # to sample user's demand profile (also initial data and initial battery state if enabled)
 
 termination:
-  max_iterations: null
+  max_iterations: 168
   min_soh: 0.6
 
 reward:

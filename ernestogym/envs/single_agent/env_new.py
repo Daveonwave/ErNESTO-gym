@@ -15,7 +15,7 @@ class MicroGridEnv(Env):
     SECONDS_PER_MINUTE = 60
     SECONDS_PER_HOUR = 60 * 60
     SECONDS_PER_DAY = 60 * 60 * 24
-    DAYS_PER_YEAR = 365.25
+    DAYS_PER_YEAR = 365
 
     def __init__(self,
                  settings: dict[str, Any],
@@ -45,6 +45,7 @@ class MicroGridEnv(Env):
             check_soh_every=None
         )
 
+
         # Save the initialization bounds for environment parameters from which we will sample at reset time
         self._reset_params = settings['battery']['init']
         self._params_bounds = settings['battery']['bounds']
@@ -52,6 +53,8 @@ class MicroGridEnv(Env):
         self._random_data_init = settings['random_data_init']
         self._seed = settings['seed']
         np.random.seed(self._seed)
+
+        print(f"[INIT] Environment created with seed {self._seed}")
 
         # Collect exogenous variables profiles
         self.demand = EnergyDemand(**settings["demand"])
@@ -193,12 +196,15 @@ class MicroGridEnv(Env):
         actual_state = {}
 
         idx = self.demand.get_idx_from_times(time=self.timeframe)
+        # idx_d = idx
         _, _, actual_state['demand'] = self.demand[idx]
 
         if self.generation is not None:
             idx = self.generation.get_idx_from_times(time=self.timeframe)
+            # idx_g = idx
             _, _, actual_state['generation'] = self.generation[idx]
         
+        # print(idx_d,idx_g)
         return actual_state
     
     def _get_info(self, to_trade: float) -> dict[str, Any]:
@@ -264,8 +270,9 @@ class MicroGridEnv(Env):
             gen_idx = 1
         # Otherwise we take an index between [1,len-1] so that we won't have out-of-index issues
         else:
-            gen_idx = np.random.randint(low=1, high=len(self.generation) - 1)
+            gen_idx = np.random.randint(low=1, high=len(self.generation) - self.termination['max_iterations'])
         
+        # print(gen_idx)
         _, sampled_time, _ = self.generation[gen_idx]
         self.timeframe = sampled_time % (self.SECONDS_PER_DAY * self.DAYS_PER_YEAR)
         

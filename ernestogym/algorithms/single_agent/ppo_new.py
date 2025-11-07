@@ -77,7 +77,7 @@ def train_ppo(envs, args, eval_env_params, model_file=None):
     
     logdir = "./logs/" + args['exp_name']
     os.makedirs(logdir, exist_ok=True)
-    model_folder = "./logs/{}/models/".format(args['exp_name'])
+    model_folder = "./logs/{}/models/seed_{}/".format(args['exp_name'],args['seed'])
     
     callback_max_episodes = StopTrainingOnMaxEpisodes(max_episodes=args['n_episodes'], verbose=1)
     callback_reward = RewardLoggerCallback()
@@ -98,7 +98,7 @@ def train_ppo(envs, args, eval_env_params, model_file=None):
     eval_env.norm_reward = False     # Often preferred during evaluation
     
     eval_callback = EvalCallback(eval_env, 
-                                 best_model_save_path="./logs/{}/models/eval/".format(args['exp_name']),
+                                 best_model_save_path="./logs/{}/models/eval/seed_{}/".format(args['exp_name'],args['seed']),
                                  log_path="./logs/{}/".format(args['exp_name']), 
                                  eval_freq=args['eval_freq'],
                                  n_eval_episodes=args['n_eval_episodes'],
@@ -124,7 +124,7 @@ def train_ppo(envs, args, eval_env_params, model_file=None):
                     ent_coef=args['ent_coef'],
                     vf_coef=args['vf_coef'],
                     max_grad_norm=args['max_grad_norm'],
-                    tensorboard_log="./logs/tensorboard/ppo/".format(args['exp_name']),
+                    tensorboard_log="./logs/tensorboard/ppo/seed_{}/".format(args['exp_name'],args['seed']),
                     #stats_window_size=1,
                     learning_rate=cosine_schedule(args['learning_rate'], envs.get_attr("termination")[0]['max_iterations'] * args['n_envs'] * args['n_episodes']),
                     verbose=args['verbose']
