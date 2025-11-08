@@ -63,11 +63,11 @@ class RewardLoggerCallback(BaseCallback):
     
     def _on_step(self) -> bool:
         info = self.locals["infos"][0]  # SB3 returns list of infos
-        if "pure_reward_list" in info:
-            pr = info["pure_reward_list"]
-            self.logger.record("custom/reward_trading", pr['r_trad'][-1])
-            self.logger.record("custom/reward_degradation", pr['r_deg'][-1])
-            self.logger.record("custom/reward_clipping", pr['r_clip'][-1])
+        if "pure_rewards" in info:
+            pr = info["pure_rewards"]
+            self.logger.record("custom/reward_trading", pr.get('r_trad'))
+            self.logger.record("custom/reward_degradation", pr.get('r_deg'))
+            self.logger.record("custom/reward_clipping", pr.get('r_clip'))
         return True
 
 
