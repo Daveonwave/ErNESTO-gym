@@ -51,7 +51,8 @@ def parameter_generator(battery_options: str = BATTERY_OPTIONS,
 
     # Battery submodel configuration retrieved with ErNESTO APIs.
     models_config = [read_yaml(electrical_model, yaml_type='model', bypass_check=bypass_yaml_schema),
-                     read_yaml(thermal_model, yaml_type='model', bypass_check=bypass_yaml_schema)]
+                     read_yaml(thermal_model, yaml_type='model', bypass_check=bypass_yaml_schema),
+                     read_yaml(aging_model, yaml_type='model', bypass_check=bypass_yaml_schema)]
 
     params = {'battery': battery_params['battery'],
               'input_var': input_var,

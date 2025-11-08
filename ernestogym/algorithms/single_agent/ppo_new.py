@@ -65,6 +65,7 @@ class RewardLoggerCallback(BaseCallback):
         info = self.locals["infos"][0]  # SB3 returns list of infos
         if "pure_rewards" in info:
             pr = info["pure_rewards"]
+            # print(pr)
             self.logger.record("custom/reward_trading", pr.get('r_trad'))
             self.logger.record("custom/reward_degradation", pr.get('r_deg'))
             self.logger.record("custom/reward_clipping", pr.get('r_clip'))
