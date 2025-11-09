@@ -32,7 +32,7 @@ python launch_env.py \
     --learning_rate 0.00005 \
     --log_rate 5 \
     --eval_freq 672 \
-    --n_eval_episodes 1 \
+    --n_eval_episodes 10 \
     --seed "${SEED}" \
     --weight_degradation 0.1 \
     --world_settings ernestogym/envs/single_agent/ijcnn_deg_train_cell.yaml \
