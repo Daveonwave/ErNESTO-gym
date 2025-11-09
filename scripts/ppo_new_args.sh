@@ -34,6 +34,7 @@ python launch_env.py \
     --eval_freq 672 \
     --n_eval_episodes 1 \
     --seed "${SEED}" \
+    --weight_degradation 0.1 \
     --world_settings ernestogym/envs/single_agent/ijcnn_deg_train_cell.yaml \
     --electrical_model ernestogym/ernesto/data/battery/models/electrical/thevenin_cell.yaml \
     --thermal_model ernestogym/ernesto/data/battery/models/thermal/r2c_thermal_cell.yaml\
