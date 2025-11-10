@@ -73,7 +73,7 @@ battery:
             low: 0.1
             high: 1.
         soh:
-            low: 0.8
+            low: 0.6
             high: 1.
 
     init:

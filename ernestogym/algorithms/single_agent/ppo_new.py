@@ -69,6 +69,18 @@ class RewardLoggerCallback(BaseCallback):
             self.logger.record("custom/reward_trading", pr.get('r_trad'))
             self.logger.record("custom/reward_degradation", pr.get('r_deg'))
             self.logger.record("custom/reward_clipping", pr.get('r_clip'))
+        if "norm_rewards" in info:
+            pr = info["norm_rewards"]
+            # print(pr)
+            self.logger.record("custom/norm_trading", pr.get('r_trad'))
+            self.logger.record("custom/norm_degradation", pr.get('r_deg'))
+            self.logger.record("custom/norm_clipping", pr.get('r_clip'))
+        if "weighted_rewards" in info:
+            pr = info["weighted_rewards"]
+            # print(pr)
+            self.logger.record("custom/weighted_trading", pr.get('r_trad'))
+            self.logger.record("custom/weighted_degradation", pr.get('r_deg'))
+            self.logger.record("custom/weighted_clipping", pr.get('r_clip'))
         return True
 
 

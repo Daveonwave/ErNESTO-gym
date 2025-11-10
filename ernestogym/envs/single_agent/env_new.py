@@ -283,6 +283,7 @@ class MicroGridEnv(Env):
         if self._random_battery_init:
             init_info = {key: np.random.uniform(low=value['low'], high=value['high']) for key, value in
                          self._params_bounds.items()}
+            init_info['soh'] = 1
         else:
             init_info = {key: value for key, value in self._reset_params.items()}
             idx = self.temp_amb.get_idx_from_times(time=self.timeframe)
