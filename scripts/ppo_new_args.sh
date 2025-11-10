@@ -14,11 +14,11 @@ done
 python launch_env.py \
     --algo ppo \
     --n_envs 10 \
-    --exp_name "Weekly_experiment" \
+    --exp_name "Weekly_experiment_01deg_final_20250911" \
     --spread_factor 1 \
-    --save_results_as "ppo_rse" \
+    --save_results_as "ppo_rse_01deg_final" \
     --gamma 0.99 \
-    --n_episodes 100000 \
+    --n_episodes 10000 \
     --policy_network 64 32 \
     --log_std_init -1 \
     --batch_size 256 \
@@ -34,7 +34,6 @@ python launch_env.py \
     --eval_freq 672 \
     --n_eval_episodes 10 \
     --seed "${SEED}" \
-    --weight_degradation 0.1 \
     --world_settings ernestogym/envs/single_agent/ijcnn_deg_train_cell.yaml \
     --electrical_model ernestogym/ernesto/data/battery/models/electrical/thevenin_cell.yaml \
     --thermal_model ernestogym/ernesto/data/battery/models/thermal/r2c_thermal_cell.yaml\
