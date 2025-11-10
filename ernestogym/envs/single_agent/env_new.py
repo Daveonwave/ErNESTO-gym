@@ -277,7 +277,7 @@ class MicroGridEnv(Env):
         else:
             gen_idx = np.random.randint(low=1, high=len(self.generation) - self.termination['max_iterations'])
             
-            print(gen_idx)
+            # print(gen_idx)
         _, sampled_time, _ = self.generation[gen_idx]
         self.timeframe = sampled_time % (self.SECONDS_PER_DAY * self.DAYS_PER_YEAR)
         
