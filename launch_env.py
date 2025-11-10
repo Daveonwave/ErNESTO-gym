@@ -115,7 +115,8 @@ if __name__ == '__main__':
     
     eval_params = parameter_generator(world_options=args['eval_world_settings'],
                                       min_soh=0.6,
-                                      use_reward_normalization=False)
+                                      use_reward_normalization=False,
+                                      replacement_cost=args['replacement_cost'] if 'replacement_cost' in args else None)
     
     base_seed = args.get("seed", 42)
     

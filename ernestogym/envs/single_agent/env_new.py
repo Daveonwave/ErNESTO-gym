@@ -1,5 +1,5 @@
 from typing import Any
-from collections import OrderedDict
+from collections import OrderedDict, defaultdict
 from copy import deepcopy
 
 import numpy as np
@@ -9,7 +9,7 @@ from gymnasium.spaces import Box
 from .rewards import operational_cost, linearized_degradation, soh_cost
 from ernestogym.ernesto.energy_storage.bess import BatteryEnergyStorageSystem
 from ernestogym.ernesto import PVGenerator, EnergyDemand, EnergyMarket, DummyGenerator, DummyMarket, AmbientTemperature, DummyAmbientTemperature
-
+# import matplotlib.pyplot as plt
 
 class MicroGridEnv(Env):
     SECONDS_PER_MINUTE = 60
@@ -259,6 +259,8 @@ class MicroGridEnv(Env):
         self.elapsed_time = 0
         self.iterations = 0
         # self.iseval = False
+        # self.pure_reward_list = defaultdict(list)
+        # self.norm_reward_list = defaultdict(list)
         # self.cumulated_reward = 0
 
         # Randomly sample a profile within the dataset
@@ -368,6 +370,11 @@ class MicroGridEnv(Env):
         reward = sum(self.weighted_rewards.values())
         # if self.iseval:
         #     self.cumulated_reward += reward
+        #     for k, v in self.pure_rewards.items():
+        #         self.pure_reward_list[k].append(v)
+
+        #     for k, v in self.norm_rewards.items():
+        #         self.norm_reward_list[k].append(v)
         #     idx = self.demand.get_idx_from_times(time=self.timeframe)
         #     print(self.demand.profile, idx)
             # print(settings["generation"])
@@ -376,7 +383,15 @@ class MicroGridEnv(Env):
         info = self._get_info(to_trade=to_trade)
 
         # if truncated or terminated:
-            # print(self.cumulated_reward)
+        #     for key, values in self.norm_reward_list.items():
+        #         plt.plot(values, label=key)
+
+        #     plt.title("Rewards per Key")
+        #     plt.xlabel("Index")
+        #     plt.ylabel("Value")
+        #     plt.legend()
+        #     plt.grid(True)
+        #     plt.show()
         
         return state, reward, terminated, truncated, info
 
