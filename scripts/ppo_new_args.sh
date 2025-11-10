@@ -36,7 +36,7 @@ python launch_env.py \
     --seed "${SEED}" \
     --world_settings ernestogym/envs/single_agent/ijcnn_deg_train_cell.yaml \
     --electrical_model ernestogym/ernesto/data/battery/models/electrical/thevenin_cell.yaml \
-    --thermal_model ernestogym/ernesto/data/battery/models/thermal/r2c_thermal_cell.yaml\
+    --thermal_model ernestogym/ernesto/data/battery/models/thermal/r2c_thermal_cell.yaml \
     --aging_model ernestogym/ernesto/data/battery/models/aging/bolun_cell.yaml \
     --eval_world_settings ernestogym/envs/single_agent/ijcnn_deg_test_cell.yaml \
     --train

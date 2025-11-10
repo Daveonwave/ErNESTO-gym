@@ -9,7 +9,7 @@ from gymnasium.spaces import Box
 from .rewards import operational_cost, linearized_degradation, soh_cost
 from ernestogym.ernesto.energy_storage.bess import BatteryEnergyStorageSystem
 from ernestogym.ernesto import PVGenerator, EnergyDemand, EnergyMarket, DummyGenerator, DummyMarket, AmbientTemperature, DummyAmbientTemperature
-# import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt
 
 class MicroGridEnv(Env):
     SECONDS_PER_MINUTE = 60
@@ -276,8 +276,8 @@ class MicroGridEnv(Env):
         # Otherwise we take an index between [1,len-1] so that we won't have out-of-index issues
         else:
             gen_idx = np.random.randint(low=1, high=len(self.generation) - self.termination['max_iterations'])
-        
-        # print(gen_idx)
+            
+            print(gen_idx)
         _, sampled_time, _ = self.generation[gen_idx]
         self.timeframe = sampled_time % (self.SECONDS_PER_DAY * self.DAYS_PER_YEAR)
         
@@ -375,6 +375,7 @@ class MicroGridEnv(Env):
 
         #     for k, v in self.norm_rewards.items():
         #         self.norm_reward_list[k].append(v)
+        #         print(self.norm_reward_list)
         #     idx = self.demand.get_idx_from_times(time=self.timeframe)
         #     print(self.demand.profile, idx)
             # print(settings["generation"])

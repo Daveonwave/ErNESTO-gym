@@ -13,7 +13,7 @@ INPUT_VAR = 'power'     # 'power'/'current'/'voltage'
 ECM = "ernestogym/ernesto/data/battery/models/electrical/thevenin_cell.yaml"
 R2C_THERMAL = "ernestogym/ernesto/data/battery/models/thermal/r2c_thermal_cell.yaml"
 BOLUN_MODEL = "ernestogym/ernesto/data/battery/models/aging/bolun_cell.yaml"
-WORLD = "ernestogym/envs/single_agent/world_fading.yaml"
+WORLD = "ernestogym/envs/single_agent/ijcnn_deg_train_cell.yaml"
 
 ureg = UnitRegistry(autoconvert_offset_to_baseunit=True)
 
