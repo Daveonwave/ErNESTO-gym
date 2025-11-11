@@ -190,8 +190,8 @@ class BatteryEnergyStorageSystem:
         v_ocv = self._electrical_model.ocv_gen.ocv_potential
         v_rc_old = self._electrical_model.rc.get_v_series(-1)
         
-        if self._sign_convention == 'passive':
-            i = -i
+        # if self._sign_convention == 'passive':
+        #     i = -i
 
         # Compute V_r0 and V_rc
         v_r0 = i * r0
@@ -222,9 +222,11 @@ class BatteryEnergyStorageSystem:
             self._electrical_model.load_battery_state(temp=t_amb, soc=soc, soh=self.soh_series[-1])
         
         # TODO: QUI HO MODIFICATO PERCHE' BISOGNA PASSARE ULTIMO CALCOLATO, NON QUELLO DEL PRECEDENTE dt_RL
-        v, i, soc = self._step_electrical(load=load, dt=dt_DT, **{'v_old': v, 'v_rc_old': v_rc_old})
         self.soc_series.append(soc)
-        
+        '''ATTENZIONE: CONVENZIONE DI SEGNO DA CORREGGERE (DOPPIA CONVERSIONE ATM)'''
+        v, i, soc = self._step_electrical(load=load, dt=dt_DT, **{'v_old': v, 'v_rc_old': v_rc_old, 'soc_old': soc})
+        self.soc_series[-1] = soc
+
         # Thermal model step if present
         if self._thermal_model is not None:
             t_amb = self.temp_ambient if t_amb is None else t_amb

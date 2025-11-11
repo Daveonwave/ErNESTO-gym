@@ -315,7 +315,9 @@ class MicroGridEnv(Env):
         # Retrieve the actual amount of demand, generation and market
         obs, actual_state = self._get_obs(), self._get_actual_state()
         self.timeframe += self._env_step
+        # print(action, obs)
         
+
         # Compute the fraction of energy to store/use and the fraction to sell/buy
         margin = actual_state['generation'] - actual_state['demand']
 
