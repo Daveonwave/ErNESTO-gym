@@ -11,6 +11,12 @@ register(
 )
 
 register(
+    id='ernestogym/micro_grid-v1_eval',
+    entry_point='ernestogym.envs.single_agent.env_new_evaluation:MicroGridEnv',
+)
+
+
+register(
     id='ernestogym/micro_grid_trading-v0',
     entry_point='ernestogym.envs.single_agent.env_trading:MicroGridEnv',
 )

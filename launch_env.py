@@ -48,9 +48,9 @@ def get_args():
                         type=str, help="")
     parser.add_argument("--aging_model", action="store", default="ernestogym/ernesto/data/battery/models/aging/bolun_pack.yaml",
                         type=str, help="")
-    parser.add_argument("--world_settings", action="store", default="ernestogym/envs/single_agent/world_fading.yaml",
+    parser.add_argument("--world_settings", action="store", default="ernestogym/envs/single_agent/ijcnn_deg_train_cell.yaml",
                         type=str, help="")
-    parser.add_argument("--eval_world_settings", action="store", default="ernestogym/envs/single_agent/world_fading.yaml",
+    parser.add_argument("--eval_world_settings", action="store", default="ernestogym/envs/single_agent/ijcnn_deg_test_cell.yaml",
                         type=str, help="")
     
     parser.add_argument("--step", action='store', type=int)

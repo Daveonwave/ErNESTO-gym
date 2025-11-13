@@ -39,7 +39,7 @@ class MicroGridEnvPhyDriven(Env):
         # Save the initialization bounds for environment parameters from which we will sample at reset time
         self._reset_params = settings['battery']['init']
         self._params_bounds = settings['battery']['bounds']
-        # self._aging_options = settings['aging_options']
+        self._aging_options = settings['aging_options']
         self._random_battery_init = settings['random_battery_init']
         self._random_data_init = settings['random_data_init']
         self._seed = settings['seed']
@@ -84,11 +84,11 @@ class MicroGridEnvPhyDriven(Env):
         self.state_list: list[np.ndarray] = []
         self.action_list: list[np.ndarray] = []
         # Reward without normalization and weights
-        self.pure_reward_list = {'r_trad': [], 'r_op': [], 'r_deg':[], 'r_clip': []}
+        self.pure_rewards = {'r_trad':0, 'r_deg':0, 'r_clip': 0}
         # Normalized value of reward
-        self.norm_reward_list: list = {'r_trad': [], 'r_op': [], 'r_deg':[], 'r_clip': []}
+        self.norm_rewards = {'r_trad':0, 'r_deg':0, 'r_clip':0}
         # Weighted value of reward multiplied by their coefficients
-        self.weighted_reward_list: list = {'r_trad': [], 'r_op': [], 'r_deg':[], 'r_clip': []}
+        self.weighted_rewards = {'r_trad':0, 'r_deg':0, 'r_clip':0}
 
         # Observation space support dictionary
         self.spaces = OrderedDict()
@@ -164,8 +164,8 @@ class MicroGridEnvPhyDriven(Env):
                     idx = self.demand.get_idx_from_times(time=self.timeframe - self._env_step)
                     _, _, obs['demand'] = self.demand[idx]
 
-                # case 'soh':
-                #     obs['soh'] = self._battery.soh_series[-1]
+                case 'soh':
+                    obs['soh'] = self._battery.soh_series[-1]
 
                 case 'generation':
                     idx = self.generation.get_idx_from_times(time=self.timeframe - self._env_step)
@@ -195,21 +195,57 @@ class MicroGridEnvPhyDriven(Env):
 
         return obs
 
-    def _get_info(self):
+    def _get_actual_state(self) -> dict[str, Any]:
         """
         Collect the actual information regarding 'demand' and 'generation' to execute the step and compute the reward.
+
+        This method retrieves the real-time values of demand and generation at the current timeframe to be used
+        for environment dynamics and reward calculation.
+
+        Returns:
+            dict[str, Any]: A dictionary containing the actual 'demand' and 'generation' values.
         """
-        # TODO: partial status of the battery + info about env
-        info = {}
+        actual_state = {}
 
         idx = self.demand.get_idx_from_times(time=self.timeframe)
-        _, _, info['demand'] = self.demand[idx]
+        # idx_d = idx
+        _, _, actual_state['demand'] = self.demand[idx]
 
         if self.generation is not None:
             idx = self.generation.get_idx_from_times(time=self.timeframe)
-            _, _, info['generation'] = self.generation[idx]
+            # idx_g = idx
+            _, _, actual_state['generation'] = self.generation[idx]
+        
+        # print(idx_d,idx_g)
+        return actual_state
+    
+    def get_info(self) -> dict[str, Any]:
+        """
+        Collects and returns the main evaluation metrics and logged data.
+
+        Returns:
+            dict[str, Any]: All tracked variables during evaluation, including power, 
+            demand, generation, market prices, reward history lists, and battery observations.
+        """
+        info = {
+            # Time series data collected during evaluation
+            "power_list": getattr(self, "power_list", []),
+            "demand_list": getattr(self, "demand_list", []),
+            "generation_list": getattr(self, "generation_list", []),
+            "price_ask_list": getattr(self, "price_ask_list", []),
+            "price_bid_list": getattr(self, "price_bid_list", []),
+            "pure_reward_list": getattr(self, "pure_reward_list", {}),
+            "norm_reward_list": getattr(self, "norm_reward_list", {}),
+            "weighted_reward_list": getattr(self, "weighted_reward_list", {}),
+        }
+
+        # Add battery observations if battery exists
+        if hasattr(self, "_battery") and hasattr(self._battery, "get_observations"):
+            info["battery_observations"] = self._battery.get_observations()
 
         return info
+
+
 
     def reset(self, seed=None, options=None):
         """
@@ -239,8 +275,8 @@ class MicroGridEnvPhyDriven(Env):
 
         # Randomly sample a profile within the dataset
         if options is not None and 'eval_profile' in options:
-            self.eval_profile = options['eval_profile']
-            self.demand.profile = self.eval_profile
+            self.demand.profile = options['eval_profile']
+            self.iseval = True
         else:
             self.demand.profile = np.random.choice(self.demand.labels)
         print("profile: ", self.demand.profile)
@@ -250,17 +286,22 @@ class MicroGridEnvPhyDriven(Env):
             gen_idx = 1
         # Otherwise we take an index between [1,len-1] so that we won't have out-of-index issues
         else:
-            gen_idx = np.random.randint(low=1, high=len(self.generation) - 1)
-        
-        '''Note to self: self.generation.__getitem__ require an index 
-        and returns self_timestamps[idx], self._times[idx], self._history[idx]'''
+            # gen_idx = np.random.randint(low=1, high=len(self.generation) - 1)
+            self._rng_gen_idx = np.random.default_rng(self._seed + int(self.demand.profile))
+
+            '''Note to self: self.generation.__getitem__ require an index 
+            and returns self_timestamps[idx], self._times[idx], self._history[idx]'''
+
+            gen_idx = self._rng_gen_idx.integers(low=1, high=len(self.generation) - self.termination['max_iterations'])
+            # print(gen_idx)
         _, sampled_time, _ = self.generation[gen_idx]
         self.timeframe = sampled_time % (self.SECONDS_PER_DAY * self.DAYS_PER_YEAR)
-        
+        print(gen_idx)
         # Initialize randomly the environment setting for a new run
         if self._random_battery_init:
             init_info = {key: np.random.uniform(low=value['low'], high=value['high']) for key, value in
                          self._params_bounds.items()}
+            init_info['soh'] = 1
         else:
             init_info = {key: value for key, value in self._reset_params.items()}
             # init_info['voltage'] = self._battery.get_v()

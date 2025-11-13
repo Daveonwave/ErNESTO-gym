@@ -1,12 +1,15 @@
 import argparse
 from joblib import Parallel, delayed
-
+from copy import deepcopy
 from stable_baselines3.common.env_util import make_vec_env
 from ernestogym.envs.single_agent.utils import parameter_generator
 from ernestogym.algorithms.single_agent.ppo_new import train_ppo, eval_ppo, eval_ppo_phydriven
 from ernestogym.algorithms.single_agent.a2c import train_a2c, eval_a2c
 from ernestogym.algorithms.single_agent.sac import train_sac, eval_sac
 from ernestogym.algorithms.single_agent.baselines import run_baseline
+from stable_baselines3.common.vec_env import SubprocVecEnv
+import gymnasium as gym
+
 
 
 algo_choices = ['ppo', 'a2c', 'sac', 'random', 'only_market', 'battery_first', '20-80', '50-50', '80-20', 'all_baselines']
@@ -35,11 +38,13 @@ def get_args():
     parser.add_argument("--battery_options", action="store", default="ernestogym/ernesto/data/battery/cell.yaml", help="")
     parser.add_argument("--electrical_model", action="store", default="ernestogym/ernesto/data/battery/models/electrical/thevenin_fading_pack.yaml",
                         type=str, help="")
-    parser.add_argument("--thermal_model", action="store", default="ernestogym/ernesto/data/battery/models/thermal/r2c_thermal_pack.yaml",
+    parser.add_argument("--thermal_model", action="store", default="ernestogym/ernesto/data/battery/models/thermal/r2c_thermal_cell.yaml",
                         type=str, help="")
     parser.add_argument("--aging_model", action="store", default="ernestogym/ernesto/data/battery/models/aging/bolun_pack.yaml",
                         type=str, help="")
-    parser.add_argument("--world_settings", action="store", default="ernestogym/envs/single_agent/world_fading.yaml",
+    parser.add_argument("--world_settings", action="store", default="ernestogym/envs/single_agent/ijcnn_deg_train_cell.yaml",
+                        type=str, help="")
+    parser.add_argument("--eval_world_settings", action="store", default="ernestogym/envs/single_agent/ijcnn_deg_test_cell.yaml",
                         type=str, help="")
     
     parser.add_argument("--step", action='store', type=int)
@@ -72,21 +77,37 @@ if __name__ == '__main__':
                "clip_action_coeff": args['weight_clipping']
                }
     
-    params = parameter_generator(battery_options=args['battery_options'],
+    params = parameter_generator(world_options=args['world_settings'],
+                                 battery_options=args['battery_options'],
                                  electrical_model=args['electrical_model'],
                                  thermal_model=args['thermal_model'],
                                  aging_model=args['aging_model'],
-                                 world_options=args['world_settings'],
                                  use_reward_normalization=True,
                                  reward_coeff=weights,
                                  spread_factor=args['spread_factor'],
                                  replacement_cost=args['replacement_cost'] if 'replacement_cost' in args else None,
+                                 seed=args['seed']
                                  )
+    eval_params = parameter_generator(world_options=args['eval_world_settings'],
+                                      min_soh=0.6,
+                                      use_reward_normalization=False,
+                                      replacement_cost=args['replacement_cost'] if 'replacement_cost' in args else None)
     
+    base_seed = args.get("seed", 42)
+    
+    def make_env(rank):
+        def _init():
+            env_params = deepcopy(params)
+            env_params["seed"] = int(base_seed) + int(rank)
+            return gym.make("ernestogym/micro_grid-v1", settings=env_params)
+        return _init
+ 
+
     if args['train']:  
         if args['algo'][0] == 'ppo':   
-            envs = make_vec_env("ernestogym/micro_grid-v0", n_envs=args["n_envs"], env_kwargs={'settings':params})
-            train_ppo(envs, args, params, model_file=args['load_model'] if args['load_model'] else None)
+            envs = SubprocVecEnv([make_env(i) for i in range(args["n_envs"])])
+            #envs = make_vec_env("ernestogym/micro_grid-v1", n_envs=args["n_envs"], env_kwargs={'settings': params}, vec_env_cls=SubprocVecEnv)
+            train_ppo(envs, args, eval_env_params=eval_params, model_file=args['load_model'] if args['load_model'] else None)
             
         elif args["algo"][0] == 'a2c':
             envs = make_vec_env("ernestogym/micro_grid-v0", n_envs=args["n_envs"], env_kwargs={'settings':params})

@@ -6,6 +6,7 @@ from typing import Callable
 import numpy as np
 
 from ernestogym.envs.single_agent.env_new import MicroGridEnv
+from ernestogym.envs.single_agent.env_new_evaluation import MicroGridEnvEval
 from ernestogym.envs.single_agent.env_phydriven import MicroGridEnvPhyDriven
 
 from gymnasium import Wrapper
@@ -158,7 +159,7 @@ def train_ppo(envs, args, eval_env_params, model_file=None):
     
 def eval_ppo(env_params, args, test_profile, model_file=""):
     
-    env = MicroGridEnv(settings=env_params)
+    env = MicroGridEnvEval(settings=env_params)
         
     comparison_dict = {
         'test': test_profile,
@@ -185,26 +186,27 @@ def eval_ppo(env_params, args, test_profile, model_file=""):
     obs = vec_env.reset()
     
     done = False
-    pbar = tqdm(total=len(vec_env.get_attr("generation")[0]))
+    pbar = tqdm(total=min(len(vec_env.get_attr("generation")[0]),vec_env.get_attr("termination")[0]["max_iterations"]))
     while not done:
         action, _states = model.predict(obs)
         obs, rewards, dones, info = vec_env.step(action)
         done = dones[0]
         pbar.update(1)
 
-    comparison_dict['total_reward'] = info[0]['total_reward']
-    comparison_dict['pure_reward'] = info[0]['pure_reward_list']
-    comparison_dict['norm_reward'] = info[0]['norm_reward_list']
-    comparison_dict['weighted_reward'] = info[0]['weighted_reward_list']
-    comparison_dict['actions'] = info[0]['actions']
-    comparison_dict['states'] = info[0]['states']
-    comparison_dict['traded_energy'] = info[0]['traded_energy']
-    comparison_dict['soh'] = info[0]['soh']
+    # comparison_dict = 
+    # comparison_dict['total_reward'] = info[0]['total_reward']
+    # comparison_dict['pure_reward'] = info[0]['pure_reward_list']
+    # comparison_dict['norm_reward'] = info[0]['norm_reward_list']
+    # comparison_dict['weighted_reward'] = info[0]['weighted_reward_list']
+    # comparison_dict['actions'] = info[0]['actions']
+    # comparison_dict['states'] = info[0]['states']
+    # comparison_dict['traded_energy'] = info[0]['traded_energy']
+    # comparison_dict['soh'] = info[0]['soh']
 
     output_file = logdir + 'test_{}.json'.format(test_profile)
 
     with open(output_file, 'w', encoding ='utf8') as f: 
-        json.dump(comparison_dict, f, allow_nan=False) 
+        json.dump(info[0], f, default=lambda o: o.tolist() if isinstance(o, np.ndarray) else o) 
 
 def eval_ppo_phydriven(env_params, args, test_profile, model_file=""):
     

@@ -30,7 +30,7 @@ class BatteryEnergyStorageSystem:
         self._electrical_model = None
         self._thermal_model = None
         self._aging_model = None
-        self._soc_model = None
+        self._soc_model = None 
         self.models = []
 
         # Battery datasheet parameters
@@ -63,6 +63,13 @@ class BatteryEnergyStorageSystem:
         
         #Inital soh
         self._init_soh = battery_options['init']['soh'] if 'soh' in battery_options['init'].keys() else 1.0 
+
+        #Boolean to save all collections
+        self._save_collections = battery_options['save_collections'] \
+            if 'save_collections' in battery_options.keys() else False
+        self.observation_v = []
+        self.observation_i = []
+        self.observation_soc = []
 
         # Instantiate models
         self._build_models()
@@ -203,6 +210,9 @@ class BatteryEnergyStorageSystem:
         # Compute soc
         soc = soc_old + i / (self._c_max * 3600) * dt
         soc = np.clip(soc, 0, 1)
+
+        if self._save_collections:
+            self._update_collections(v,i,soc)
         return v, soc, v_rc
 
     def step(self, load: float, dt_RL: float, dt_DT: float, k: int, n_iter_el: int, t_amb: float = None):
@@ -216,16 +226,17 @@ class BatteryEnergyStorageSystem:
         v = self.get_v()
         soc = self.soc_series[-1]
         v_rc_old = None
-        
         for _ in range(n_iter_el-1):
             v, soc, v_rc_old = self.repeat_el_step(v_old=v, soc_old=soc, p_load=load, dt=dt_DT, v_rc_old=v_rc_old)
             self._electrical_model.load_battery_state(temp=t_amb, soc=soc, soh=self.soh_series[-1])
-        
+
         # TODO: QUI HO MODIFICATO PERCHE' BISOGNA PASSARE ULTIMO CALCOLATO, NON QUELLO DEL PRECEDENTE dt_RL
         self.soc_series.append(soc)
         '''ATTENZIONE: CONVENZIONE DI SEGNO DA CORREGGERE (DOPPIA CONVERSIONE ATM)'''
-        v, i, soc = self._step_electrical(load=load, dt=dt_DT, **{'v_old': v, 'v_rc_old': v_rc_old, 'soc_old': soc})
+        v, i, soc = self._step_electrical(load=load, dt=dt_DT, **{'v_old': v, 'v_rc_old': v_rc_old})
         self.soc_series[-1] = soc
+        if self._save_collections:
+            self._update_collections(v,i,soc)
 
         # Thermal model step if present
         if self._thermal_model is not None:
@@ -360,7 +371,22 @@ class BatteryEnergyStorageSystem:
                 del final_dict[key]
 
         return {'operations': final_dict, 'aging': deg_dict}
+    
+    def _update_collections(self, v,i,soc):
+        self.observation_v.append(v)
+        self.observation_i.append(i)
+        self.observation_soc.append(soc)
 
+    def get_observations(self) -> dict[str, list]:
+        """
+        Returns all collected observations as a dictionary.
+        """
+        return {
+            "v": self.observation_v,
+            "i": self.observation_i,
+            "soc": self.observation_soc,
+            "soh": self.soh_series,
+        }
 
 
 

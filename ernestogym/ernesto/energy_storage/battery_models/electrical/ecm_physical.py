@@ -3,8 +3,8 @@ from .ecm_components import Resistor
 from .ecm_components import ResistorCapacitorParallel
 from .ecm_components import OCVGenerator
 from ernestogym.ernesto.energy_storage.battery_models.parameters import instantiate_variables
-# from ernestogym.ernesto.cycler import Cycler_Kewell_scheduler
-from ernestogym.ernesto.cycler import Cycler_dummy
+from ernestogym.ernesto.cycler import Cycler_Kewell_scheduler
+# from ernestogym.ernesto.cycler import Cycler_dummy
 import time
 import signal
 
@@ -35,7 +35,7 @@ class Phydriven(ElectricalModel):
 
 
         # Build the cycler object
-        self._cycler = Cycler_dummy.Cycler(ip = '192.168.1.191', port=502)
+        self._cycler = Cycler_Kewell_scheduler.Cycler(ip = '192.168.1.191', port=502)
         ''' TO DO: Creare settings per impostazioni ciclatore'''
         self._init_components = instantiate_variables(components_settings)
         self.r0 = Resistor(name='R0', resistance=self._init_components['r0'])
@@ -145,7 +145,7 @@ class Phydriven(ElectricalModel):
         # self.update_v_load(value=v_load)
         # self.update_power(value=power)
 
-        return v_load, i
+        return v_load
 
     def step_current_driven(self, i_load, dt, k, p_load=None):
         """
@@ -208,8 +208,9 @@ class Phydriven(ElectricalModel):
             # self._cyler.set_P_setpoint(P_set=p_load, I_max, V_min, V_max, update_interval=1.0)
             # return self.step_current_driven(i_load=p_load / self._v_load_series[-1], dt=dt, k=k, p_load=p_load)
             '''Remove hardcode update interval'''
-            self._cycler.start_follow_P(P_set=p_load*83/23904, I_max = I_max, V_min = V_min, V_max = V_max, update_interval = 0.1)
+            self._cycler.start_follow_P(P_set=p_load, I_max = I_max, V_min = V_min, V_max = V_max, update_interval = 0.1)
             time.sleep(dt)
+            # time.sleep(5)
             v = self._cycler.read_V_meas()
             i = self._cycler.read_I_meas()
             p_imposed = self._cycler.read_P_meas() 

@@ -1,5 +1,5 @@
 demand:
-  path: "ernestogym/ernesto/data/demand/rse_profiles_test.csv"
+  path: "ernestogym/ernesto/data/demand/rse_profiles_test_cell.csv"
   timestep: 3600 # seconds
   test_profiles: # column label to use to test the agent
     - "70"
@@ -10,7 +10,7 @@ demand:
   data_usage: "end" # "circular/end"
 
 generation:
-  path: "ernestogym/ernesto/data/generation/pv_ninja_2019-2020_3kW_test.csv"
+  path: "ernestogym/ernesto/data/generation/pv_ninja_2019-2020_3kW_NoLeap_test_cell.csv"
   timestep: 3600 # seconds
   data_usage: "end" # "circular/end"
 
@@ -28,9 +28,9 @@ market:
 dummy:
   generator: 10
   market:
-    ask: 10
-    bid: 8
-
+    ask: 0.00021
+    bid: 0.00014
+  temp_amb: 298.15
 observations:
   - demand
   - temperature
@@ -41,26 +41,26 @@ observations:
   - market
   # - energy_level
 
-# Aging options determining the reward term related to degradation
-# Only one can be set to True (at the moment)
-aging_options:
-  degradation: True
-  fading: False
+# # Aging options determining the reward term related to degradation
+# # Only one can be set to True (at the moment)
+# aging_options:
+#   degradation: True
+#   fading: False
 
-step: 360 # in seconds
+step: 3600 # in seconds
 step_model: 10 # in seconds
 random_battery_init: False # battery state initialization: if True it is randomized between declared bounds
-random_data_init: False # timeseries starting point: if True the timeseries starting point is randomly sampled
-seed: 10 # to sample user's demand profile (also initial data and initial battery state if enabled)
+random_data_init: True # timeseries starting point: if True the timeseries starting point is randomly sampled
+seed: 46 # to sample user's demand profile (also initial data and initial battery state if enabled)
 
 termination:
-  max_iterations: null
+  max_iterations: 168
   min_soh: 0.6
 
 reward:
   trading_coeff: 1
-  operational_cost_coeff: 0
+  # operational_cost_coeff: 0
   degradation_coeff: 1
-  clip_action_coeff: 1
+  clip_action_coeff: 0.1
 
 use_reward_normalization: True

@@ -1,5 +1,5 @@
 from typing import Any
-from collections import OrderedDict
+from collections import OrderedDict, defaultdict
 from copy import deepcopy
 
 import numpy as np
@@ -7,12 +7,11 @@ from datetime import timedelta
 from gymnasium import Env
 from gymnasium.spaces import Box
 from .rewards import operational_cost, linearized_degradation, soh_cost
-from ernestogym.ernesto.energy_storage.bessPhyDriven import BatteryEnergyStorageSystemPhyDriven
+from ernestogym.ernesto.energy_storage.bess import BatteryEnergyStorageSystem
 from ernestogym.ernesto import PVGenerator, EnergyDemand, EnergyMarket, DummyGenerator, DummyMarket, AmbientTemperature, DummyAmbientTemperature
+import matplotlib.pyplot as plt
 
-class MicroGridEnvPhyDriven(Env):
-    """
-    """
+class MicroGridEnvEval(Env):
     SECONDS_PER_MINUTE = 60
     SECONDS_PER_HOUR = 60 * 60
     SECONDS_PER_DAY = 60 * 60 * 24
@@ -23,12 +22,23 @@ class MicroGridEnvPhyDriven(Env):
                  render_mode = None
                  ):
         """
+        Initialize the MicroGrid environment.
 
-        """
-        metadata = {"render_modes": None}
+        This method sets up the environment, including the battery system, exogenous variables, 
+        observation and action spaces, and reward coefficients.
+
+        Args:
+            settings (dict[str, Any]): A dictionary containing configuration settings for the environment.
+        """        
+        metadata = {"render_modes": [None]}
+        print('++++++ INITIALIZING ENV +++++++')
         
+        self._env_step = settings['step']
+        self._DT_step = settings['step_model']
+        self.n_repeat_action = self._env_step // self._DT_step
+
         # Build the battery object
-        self._battery = BatteryEnergyStorageSystemPhyDriven(
+        self._battery = BatteryEnergyStorageSystem(
             models_config=settings['models_config'],
             battery_options=settings['battery'],
             input_var=settings['input_var'],
@@ -39,13 +49,15 @@ class MicroGridEnvPhyDriven(Env):
         # Save the initialization bounds for environment parameters from which we will sample at reset time
         self._reset_params = settings['battery']['init']
         self._params_bounds = settings['battery']['bounds']
-        # self._aging_options = settings['aging_options']
         self._random_battery_init = settings['random_battery_init']
         self._random_data_init = settings['random_data_init']
         self._seed = settings['seed']
+        
         np.random.seed(self._seed)
 
         print(f"[INIT] Environment created with seed {self._seed}")
+
+        # self._rng_gen_idx = np.random.default_rng(self._seed + 12345)  # offset to keep streams independent
 
         # Collect exogenous variables profiles
         self.demand = EnergyDemand(**settings["demand"])
@@ -60,11 +72,9 @@ class MicroGridEnvPhyDriven(Env):
         self.timeframe = 0
         self.elapsed_time = 0
         self.iterations = 0
-        '''Changed the _env_step in order to use dt_cycle and not dt'''
-        self._env_step = settings['step_model']
         self.termination = settings['termination']
         self.termination['max_iterations'] = len(self.generation) - 1 if self.termination['max_iterations'] is None else self.termination['max_iterations']
-
+        
         # Reward coefficients
         self._trading_coeff = settings['reward']['trading_coeff'] if 'trading_coeff' in settings['reward'] else 0
         self._op_cost_coeff = settings['reward']['operational_cost_coeff'] if 'operational_cost_coeff' in settings['reward'] else 0
@@ -72,27 +82,16 @@ class MicroGridEnvPhyDriven(Env):
         self._clip_action_coeff = settings['reward']['clip_action_coeff'] if 'clip_action_coeff' in settings['reward'] else 0
         self._use_reward_normalization = settings['use_reward_normalization']
         self._trad_norm_term = None
-        self._max_op_cost = None
-        self.traded_energy = []
         
-        # To distinguish between learning and testing
-        self.eval_profile = None
-
-        # MDP information
-        self._state = None
-        self.total_reward = 0
-        self.state_list: list[np.ndarray] = []
-        self.action_list: list[np.ndarray] = []
         # Reward without normalization and weights
-        self.pure_reward_list = {'r_trad': [], 'r_op': [], 'r_deg':[], 'r_clip': []}
+        self.pure_rewards = {'r_trad':0, 'r_deg':0, 'r_clip': 0}
         # Normalized value of reward
-        self.norm_reward_list: list = {'r_trad': [], 'r_op': [], 'r_deg':[], 'r_clip': []}
+        self.norm_rewards = {'r_trad':0, 'r_deg':0, 'r_clip':0}
         # Weighted value of reward multiplied by their coefficients
-        self.weighted_reward_list: list = {'r_trad': [], 'r_op': [], 'r_deg':[], 'r_clip': []}
-
+        self.weighted_rewards = {'r_trad':0, 'r_deg':0, 'r_clip':0}
+        
         # Observation space support dictionary
         self.spaces = OrderedDict()
-
         self.spaces['temperature'] = {'low': 250., 'high': 400.}
         self.spaces['soc'] = {'low': 0., 'high': 1.}
         self.spaces['demand'] = {'low': 0., 'high': np.inf}
@@ -130,19 +129,11 @@ class MicroGridEnvPhyDriven(Env):
             self.spaces['sin_seconds_of_day'] = {'low': -1, 'high': 1}
             self.spaces['cos_seconds_of_day'] = {'low': -1, 'high': 1}
 
-        if settings['energy_level']:
-            self._obs_keys.append('energy_level')
-            min_energy = self._battery.nominal_capacity * self._battery.soc_min * self._battery.v_min
-            max_energy = self._battery.nominal_capacity * self._battery.soc_max * self._battery.v_max
-            self.spaces['energy_level'] = {'low': min_energy, 'high': max_energy}
-
         lows = [self.spaces[key]['low'] for key in self.spaces.keys()]
         highs = [self.spaces[key]['high'] for key in self.spaces.keys()]
 
-        # Observation Space
+        # Gym spaces
         self.observation_space = Box(low=np.array(lows), high=np.array(highs), dtype=np.float32)
-
-        # Action Space: percentage of generated energy to store
         self.action_space = Box(low=0., high=1., dtype=np.float32, shape=(1,))
 
     def _get_obs(self) -> dict[str, Any]:
@@ -164,8 +155,8 @@ class MicroGridEnvPhyDriven(Env):
                     idx = self.demand.get_idx_from_times(time=self.timeframe - self._env_step)
                     _, _, obs['demand'] = self.demand[idx]
 
-                # case 'soh':
-                #     obs['soh'] = self._battery.soh_series[-1]
+                case 'soh':
+                    obs['soh'] = self._battery.soh_series[-1]
 
                 case 'generation':
                     idx = self.generation.get_idx_from_times(time=self.timeframe - self._env_step)
@@ -192,119 +183,157 @@ class MicroGridEnvPhyDriven(Env):
 
                 case _:
                     raise KeyError(f'Unknown observation variable: {key}')
-
+        
         return obs
 
-    def _get_info(self):
+    def _get_actual_state(self) -> dict[str, Any]:
         """
         Collect the actual information regarding 'demand' and 'generation' to execute the step and compute the reward.
+
+        This method retrieves the real-time values of demand and generation at the current timeframe to be used
+        for environment dynamics and reward calculation.
+
+        Returns:
+            dict[str, Any]: A dictionary containing the actual 'demand' and 'generation' values.
         """
-        # TODO: partial status of the battery + info about env
-        info = {}
+        actual_state = {}
 
         idx = self.demand.get_idx_from_times(time=self.timeframe)
-        _, _, info['demand'] = self.demand[idx]
+        # idx_d = idx
+        _, _, actual_state['demand'] = self.demand[idx]
 
         if self.generation is not None:
             idx = self.generation.get_idx_from_times(time=self.timeframe)
-            _, _, info['generation'] = self.generation[idx]
+            # idx_g = idx
+            _, _, actual_state['generation'] = self.generation[idx]
+        
+        # print(idx_d,idx_g)
+        return actual_state
+        
+    def get_info(self) -> dict[str, Any]:
+        """
+        Collects and returns the main evaluation metrics and logged data.
+
+        Returns:
+            dict[str, Any]: All tracked variables during evaluation, including power, 
+            demand, generation, market prices, reward history lists, and battery observations.
+        """
+        info = {
+            # Time series data collected during evaluation
+            "power_list": getattr(self, "power_list", []),
+            "demand_list": getattr(self, "demand_list", []),
+            "generation_list": getattr(self, "generation_list", []),
+            "price_ask_list": getattr(self, "price_ask_list", []),
+            "price_bid_list": getattr(self, "price_bid_list", []),
+            "pure_reward_list": getattr(self, "pure_reward_list", {}),
+            "norm_reward_list": getattr(self, "norm_reward_list", {}),
+            "weighted_reward_list": getattr(self, "weighted_reward_list", {}),
+        }
+
+        # Add battery observations if battery exists
+        if hasattr(self, "_battery") and hasattr(self._battery, "get_observations"):
+            info["battery_observations"] = self._battery.get_observations()
 
         return info
 
+
+
     def reset(self, seed=None, options=None):
         """
+        Reset the environment to its initial state.
 
+        This method resets the environment, including the battery system, reward collections, and timing variables.
+        It also initializes the environment with random or predefined settings based on the configuration.
+
+        Args:
+            seed (int, optional): A seed for random number generation. Defaults to None.
+            options (dict, optional): Additional options for resetting the environment. Defaults to None.
+
+        Returns:
+            tuple: A tuple containing the initial state and an empty info dictionary.
         """
         super().reset(seed=seed, options=options)
-
-        print('Resetting the environment...')
         
-        # Initialize the episode counter
-        self.state_list = []
-        self.action_list = []
-        
-        # Reset reward collections
-        self.pure_reward_list = {'r_trad': [], 'r_op': [], 'r_deg':[], 'r_clip': []}
-        self.norm_reward_list: list = {'r_trad': [], 'r_op': [], 'r_deg':[], 'r_clip': []}
-        self.weighted_reward_list: list = {'r_trad': [], 'r_op': [], 'r_deg':[], 'r_clip': []}
-        
-        self.traded_energy = []
-
         self.total_reward = 0
         self._trad_norm_term = None
-        self._max_op_cost = None
-
         self.elapsed_time = 0
         self.iterations = 0
+        self.iseval = False
+        self.pure_reward_list = defaultdict(list)
+        self.norm_reward_list = defaultdict(list)
+        self.weighted_reward_list = defaultdict(list)
+        self.power_list = []
+        self.cumulated_reward_list = []
+        self.demand_list = []
+        self.generation_list = []
+        self.price_ask_list = []
+        self.price_bid_list = []
+
+        self.cumulated_reward = 0
 
         # Randomly sample a profile within the dataset
         if options is not None and 'eval_profile' in options:
-            self.eval_profile = options['eval_profile']
-            self.demand.profile = self.eval_profile
+            self.demand.profile = options['eval_profile']
+            self.iseval = True
         else:
             self.demand.profile = np.random.choice(self.demand.labels)
-        print("profile: ", self.demand.profile)
-
+            
         # If seed is -1 we take datasets from the beginning
         if not self._random_data_init:
             gen_idx = 1
         # Otherwise we take an index between [1,len-1] so that we won't have out-of-index issues
         else:
-            gen_idx = np.random.randint(low=1, high=len(self.generation) - 1)
-        
-        '''Note to self: self.generation.__getitem__ require an index 
-        and returns self_timestamps[idx], self._times[idx], self._history[idx]'''
+            # gen_idx = np.random.randint(low=1, high=len(self.generation) - self.termination['max_iterations'])
+            self._rng_gen_idx = np.random.default_rng(self._seed + int(self.demand.profile))
+
+            '''Note to self: self.generation.__getitem__ require an index 
+            and returns self_timestamps[idx], self._times[idx], self._history[idx]'''
+
+            gen_idx = self._rng_gen_idx.integers(low=1, high=len(self.generation) - self.termination['max_iterations'])
+            # print(gen_idx)
         _, sampled_time, _ = self.generation[gen_idx]
         self.timeframe = sampled_time % (self.SECONDS_PER_DAY * self.DAYS_PER_YEAR)
-        
+        print(gen_idx)
         # Initialize randomly the environment setting for a new run
         if self._random_battery_init:
             init_info = {key: np.random.uniform(low=value['low'], high=value['high']) for key, value in
                          self._params_bounds.items()}
+            init_info['soh'] = 1
         else:
             init_info = {key: value for key, value in self._reset_params.items()}
             # init_info['voltage'] = self._battery.get_v()
             idx = self.temp_amb.get_idx_from_times(time=self.timeframe)
-            # _, _, init_info['temperature'] = self.temp_amb[idx]
-            # _, _, init_info['temp_ambient'] = self.temp_amb[idx]
-            init_info['temp_ambient'] = 21.0+273.15
-            init_info['temperature'] = init_info['temp_ambient']
-
-
-
+            _, _, init_info['temperature'] = self.temp_amb[idx]
+            _, _, init_info['temp_ambient'] = self.temp_amb[idx]
 
         # Initialize the battery object
         self._battery.reset()
         self._battery.init(init_info=init_info)
                 
-        self._state = np.array(list(self._get_obs().values()), dtype=np.float32)
-        self.state_list.append(self._state)
-
-        # info = self._get_info()
-        info = {}
-        
-        return self._state, info
+        self._state = np.array(list(self._get_obs().values()), dtype=np.float32)        
+        return self._state, {}
 
     def step(self, action: np.ndarray):
         """
+        Perform a single step in the environment.
 
+        This method updates the environment state based on the action taken by the agent. It computes the reward, 
+        checks termination and truncation conditions, and returns the new state, reward, and additional information.
+
+        Args:
+            action (np.ndarray): The action taken by the agent, representing the fraction of energy to store.
+
+        Returns:
+            tuple: A tuple containing the new state, reward, termination flag, truncation flag, and info dictionary.
         """
-        #assert self.action_space.contains(action), f"{action!r} ({type(action)}) invalid" (TODO: this assertion generates error with np.ndarray)
-        assert self._state is not None, "Call reset before using step method."
-
-        self.action_list.append(action)
-
         # Retrieve the actual amount of demand, generation and market
-        obs_pre_step, info_pre_step = self._get_obs(), self._get_info()
-
-        # '''Brought the increase in the timeframe outside of the while:
-        #   this way keep the external world fixed in order to mantain 
-        #   the same exogenous causes and do not risk to slip to the next'''
+        obs, actual_state = self._get_obs(), self._get_actual_state()
         self.timeframe += self._env_step
+        # print(action, obs)
+        
 
         # Compute the fraction of energy to store/use and the fraction to sell/buy
-
-        margin = info_pre_step['generation'] - info_pre_step['demand']
+        margin = actual_state['generation'] - actual_state['demand']
 
         last_v = self._battery.get_v()
         i_max, i_min = self._battery.get_feasible_current(last_soc=self._battery.soc_series[-1], dt=self._env_step)
@@ -313,20 +342,13 @@ class MicroGridEnvPhyDriven(Env):
         to_load = np.clip(a=margin * action[0], a_min=last_v * i_min, a_max=last_v * i_max)
         to_trade = margin - to_load
         
-        self.traded_energy.append(to_trade)
-
         # Current ambient temperature
-        '''TO DO: WHEN T SENSOR ARE AVAILABLE'''
-        # idx = self.temp_amb.get_idx_from_times(time=self.timeframe)
-        # _, _, t_amb = self.temp_amb[idx]        
-        t_amb = 21.0+273.15
-                
+        idx = self.temp_amb.get_idx_from_times(time=self.timeframe)
+        _, _, t_amb = self.temp_amb[idx]        
+
         # Step of the battery model and update of internal state
-        # for dtpiccolo:
-
-        self._battery.step(load=to_load, dt=self._env_step, k=self.iterations, t_amb=t_amb)
-        #     get_i()
-
+        '''Qui fare for per chiamare D.T. su un dt piu piccolo e poi chiamare self._battery.get_i()'''
+        self._battery.step(load=to_load, dt_RL=self._env_step, dt_DT=self._DT_step, n_iter_el=self.n_repeat_action, k=self.iterations, t_amb=t_amb)
         self._battery.t_series.append(self.elapsed_time)
         self.elapsed_time += self._env_step
         self.iterations += 1
@@ -344,125 +366,84 @@ class MicroGridEnvPhyDriven(Env):
         )
 
         # Trading reward with market and cost of degradation
-        r_trading = to_trade * obs_pre_step['ask'] if to_trade < 0 else to_trade * obs_pre_step['bid']
+        r_trading = to_trade * obs['ask'] * self._env_step/3600 if to_trade < 0 else to_trade * obs['bid'] * self._env_step/3600
 
+        # Degradation penalty
+        r_deg = -soh_cost(delta_soh=abs(self._battery.soh_series[-2] - self._battery.soh_series[-1]),
+                          replacement_cost=self._battery.nominal_cost,
+                          soh_limit=self.termination['min_soh'])
+        
         # Clipping penalty from unfeasible actions
         r_clipping = -abs(margin * action[0] - to_load)
 
-        # Operational cost penalty and degradation penalty
-        r_operation, r_deg = self._optional_reward()
-        
-        pure_reward_terms = [r_trading, r_operation, r_deg, r_clipping]
-        normalized_reward_terms = self._normalize_reward(deepcopy(pure_reward_terms))
-        weighted_reward_terms = [self._trading_coeff * normalized_reward_terms[0], self._op_cost_coeff * normalized_reward_terms[1],
-                                 self._deg_coeff * normalized_reward_terms[2], self._clip_action_coeff * normalized_reward_terms[3]]
-
-        self._update_reward_collections(pure_reward_terms, normalized_reward_terms, weighted_reward_terms)
+        self.pure_rewards = {'r_trad': r_trading, 'r_deg': r_deg, 'r_clip': r_clipping}
+        self._normalize_rewards(rewards=list(self.pure_rewards.values()))
+        self.weighted_rewards = {'r_trad': self.norm_rewards['r_trad'] * self._trading_coeff,
+                                 'r_deg': self.norm_rewards['r_deg'] * self._deg_coeff,
+                                 'r_clip': self.norm_rewards['r_clip'] * self._clip_action_coeff}
 
         # Combining reward terms
-        reward = sum(weighted_reward_terms)
-        self.total_reward += reward
+        reward = sum(self.weighted_rewards.values())
+
+        state = np.array(list(self._get_obs().values()), dtype=np.float32)
+        info = {}
+
+        if self.iseval:
+            # self.cumulated_reward += reward
+            # self.cumulated_reward_list.append(self.cumulated_reward)
+            self.power_list.append(to_load)
+            self.demand_list.append(actual_state['demand'])
+            self.generation_list.append(actual_state['generation'])
+            self.price_ask_list.append(obs['ask'])
+            self.price_bid_list.append(obs['bid'])
+            for reward_type in ["pure", "norm", "weighted"]:
+                reward_dict = getattr(self, f"{reward_type}_rewards")
+                reward_list_dict = getattr(self, f"{reward_type}_reward_list")
+                for k, v in reward_dict.items():
+                    reward_list_dict[k].append(v)
+
+            if truncated or terminated:
+                info = self.get_info()
+                # idx = self.demand.get_idx_from_times(time=self.timeframe)
+                # print(self.demand.profile, idx)
         
-        self._state = np.array(list(self._get_obs().values()), dtype=np.float32)
-        self.state_list.append(self._state)
-        info = self._get_info()
+
+
+        # if truncated or terminated:
+        #     for key, values in self.norm_reward_list.items():
+        #         plt.plot(values, label=key)
+
+        #     plt.title("Rewards per Key")
+        #     plt.xlabel("Index")
+        #     plt.ylabel("Value")
+        #     plt.legend()
+        #     plt.grid(True)
+        #     plt.show()
         
-        if truncated or terminated:
-            info['total_reward'] = self.total_reward
-            info['pure_reward_list'] = self.pure_reward_list
-            info['norm_reward_list'] = self.norm_reward_list
-            info['weighted_reward_list'] = self.weighted_reward_list            
-            info['actions'] = [action.tolist() for action in self.action_list]
-            info['states'] = [state.tolist() for state in self.state_list]
-            info['traded_energy'] = self.traded_energy
-            info['soh'] = self._battery.soh_series  
-        return self._state, reward, terminated, truncated, info
+        return state, reward, terminated, truncated, info
 
-    def _optional_reward(self):
+    def _normalize_rewards(self, rewards: list):
         """
-        Compute the reward related to optional aspect of the environment. In particular, the operational cost term, the
-        degradation term and the action clipping penalty term.
-        NOTE: the reward related to trading is the only mandatory term.
-        """
-        op_cost_term = 0
-        deg_term = 0
+        Normalize reward values using min-max normalization.
 
-        # Linearized degradation penalty
-        deg_term = soh_cost(delta_soh=abs(self._battery.soh_series[-2] - self._battery.soh_series[-1]),
-                            replacement_cost=self._battery.nominal_cost,
-                            soh_limit=self.termination['min_soh'])
+        This method normalizes the reward components based on predefined terms and coefficients. 
+        If normalization is disabled, the raw rewards are used as-is.
 
-        # Operational cost penalty
-        op_cost_term = (
-            operational_cost(replacement_cost=self._battery.nominal_cost,
-                             C_rated=self._battery.nominal_capacity * self._battery.nominal_voltage / 1000,
-                             C=self._battery.get_c_max() * self._battery.nominal_voltage / 1000,
-                             DoD_rated=self._battery.nominal_dod,
-                             L_rated=self._battery.nominal_lifetime,
-                             v_rated=self._battery.nominal_voltage,
-                             K_rated=self._battery.get_polarization_resistance(),
-                             p=self._battery.get_p(),
-                             r=self._battery.get_internal_resistance(),
-                             soc=self._battery.soc_series[-1],
-                             is_discharging=bool(self._battery.get_p() <= 0))
-        )
-            
-        if self._max_op_cost is None: 
-            self._max_op_cost = operational_cost(replacement_cost=self._battery.nominal_cost,
-                                                 C_rated=self._battery.nominal_capacity * self._battery.nominal_voltage / 1000,
-                                                 C=self._battery.nominal_capacity * self._battery.nominal_voltage / 1000,
-                                                 DoD_rated=self._battery.nominal_dod,
-                                                 L_rated=self._battery.nominal_lifetime,
-                                                 v_rated=self._battery.nominal_voltage,
-                                                 K_rated=self._battery.get_polarization_resistance(nominal=True),
-                                                 p=self._battery.get_feasible_current(last_soc=self._battery.soc_min, dt=self._env_step)[0] * self._battery.v_max / 1000,
-                                                 r=self._battery.get_internal_resistance(nominal=True),
-                                                 soc=self._battery.soc_min,
-                                                 is_discharging=True)
-
-        return -op_cost_term, -deg_term
-
-    def _normalize_reward(self, rewards: list):
-        """
-        Min-max normalization of reward values.
+        Args:
+            rewards (list): A list of raw reward values to be normalized.
         """
         if self._use_reward_normalization:
             if self._trad_norm_term is None:
-                self._trad_norm_term = max(self.generation.max_gen * self.market.max_bid, self.demand.max_demand * self.market.max_ask)
-        
-            # OlD NORMALIZATION of r_trad
-            #min_trading = -self.demand.max_demand * self.market.max_ask
-            #max_trading = self._battery.v_max * (0.6 * self._battery.nominal_capacity) * self.market.max_bid
-            #max_trading = self.generation.max_gen * self.market.max_bid
-            #rewards[0] = -1 + 2 * (rewards[0] - min_trading) / (max_trading - min_trading)
+                self._trad_norm_term = max(self.generation.max_gen * self.market.max_bid, 
+                                           self.demand.max_demand * self.market.max_ask)
             
-            rewards[0] = rewards[0] / self._trad_norm_term
-            #rewards[1] = rewards[1] / 40 / 21
-            #print("before:", rewards[1])
-            #print("MAX:", self._max_op_cost)
-            
-            #rewards[1] = rewards[1] / self._max_op_cost
-            rewards[1] = rewards[1] / self._battery.nominal_cost
-            #rewards[1] = rewards[1] / 410            
-            
-            #rewards[3] = rewards[3] / max(self.demand.max_demand, self.generation.max_gen)
-            rewards[3] = rewards[3] / max(abs(self.demand.max_demand - self.generation.min_gen), 
-                                          abs(self.generation.max_gen - self.demand.min_demand))            
-            #rewards[3] = rewards[3] / self.demand.max_demand
+            self.norm_rewards['r_trad'] = rewards[0] / self._trad_norm_term
+            self.norm_rewards['r_deg'] = rewards[1] 
+            self.norm_rewards['r_clip'] = rewards[2] / max(abs(self.demand.max_demand - self.generation.min_gen), 
+                                          abs(self.generation.max_gen - self.demand.min_demand))          
+        else:
+            self.norm_rewards['r_trad'] = rewards[0]
+            self.norm_rewards['r_deg'] = rewards[1]
+            self.norm_rewards['r_clip'] = rewards[2]
 
-        return rewards
-    
-    def _update_reward_collections(self, pure_terms: list, norm_terms: list, weighted_terms: list):
-        labels = ['r_trad', 'r_op', 'r_deg', 'r_clip']
-        
-        for i, label in enumerate(labels):
-            self.pure_reward_list[label].append(pure_terms[i])
-            self.norm_reward_list[label].append(norm_terms[i])
-            self.weighted_reward_list[label].append(weighted_terms[i])
-
-    def render(self):
-        raise NotImplementedError("Rendering not implemented yet.")
-
-    def close(self):
-        raise NotImplementedError("Rendering not implemented yet.")
 

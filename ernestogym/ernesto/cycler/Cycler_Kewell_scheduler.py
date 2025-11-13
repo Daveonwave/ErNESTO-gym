@@ -1,6 +1,6 @@
 from . import Modbus_Read_Write_Float_Functions as Mb
 from pymodbus.client import ModbusTcpClient
-# from pymodbus.payload import BinaryPayloadDecoder, BinaryPayloadBuilder
+from pymodbus.payload import BinaryPayloadDecoder, BinaryPayloadBuilder
 from pymodbus.constants import Endian
 from . import helper_functions as hfunc
 import numpy as np
