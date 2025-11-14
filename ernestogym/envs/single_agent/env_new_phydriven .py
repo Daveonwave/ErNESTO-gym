@@ -163,6 +163,7 @@ class MicroGridEnvPhyDriven(Env):
                 case 'demand':
                     idx = self.demand.get_idx_from_times(time=self.timeframe - self._env_step)
                     _, _, obs['demand'] = self.demand[idx]
+                    # obs['demand'] = obs['demand']*10
 
                 case 'soh':
                     obs['soh'] = self._battery.soh_series[-1]
@@ -170,6 +171,7 @@ class MicroGridEnvPhyDriven(Env):
                 case 'generation':
                     idx = self.generation.get_idx_from_times(time=self.timeframe - self._env_step)
                     _, _, obs['generation'] = self.generation[idx]
+                    # obs['generation'] = obs['generation']*10
 
                 case 'market':
                     idx = self.market.get_idx_from_times(time=self.timeframe)

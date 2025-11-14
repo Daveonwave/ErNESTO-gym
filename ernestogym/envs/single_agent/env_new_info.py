@@ -201,12 +201,12 @@ class MicroGridEnvEval(Env):
         idx = self.demand.get_idx_from_times(time=self.timeframe)
         # idx_d = idx
         _, _, actual_state['demand'] = self.demand[idx]
-
+        # actual_state['demand'] = actual_state['demand']*10
         if self.generation is not None:
             idx = self.generation.get_idx_from_times(time=self.timeframe)
             # idx_g = idx
             _, _, actual_state['generation'] = self.generation[idx]
-        
+            # actual_state['generation'] = actual_state['generation']*10
         # print(idx_d,idx_g)
         return actual_state
         
@@ -283,17 +283,17 @@ class MicroGridEnvEval(Env):
             gen_idx = 1
         # Otherwise we take an index between [1,len-1] so that we won't have out-of-index issues
         else:
-            # gen_idx = np.random.randint(low=1, high=len(self.generation) - self.termination['max_iterations'])
-            self._rng_gen_idx = np.random.default_rng(self._seed + int(self.demand.profile))
+            gen_idx = np.random.randint(low=1, high=len(self.generation) - self.termination['max_iterations'])
+            # self._rng_gen_idx = np.random.default_rng(self._seed + int(self.demand.profile))
 
             '''Note to self: self.generation.__getitem__ require an index 
             and returns self_timestamps[idx], self._times[idx], self._history[idx]'''
 
-            gen_idx = self._rng_gen_idx.integers(low=1, high=len(self.generation) - self.termination['max_iterations'])
+            # gen_idx = self._rng_gen_idx.integers(low=1, high=len(self.generation) - self.termination['max_iterations'])
             # print(gen_idx)
         _, sampled_time, _ = self.generation[gen_idx]
         self.timeframe = sampled_time % (self.SECONDS_PER_DAY * self.DAYS_PER_YEAR)
-        print(gen_idx)
+        # print(gen_idx)
         # Initialize randomly the environment setting for a new run
         if self._random_battery_init:
             init_info = {key: np.random.uniform(low=value['low'], high=value['high']) for key, value in

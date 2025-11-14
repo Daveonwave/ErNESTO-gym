@@ -352,10 +352,11 @@ class Cycler:
 
             self.set_I_setpoint(I_set)
             # self.start_operation()
-            self.I_read = I_set
+            self.I_read = self.read_I_meas()
 
             
-            print(f"Current = ({self.I_read:.3f} A)\n")
+            print(f"I_set = {I_set:.8f} A)\n")
+            print(f"I_read = {self.I_read:.8f} A\n")
             print(f"Power = ({P_set:.3f} W)\n\n")
 
             
