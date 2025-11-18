@@ -5,8 +5,8 @@ from tqdm import tqdm
 from typing import Callable
 import numpy as np
 
-from ernestogym.envs.single_agent.env_new import MicroGridEnv
-from ernestogym.envs.single_agent.env_new_evaluation import MicroGridEnvEval
+# from ernestogym.envs.single_agent.env_new import MicroGridEnv
+from ernestogym.envs.single_agent.env_new_info import MicroGridEnv
 from ernestogym.envs.single_agent.env_phydriven import MicroGridEnvPhyDriven
 
 from gymnasium import Wrapper
@@ -159,7 +159,7 @@ def train_ppo(envs, args, eval_env_params, model_file=None):
     
 def eval_ppo(env_params, args, test_profile, model_file=""):
     
-    env = MicroGridEnvEval(settings=env_params)
+    env = MicroGridEnv(settings=env_params)
         
     comparison_dict = {
         'test': test_profile,
@@ -212,12 +212,12 @@ def eval_ppo_phydriven(env_params, args, test_profile, model_file=""):
     
     env = MicroGridEnvPhyDriven(settings=env_params)
         
-    comparison_dict = {
-        'test': test_profile,
-        'pure_reward': {},
-        'norm_reward': {},
-        'weighted_reward': {},
-        'total_reward': 0
+    output_info = {
+        "demand_list": [],
+        "generation_list": [],
+        "price_ask_list": [],
+        "price_bid_list": [],
+        "power_list": []
     }
     
     logdir = "./logs/{}/results/{}/".format(args['exp_name'], args['save_results_as'])
@@ -250,33 +250,55 @@ def eval_ppo_phydriven(env_params, args, test_profile, model_file=""):
     while not done:
         ''' Scelta dell'azione'''
         action, _states = model.predict(obs)
+        last_info = None
 
         '''Applicazione dell'azione per un tempo dt_RL'''
-        end_time = time.time() + 0.5
+        end_time = time.time() + dt_RL
         while time.time() < end_time:
             # start_it_time = time.time()
-            obs, rewards, dones, info = vec_env.step(action)
+            obs, rewards, dones, info, to_load = vec_env.step(action)
             if dones[0]:
                 done = True
                 break
+        
+        output_info["demand_list"].append(obs['demand'])
+        output_info["generation_list"].append(obs['generation'])
+        output_info["price_ask_list"].append(obs['ask'])
+        output_info["price_bid_list"].append(obs['bid'])
+        output_info["power_list"].append(to_load)
 
-        # vec_env.timeframe += dt_RL
-        pbar.update(1)
+        if last_info is not None: 
+            for k, v in info[0].items():
+                # if the key is new, initialize a list
+                if k not in output_info:
+                    output_info[k] = []
+                # append the current hour’s value
+                output_info[k].append(v)
+
+            # vec_env.timeframe += dt_RL
+            
+            output_file = logdir + 'test_{}.json'.format(test_profile)
+
+            with open(output_file, 'w', encoding ='utf8') as f: 
+                json.dump(output_info, f, default=lambda o: o.tolist() if isinstance(o, np.ndarray) else o) 
+            pbar.update(1)
+
     env._battery._electrical_model._cycler.stop_follow_P()
     env._battery._electrical_model._cycler.exit_communications()
+    
 
-    comparison_dict['total_reward'] = info[0]['total_reward']
-    comparison_dict['pure_reward'] = info[0]['pure_reward_list']
-    comparison_dict['norm_reward'] = info[0]['norm_reward_list']
-    comparison_dict['weighted_reward'] = info[0]['weighted_reward_list']
-    comparison_dict['actions'] = info[0]['actions']
-    comparison_dict['states'] = info[0]['states']
-    comparison_dict['traded_energy'] = info[0]['traded_energy']
-    comparison_dict['soh'] = info[0]['soh']
+    # comparison_dict['total_reward'] = info[0]['total_reward']
+    # comparison_dict['pure_reward'] = info[0]['pure_reward_list']
+    # comparison_dict['norm_reward'] = info[0]['norm_reward_list']
+    # comparison_dict['weighted_reward'] = info[0]['weighted_reward_list']
+    # comparison_dict['actions'] = info[0]['actions']
+    # comparison_dict['states'] = info[0]['states']
+    # comparison_dict['traded_energy'] = info[0]['traded_energy']
+    # comparison_dict['soh'] = info[0]['soh']
 
-    output_file = logdir + 'test_{}.json'.format(test_profile)
+    # output_file = logdir + 'test_{}.json'.format(test_profile)
 
-    with open(output_file, 'w', encoding ='utf8') as f: 
-        json.dump(comparison_dict, f, allow_nan=False) 
+    # with open(output_file, 'w', encoding ='utf8') as f: 
+    #     json.dump(comparison_dict, f, allow_nan=False) 
 
 

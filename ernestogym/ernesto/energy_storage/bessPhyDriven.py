@@ -57,9 +57,16 @@ class BatteryEnergyStorageSystemPhyDriven:
         self.soc_series = []
         self.soh_series = []
         self.t_series = []
-
+        
         #Inital soh
         self._init_soh = battery_options['init']['soh'] if 'soh' in battery_options['init'].keys() else 1.0 
+
+        #Boolean to save all collections
+        self._save_collections = battery_options['save_collections'] \
+            if 'save_collections' in battery_options.keys() else False
+        self.observation_v = []
+        self.observation_i = []
+        self.observation_soc = []
 
         # Instantiate models
         self._build_models()
@@ -188,6 +195,7 @@ class BatteryEnergyStorageSystemPhyDriven:
         """
         v, i, soc = self._step_electrical(load=load, dt=dt)
         self.soc_series.append(soc)
+        self._update_collections(v,i,soc)
         
         # Thermal model step if present
         if self._thermal_model is not None:
@@ -209,9 +217,9 @@ class BatteryEnergyStorageSystemPhyDriven:
         for model in self.models:
             model.load_battery_state(temp=temp, soc=soc, soh=soh)
             
-        # Reset the SoC estimation to avoid an error drift of the SoC estimation. 
-        if self._reset_soc_every is not None and k % self._reset_soc_every == 0:
-            self.soc_series[-1] = self._soc_model.reset_soc(v=v, v_max=self.v_max, v_min=self.v_min)
+        # # Reset the SoC estimation to avoid an error drift of the SoC estimation. 
+        # if self._reset_soc_every is not None and k % self._reset_soc_every == 0:
+        #     self.soc_series[-1] = self._soc_model.reset_soc(v=v, v_max=self.v_max, v_min=self.v_min)
 
     def _step_electrical(self, load: float, dt: float):
         """
@@ -324,7 +332,22 @@ class BatteryEnergyStorageSystemPhyDriven:
                 del final_dict[key]
 
         return {'operations': final_dict, 'aging': deg_dict}
+    
+    def _update_collections(self, v,i,soc):
+        self.observation_v.append(v)
+        self.observation_i.append(i)
+        self.observation_soc.append(soc)
 
+    def get_observations(self) -> dict[str, list]:
+        """
+        Returns all collected observations as a dictionary.
+        """
+        return {
+            "v": self.observation_v,
+            "i": self.observation_i,
+            "soc": self.observation_soc,
+            "soh": self.soh_series,
+        }
 
 
 

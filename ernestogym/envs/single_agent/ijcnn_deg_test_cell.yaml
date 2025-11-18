@@ -45,11 +45,11 @@ observations:
 step: 3600 # in seconds
 step_model: 120 # in seconds
 random_battery_init: False # battery state initialization: if True it is randomized between declared bounds
-random_data_init: True # timeseries starting point: if True the timeseries starting point is randomly sampled
+random_data_init: False # timeseries starting point: if True the timeseries starting point is randomly sampled
 seed: 46 # to sample user's demand profile (also initial data and initial battery state if enabled)
 
 termination:
-  max_iterations: 168
+  max_iterations: 8760
   min_soh: 0.6
 
 reward:

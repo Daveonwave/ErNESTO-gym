@@ -211,8 +211,8 @@ class BatteryEnergyStorageSystem:
         soc = soc_old + i / (self._c_max * 3600) * dt
         soc = np.clip(soc, 0, 1)
 
-        if self._save_collections:
-            self._update_collections(v,i,soc)
+        # if self._save_collections:
+        #     self._update_collections(v,i,soc)
         return v, soc, v_rc
 
     def step(self, load: float, dt_RL: float, dt_DT: float, k: int, n_iter_el: int, t_amb: float = None):
