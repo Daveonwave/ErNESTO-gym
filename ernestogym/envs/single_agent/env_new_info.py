@@ -57,7 +57,7 @@ class MicroGridEnv(Env):
 
         print(f"[INIT] Environment created with seed {self._seed}")
 
-        # self._rng_gen_idx = np.random.default_rng(self._seed + 12345)  # offset to keep streams independent
+        self._rng_gen_idx = np.random.default_rng(self._seed + 12345)  # offset to keep streams independent
 
         # Collect exogenous variables profiles
         self.demand = EnergyDemand(**settings["demand"])
@@ -218,27 +218,27 @@ class MicroGridEnv(Env):
             dict[str, Any]: All tracked variables during evaluation, including power, 
             demand, generation, market prices, reward history lists, and battery observations.
         """
-        # info = {
-        #     # Time series data collected during evaluation
-        #     "power_list": getattr(self, "power_list", []),
-        #     "demand_list": getattr(self, "demand_list", []),
-        #     "generation_list": getattr(self, "generation_list", []),
-        #     "price_ask_list": getattr(self, "price_ask_list", []),
-        #     "price_bid_list": getattr(self, "price_bid_list", []),
-        #     "pure_reward_list": getattr(self, "pure_reward_list", {}),
-        #     "norm_reward_list": getattr(self, "norm_reward_list", {}),
-        #     "weighted_reward_list": getattr(self, "weighted_reward_list", {}),
-        # }
         info = {
+            # Time series data collected during evaluation
+            "power_list": getattr(self, "power_list", []),
+            "demand_list": getattr(self, "demand_list", []),
+            "generation_list": getattr(self, "generation_list", []),
+            "price_ask_list": getattr(self, "price_ask_list", []),
+            "price_bid_list": getattr(self, "price_bid_list", []),
             "pure_reward_list": getattr(self, "pure_reward_list", {}),
             "norm_reward_list": getattr(self, "norm_reward_list", {}),
             "weighted_reward_list": getattr(self, "weighted_reward_list", {}),
         }
+        # info = {
+        #     "pure_reward_list": getattr(self, "pure_reward_list", {}),
+        #     "norm_reward_list": getattr(self, "norm_reward_list", {}),
+        #     "weighted_reward_list": getattr(self, "weighted_reward_list", {}),
+        # }
 
 
         # Add battery observations if battery exists
-        # if hasattr(self, "_battery") and hasattr(self._battery, "get_observations"):
-        #     info["battery_observations"] = self._battery.get_observations()
+        if hasattr(self, "_battery") and hasattr(self._battery, "get_observations"):
+            info["battery_observations"] = self._battery.get_observations()
 
         return info
 
@@ -289,14 +289,14 @@ class MicroGridEnv(Env):
             gen_idx = 1
         # Otherwise we take an index between [1,len-1] so that we won't have out-of-index issues
         else:
-            gen_idx = np.random.randint(low=1, high=len(self.generation) - self.termination['max_iterations'])
-            # self._rng_gen_idx = np.random.default_rng(self._seed + int(self.demand.profile))
+            # gen_idx = np.random.randint(low=1, high=len(self.generation) - self.termination['max_iterations'])
+            self._rng_gen_idx = np.random.default_rng(self._seed + int(self.demand.profile))
 
             '''Note to self: self.generation.__getitem__ require an index 
             and returns self_timestamps[idx], self._times[idx], self._history[idx]'''
 
-            # gen_idx = self._rng_gen_idx.integers(low=1, high=len(self.generation) - self.termination['max_iterations'])
-            # print(gen_idx)
+            gen_idx = self._rng_gen_idx.integers(low=0, high = len(self.generation) +1 - self.termination['max_iterations'])    
+        print(gen_idx)
         _, sampled_time, _ = self.generation[gen_idx]
         self.timeframe = sampled_time % (self.SECONDS_PER_DAY * self.DAYS_PER_YEAR)
         # print(gen_idx)
@@ -370,11 +370,13 @@ class MicroGridEnv(Env):
         # Truncation conditions (due to the end of data)
         truncated = bool(
             (self.termination['max_iterations'] is not None and
-             self.iterations >= self.termination['max_iterations'])
+             self.iterations > self.termination['max_iterations'])
             or self.demand.is_run_out_of_data()
             or self.generation.is_run_out_of_data()
             or self.market.is_run_out_of_data()
         )
+        # if self.iterations > self.termination['max_iterations']:
+        #     print(self.iterations > self.termination['max_iterations'])
 
         # Trading reward with market and cost of degradation
         r_trading = to_trade * obs['ask'] * self._env_step/3600 if to_trade < 0 else to_trade * obs['bid'] * self._env_step/3600

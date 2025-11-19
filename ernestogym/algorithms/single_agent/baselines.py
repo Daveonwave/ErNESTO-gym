@@ -1,4 +1,4 @@
-from ernestogym.envs.single_agent.env import MicroGridEnv
+from ernestogym.envs.single_agent.env_new_info import MicroGridEnv
 from ernestogym.envs.single_agent.utils import parameter_generator
 from tqdm import tqdm
 import pandas as pd
@@ -67,19 +67,19 @@ def random_action_policy(env, exp_name, test_profile):
         done = terminated or truncated
         pbar.update(1)
 
-    comparison_dict['total_reward'] = info['total_reward']
-    comparison_dict['pure_reward'] = info['pure_reward_list']
-    comparison_dict['norm_reward'] = info['norm_reward_list']
-    comparison_dict['weighted_reward'] = info['weighted_reward_list']
-    comparison_dict['actions'] = info['actions']
-    comparison_dict['states'] = info['states']
-    comparison_dict['traded_energy'] = info['traded_energy']
-    comparison_dict['soh'] = info['soh']
+    # comparison_dict['total_reward'] = info['total_reward']
+    # comparison_dict['pure_reward'] = info['pure_reward_list']
+    # comparison_dict['norm_reward'] = info['norm_reward_list']
+    # comparison_dict['weighted_reward'] = info['weighted_reward_list']
+    # comparison_dict['actions'] = info['actions']
+    # comparison_dict['states'] = info['states']
+    # comparison_dict['traded_energy'] = info['traded_energy']
+    # comparison_dict['soh'] = info['soh']
 
     output_file = logdir + 'test_{}.json'.format(test_profile)
 
     with open(output_file, 'w', encoding ='utf8') as f: 
-        json.dump(comparison_dict, f, allow_nan=False) 
+        json.dump(info, f, default=lambda o: o.tolist() if isinstance(o, np.ndarray) else o) 
 
 
 def deterministic_action_policy(env, action:float, algo_name: str, exp_name: str, test_profile):
@@ -108,16 +108,16 @@ def deterministic_action_policy(env, action:float, algo_name: str, exp_name: str
         done = terminated or truncated
         pbar.update(1)
 
-    comparison_dict['total_reward'] = info['total_reward']
-    comparison_dict['pure_reward'] = info['pure_reward_list']
-    comparison_dict['norm_reward'] = info['norm_reward_list']
-    comparison_dict['weighted_reward'] = info['weighted_reward_list']
-    comparison_dict['actions'] = info['actions']
-    comparison_dict['states'] = info['states']
-    comparison_dict['traded_energy'] = info['traded_energy']
-    comparison_dict['soh'] = info['soh']
+    # comparison_dict['total_reward'] = info['total_reward']
+    # comparison_dict['pure_reward'] = info['pure_reward_list']
+    # comparison_dict['norm_reward'] = info['norm_reward_list']
+    # comparison_dict['weighted_reward'] = info['weighted_reward_list']
+    # comparison_dict['actions'] = info['actions']
+    # comparison_dict['states'] = info['states']
+    # comparison_dict['traded_energy'] = info['traded_energy']
+    # comparison_dict['soh'] = info['soh']
 
     output_file = logdir + 'test_{}.json'.format(test_profile)
 
     with open(output_file, 'w', encoding ='utf8') as f: 
-        json.dump(comparison_dict, f, allow_nan=False) 
+        json.dump(info, f, default=lambda o: o.tolist() if isinstance(o, np.ndarray) else o) 

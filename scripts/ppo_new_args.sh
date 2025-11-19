@@ -31,12 +31,12 @@ python launch_env.py \
     --max_grad_norm 0.5 \
     --learning_rate 0.00005 \
     --log_rate 5 \
-    --eval_freq 672 \
+    --eval_freq 35000 \
     --n_eval_episodes 10 \
     --seed "${SEED}" \
-    --world_settings ernestogym/envs/single_agent/ijcnn_deg_train_cell.yaml \
+    --world_settings ernestogym/envs/single_agent/ijcnn_deg_train_cell_scaling.yaml \
     --electrical_model ernestogym/ernesto/data/battery/models/electrical/thevenin_cell.yaml \
     --thermal_model ernestogym/ernesto/data/battery/models/thermal/r2c_thermal_cell.yaml \
     --aging_model ernestogym/ernesto/data/battery/models/aging/bolun_cell.yaml \
-    --eval_world_settings ernestogym/envs/single_agent/ijcnn_deg_test_cell.yaml \
+    --eval_world_settings ernestogym/envs/single_agent/ijcnn_deg_test_cell_scaling.yaml \
     --train

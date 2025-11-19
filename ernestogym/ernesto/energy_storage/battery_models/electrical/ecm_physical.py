@@ -3,8 +3,9 @@ from .ecm_components import Resistor
 from .ecm_components import ResistorCapacitorParallel
 from .ecm_components import OCVGenerator
 from ernestogym.ernesto.energy_storage.battery_models.parameters import instantiate_variables
-from ernestogym.ernesto.cycler import Cycler_Kewell_scheduler
+# from ernestogym.ernesto.cycler import Cycler_Kewell_scheduler
 # from ernestogym.ernesto.cycler import Cycler_dummy
+from ernestogym.ernesto.cycler import Cycler_Kewell_stop_at_zero
 import time
 import signal
 
@@ -35,7 +36,7 @@ class Phydriven(ElectricalModel):
 
 
         # Build the cycler object
-        self._cycler = Cycler_Kewell_scheduler.Cycler(ip = '192.168.1.191', port=502)
+        self._cycler = Cycler_Kewell_stop_at_zero.Cycler(ip = '192.168.1.191', port=502)
         ''' TO DO: Creare settings per impostazioni ciclatore'''
         self._init_components = instantiate_variables(components_settings)
         self.r0 = Resistor(name='R0', resistance=self._init_components['r0'])

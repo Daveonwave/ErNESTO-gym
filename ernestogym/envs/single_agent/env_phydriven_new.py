@@ -340,7 +340,7 @@ class MicroGridEnvPhyDriven(Env):
         """
         # Retrieve the actual amount of demand, generation and market
         obs, actual_state = self._get_obs(), self._get_actual_state()
-        self.timeframe += self._env_step
+        self.timeframe += self._env_step*120
         # print(action, obs)
         
 
@@ -367,7 +367,7 @@ class MicroGridEnvPhyDriven(Env):
         #     get_i()
 
         self._battery.t_series.append(self.elapsed_time)
-        self.elapsed_time += self._env_step
+        self.elapsed_time += self._env_step*120
         self.iterations += 1
                                 
         # Termination condition
@@ -422,6 +422,17 @@ class MicroGridEnvPhyDriven(Env):
                     reward_list_dict[k].append(v)
 
             info = self.get_info()
+            info['power_setpoint'] = to_load
+            info['demand'] = obs ['demand']
+            info['generation'] = obs ['generation']
+            info['ask'] = obs ['ask']
+            info['bid'] = obs ['bid']
+            # for k, v in obs.items():
+            #     # if the key is new, initialize a list
+            #     if k not in info:
+            #         info[k] = []
+            #         # save the current hour’s value
+            #         info[k] = v
                 # idx = self.demand.get_idx_from_times(time=self.timeframe)
                 # print(self.demand.profile, idx)
         
@@ -438,7 +449,7 @@ class MicroGridEnvPhyDriven(Env):
         #     plt.grid(True)
         #     plt.show()
         
-        return state, reward, terminated, truncated, info, to_load
+        return state, reward, terminated, truncated, info
 
     def _normalize_rewards(self, rewards: list):
         """

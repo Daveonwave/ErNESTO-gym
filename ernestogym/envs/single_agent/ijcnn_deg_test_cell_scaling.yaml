@@ -1,5 +1,5 @@
 demand:
-  path: "ernestogym/ernesto/data/demand/rse_profiles_test_cell.csv"
+  path: "ernestogym/ernesto/data/demand/rse_profiles_test_V_scaling.csv"
   timestep: 3600 # seconds
   test_profiles: # column label to use to test the agent
     - "70"
@@ -10,7 +10,7 @@ demand:
   data_usage: "end" # "circular/end"
 
 generation:
-  path: "ernestogym/ernesto/data/generation/pv_ninja_2019-2020_3kW_NoLeap_test_cell.csv"
+  path: "ernestogym/ernesto/data/generation/pv_ninja_2019-2020_3kW_test_V_scaling.csv"
   timestep: 3600 # seconds
   data_usage: "end" # "circular/end"
 
@@ -45,16 +45,16 @@ observations:
 step: 3600 # in seconds
 step_model: 120 # in seconds
 random_battery_init: False # battery state initialization: if True it is randomized between declared bounds
-random_data_init: True # timeseries starting point: if True the timeseries starting point is randomly sampled
-seed: 74842 # to sample user's demand profile (also initial data and initial battery state if enabled)
+random_data_init: False # timeseries starting point: if True the timeseries starting point is randomly sampled
+seed: 46 # to sample user's demand profile (also initial data and initial battery state if enabled)
 
 termination:
-  max_iterations: 672
+  max_iterations: 8760
   min_soh: 0.6
 
 reward:
   trading_coeff: 1
   degradation_coeff: 1
-  clip_action_coeff: 1
+  clip_action_coeff: 10
 
 use_reward_normalization: True

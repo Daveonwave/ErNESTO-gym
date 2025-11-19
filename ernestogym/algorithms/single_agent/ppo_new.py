@@ -7,7 +7,7 @@ import numpy as np
 
 # from ernestogym.envs.single_agent.env_new import MicroGridEnv
 from ernestogym.envs.single_agent.env_new_info import MicroGridEnv
-from ernestogym.envs.single_agent.env_phydriven import MicroGridEnvPhyDriven
+from ernestogym.envs.single_agent.env_phydriven_new import MicroGridEnvPhyDriven
 
 from gymnasium import Wrapper
 from stable_baselines3.common.vec_env import VecNormalize, DummyVecEnv
@@ -213,11 +213,11 @@ def eval_ppo_phydriven(env_params, args, test_profile, model_file=""):
     env = MicroGridEnvPhyDriven(settings=env_params)
         
     output_info = {
-        "demand_list": [],
-        "generation_list": [],
-        "price_ask_list": [],
-        "price_bid_list": [],
-        "power_list": []
+        "demand": [],
+        "generation": [],
+        "ask": [],
+        "bid": [],
+        "power_setpoint": []
     }
     
     logdir = "./logs/{}/results/{}/".format(args['exp_name'], args['save_results_as'])
@@ -253,36 +253,42 @@ def eval_ppo_phydriven(env_params, args, test_profile, model_file=""):
         last_info = None
 
         '''Applicazione dell'azione per un tempo dt_RL'''
-        end_time = time.time() + dt_RL
+        # end_time = time.time() + dt_RL
+        end_time = time.time() + 30
         while time.time() < end_time:
             # start_it_time = time.time()
-            obs, rewards, dones, info, to_load = vec_env.step(action)
+            obs, rewards, dones, info = vec_env.step(action)
+            last_info = info[0]       # always updated to the most recent one
             if dones[0]:
                 done = True
                 break
-        
-        output_info["demand_list"].append(obs['demand'])
-        output_info["generation_list"].append(obs['generation'])
-        output_info["price_ask_list"].append(obs['ask'])
-        output_info["price_bid_list"].append(obs['bid'])
-        output_info["power_list"].append(to_load)
+            pbar.update(1)
 
+        
+        output_info["demand"].append(last_info['demand'])
+        output_info["generation"].append(last_info['generation'])
+        output_info["ask"].append(last_info['ask'])
+        output_info["bid"].append(last_info['bid'])
+        output_info["power_setpoint"].append(last_info['power_setpoint'])
+
+        cycler_keys = ['pure_reward_list', 'weighted_reward_list','norm_reward_list', 'battery_observations']
         if last_info is not None: 
-            for k, v in info[0].items():
+            for k, v in last_info.items():
                 # if the key is new, initialize a list
-                if k not in output_info:
-                    output_info[k] = []
-                # append the current hour’s value
-                output_info[k].append(v)
+                if k in cycler_keys:
+                    # output_info[k] = []
+                    # append the current hour’s value
+                    output_info[k] = v
 
             # vec_env.timeframe += dt_RL
             
-            output_file = logdir + 'test_{}.json'.format(test_profile)
+        output_file = logdir + 'test_{}.json'.format(test_profile)
 
-            with open(output_file, 'w', encoding ='utf8') as f: 
-                json.dump(output_info, f, default=lambda o: o.tolist() if isinstance(o, np.ndarray) else o) 
-            pbar.update(1)
-
+        output_info["generation"] = [float(x) for x in output_info["generation"]]
+        output_info["demand"] = [float(x) for x in output_info["demand"]]
+        with open(output_file, 'w', encoding ='utf8') as f: 
+            json.dump(output_info, f, default=lambda o: o.tolist() if isinstance(o, np.ndarray) else o) 
+        print('\n++++++ FILE SAVED ++++++')
     env._battery._electrical_model._cycler.stop_follow_P()
     env._battery._electrical_model._cycler.exit_communications()
     

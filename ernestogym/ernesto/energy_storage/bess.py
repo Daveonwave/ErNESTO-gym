@@ -337,7 +337,13 @@ class BatteryEnergyStorageSystem:
                                                                               temp=self._thermal_model.get_temp_series(k=-1),
                                                                               elapsed_time=self.t_series[-1],
                                                                               k=k,
-                                                                              do_check=(k % self._check_soh_every == 0))        
+                                                                              do_check=(k % self._check_soh_every == 0))  
+        # elif self._aging_model.name == 'Linear':
+        #     return self._init_soh -  self._aging_model.compute_degradation(soc = self.soc_series[-1],
+        #                                                                       temp = self._thermal_model.get_temp_series(k=-1),
+        #                                                                       elapsed_time = self.t_series[-1],
+        #                                                                       k=k,
+        #                                                                       do_check = (k % self._check_soh_every == 0)) 
         else:
             raise Exception("The provided aging model {} doesn't exist or is just not implemented!".format(self._aging_model.name))
     
