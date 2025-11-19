@@ -296,7 +296,7 @@ class MicroGridEnv(Env):
             and returns self_timestamps[idx], self._times[idx], self._history[idx]'''
 
             gen_idx = self._rng_gen_idx.integers(low=0, high = len(self.generation) +1 - self.termination['max_iterations'])    
-        print(gen_idx)
+        # print(gen_idx)
         _, sampled_time, _ = self.generation[gen_idx]
         self.timeframe = sampled_time % (self.SECONDS_PER_DAY * self.DAYS_PER_YEAR)
         # print(gen_idx)
