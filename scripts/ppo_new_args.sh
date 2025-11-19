@@ -18,7 +18,7 @@ python launch_env.py \
     --spread_factor 1 \
     --save_results_as "ppo_rse_01deg_final" \
     --gamma 0.99 \
-    --n_episodes 10000 \
+    --n_episodes 1000 \
     --policy_network 64 32 \
     --log_std_init -1 \
     --batch_size 256 \
