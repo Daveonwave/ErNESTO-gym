@@ -10,6 +10,7 @@ from .rewards import operational_cost, linearized_degradation, soh_cost
 from ernestogym.ernesto.energy_storage.bess import BatteryEnergyStorageSystem
 from ernestogym.ernesto import PVGenerator, EnergyDemand, EnergyMarket, DummyGenerator, DummyMarket, AmbientTemperature, DummyAmbientTemperature
 import matplotlib.pyplot as plt
+import time
 
 class MicroGridEnv(Env):
     SECONDS_PER_MINUTE = 60
@@ -387,7 +388,10 @@ class MicroGridEnv(Env):
                           soh_limit=self.termination['min_soh'])
         
         # Clipping penalty from unfeasible actions
-        r_clipping = -abs(margin * action[0] - to_load)
+        # r_clipping = -abs(margin * action[0] - to_load)
+        clipped = margin * action[0] - to_load
+        r_clipping = clipped**2
+
 
         self.pure_rewards = {'r_trad': r_trading, 'r_deg': r_deg, 'r_clip': r_clipping}
         self._normalize_rewards(rewards=list(self.pure_rewards.values()))
@@ -398,6 +402,12 @@ class MicroGridEnv(Env):
         # Combining reward terms
         reward = sum(self.weighted_rewards.values())
 
+        # if self.norm_rewards['r_clip'] != 0:
+        #     print(f"R_deg={self.norm_rewards['r_deg']}\t")
+        #     print(f"R_clip={self.norm_rewards['r_clip']}\t")
+        #     print(f"R_trad={self.norm_rewards['r_trad']}\t")
+        #     time.sleep(1)
+        
         state = np.array(list(self._get_obs().values()), dtype=np.float32)
         info = {}
 
@@ -451,12 +461,12 @@ class MicroGridEnv(Env):
                                            self.demand.max_demand * self.market.max_ask)
             
             self.norm_rewards['r_trad'] = rewards[0] / self._trad_norm_term
-            self.norm_rewards['r_deg'] = rewards[1] 
+            self.norm_rewards['r_deg']  = rewards[1] / self._battery.nominal_cost
             self.norm_rewards['r_clip'] = rewards[2] / max(abs(self.demand.max_demand - self.generation.min_gen), 
                                           abs(self.generation.max_gen - self.demand.min_demand))          
         else:
             self.norm_rewards['r_trad'] = rewards[0]
-            self.norm_rewards['r_deg'] = rewards[1]
+            self.norm_rewards['r_deg']  = rewards[1]
             self.norm_rewards['r_clip'] = rewards[2]
 
 
