@@ -409,11 +409,11 @@ class MicroGridEnvPhyDriven(Env):
             # self.cumulated_reward += reward
             # self.cumulated_reward_list.append(self.cumulated_reward)
             '''Commented'''
-            # self.power_list.append(to_load)
-            # self.demand_list.append(actual_state['demand'])
-            # self.generation_list.append(actual_state['generation'])
-            # self.price_ask_list.append(obs['ask'])
-            # self.price_bid_list.append(obs['bid'])
+            self.power_list.append(to_load)
+            self.demand_list.append(actual_state['demand'])
+            self.generation_list.append(actual_state['generation'])
+            self.price_ask_list.append(obs['ask'])
+            self.price_bid_list.append(obs['bid'])
             ''''''
             for reward_type in ["pure", "norm", "weighted"]:
                 reward_dict = getattr(self, f"{reward_type}_rewards")

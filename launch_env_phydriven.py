@@ -136,5 +136,8 @@ if __name__ == '__main__':
             eval_func = run_baseline
 
         test_profiles = [str(i) for i in range(370, 398)]
-        n_cores = len(test_profiles) if args['n_cores'] >= len(test_profiles) else args['n_cores']
-        Parallel(n_jobs=n_cores)(delayed(eval_func)(params, args, test, args['load_model']) for test in test_profiles)    
+
+        # pick the profile you want, e.g. the first one
+        test = test_profiles[1]
+
+        eval_func(params, args, test, args['load_model'])
