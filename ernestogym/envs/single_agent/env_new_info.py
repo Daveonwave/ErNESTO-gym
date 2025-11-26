@@ -390,7 +390,11 @@ class MicroGridEnv(Env):
         # Clipping penalty from unfeasible actions
         # r_clipping = -abs(margin * action[0] - to_load)
         clipped = margin * action[0] - to_load
-        r_clipping = 0.1*clipped**2
+        # r_clipping = -1.0 * np.tanh(0.1 * abs(clipped))
+
+        # r_clipping = -0.1*clipped**2
+        r_clipping = self.huber_penalty(clipped)
+
 
 
         self.pure_rewards = {'r_trad': r_trading, 'r_deg': r_deg, 'r_clip': r_clipping}
@@ -469,4 +473,11 @@ class MicroGridEnv(Env):
             self.norm_rewards['r_deg']  = rewards[1]
             self.norm_rewards['r_clip'] = rewards[2]
 
+
+    def huber_penalty(self, c, k=0.1, alpha=0.005):
+        abs_c = abs(c) 
+        if abs_c <= k: 
+            return -alpha * 0.5 * abs_c * abs_c 
+        else: 
+            return -alpha * (k * (abs_c - 0.5 * k))
 

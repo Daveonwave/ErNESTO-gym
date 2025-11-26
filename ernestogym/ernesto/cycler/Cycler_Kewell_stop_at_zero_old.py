@@ -9,7 +9,6 @@ import time
 import threading
 from apscheduler.schedulers.background import BackgroundScheduler
 import datetime
-import csv
 
 
 
@@ -34,19 +33,7 @@ class Cycler:
         self._V_max = None
         self._update_interval = 1.0
         self.V_read = None
-        self.I_read = 0
-        self.I_set = 0
-        self.I_set_sat = 0
-        self.e_k = 0
-        self.e_i = 0
-        self.e_s = 0
-        self.e_k_prev = 0
-        self.P_set_prev = 0
-        self.activate_reset = False
-        self.Ts = 0.1 
-        self.k_p = 1/3.7
-        self.k_i = 0.1*self.Ts/3.7
-        self.k_W = 0.1*self.Ts
+        self.I_read = None
 
         '''Set CC mode'''
         self.set_mode(1)
@@ -108,7 +95,7 @@ class Cycler:
         result = self.client.write_registers(start_register, payload)
         
         if not result.isError():
-            # print(f"✅ Float scritti con successo nei registri a partire da {start_register}: {new_values}")
+            print(f"✅ Float scritti con successo nei registri a partire da {start_register}: {new_values}")
             
             # self.disconnect()
             #print("🔌 Connessione chiusa.")
@@ -357,53 +344,20 @@ class Cycler:
                 warnings.warn("Voltage too low; skipping update.")
                 return
 
+            I_computed = P_set / self.V_read
+            I_set = np.clip(I_computed, -I_max, I_max)
 
+            if I_computed != I_set:
+                warnings.warn(f"I_computed={I_computed:.3f} A clipped to {I_set:.3f} A")
 
-            # I_computed = P_set / self.V_read
-            # with self._lock:
-            #     self.I_set = np.clip(I_computed, -I_max, I_max)
-
-            # if I_computed != self.I_set:
-            #     warnings.warn(f"I_computed={I_computed:.3f} A clipped to {self.I_set:.3f} A")
-
-
-            I_ff = P_set / 3.7
-
+            self.set_I_setpoint(I_set)
             # self.start_operation()
             self.I_read = self.read_I_meas()
-            if abs(self.I_read) <= 0.15:
-                self.I_read_adjusted = self.I_set_sat
-            else:
-                self.I_read_adjusted = self.I_read
-            self.P_read = self.read_P_meas()
-                
-            self.e_k = P_set-self.P_read
 
-            if P_set != self.P_set_prev and self.activate_reset:
-                self.e_i = 0
-                self.e_s = 0
-            self.P_set_prev = P_set
-            if abs(self.e_i) > 10:
-                self.e_i = np.sign(self.e_i)*10
-            self.e_i_prev = np.copy(self.e_i)
-            self.e_i += self.e_k 
-            self.e_s += self.I_set - self.I_set_sat
-
-            self.I_set = I_ff + self.k_p*self.e_k + self.k_i * self.e_i - self.k_W * self.e_s
-
-            with self._lock:
-                self.I_set_sat = np.clip(self.I_set, -I_max, I_max)
-
-            self.set_I_setpoint(self.I_set_sat)
-
-            print(f"I_set = {self.I_set:.8f} A)\t")
-            print(f"I_read = {self.I_read:.8f} A\t")
-            print(f"Power = ({P_set:.3f} W)\n")
-            filename = 'Test_controllore'
-            with open(filename, 'a', newline='') as file:
-                writer = csv.writer(file)
-                riga=[self.I_set, self.I_read ,P_set]
-                writer.writerow(riga)
+            
+            print(f"I_set = {I_set:.8f} A)\n")
+            print(f"I_read = {self.I_read:.8f} A\n")
+            print(f"Power = ({P_set:.3f} W)\n\n")
 
             
 
@@ -434,13 +388,6 @@ class Cycler:
         """
 
         """Set the setpoint and the other params"""
-
-        filename = 'Test_controllore'
-        with open(filename, 'a', newline='') as file:
-            writer = csv.writer(file)
-            riga = ['Iset' ,'Imeas' ,'Pset']
-            writer.writerow(riga)
-
         with self._lock:
             self._P_set = P_set
             self._I_max = I_max
@@ -461,16 +408,12 @@ class Cycler:
                 
             else:
                 self.stop_follow_P()
-                with self._lock:
-                    self.I_set = 0
-
                 print(f'Power  = {P_set} -> scheduler stopped')
             return
 
         # Case 2: no job running yet
         if P_set == 0:
             self.stop_operation()
-            self.I_set = 0
             print(f'Power  = {P_set} -> scheduler not running')
             return
 
@@ -512,9 +455,6 @@ class Cycler:
         # Recreate scheduler for next start
         self._scheduler = BackgroundScheduler()
 
-    def get_I_setpoint(self):
-        with self._lock:
-            return self.I_set
     
             
 # my_cycler.set_I_from_P(4, 5, 3.2, 4.14)

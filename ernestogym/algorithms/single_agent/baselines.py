@@ -103,7 +103,7 @@ def deterministic_action_policy(env, action:float, algo_name: str, exp_name: str
     done = False
     pbar = tqdm(total=len(env.generation))
     while not done:
-        act = np.array([action])  # Randomly select an action
+        act = np.array([action])  # Deterministic selection of the action
         obs, reward, terminated, truncated, info = env.step(act)  # Return observation and reward
         done = terminated or truncated
         pbar.update(1)

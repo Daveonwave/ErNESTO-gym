@@ -77,7 +77,7 @@ battery:
             high: 1.
 
     init:
-        voltage: 3.434
+        voltage: 3.65
         current: 0.
         power: 0.
         temperature: 293.15

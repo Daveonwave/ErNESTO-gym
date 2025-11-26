@@ -17,13 +17,18 @@ done
 #################################
 
 # Algorithms to run
-# ALGOS=("ppo" "random" "only_market" "battery_first")
-ALGOS=("ppo")
+ALGOS=("ppo" "random" "only_market" "battery_first")
+# ALGOS=("ppo")
 
 
 # Models to test **for PPO only**
-PPO_MODELS=("20251120_456_partial_model")
+# PPO_MODELS=("20251120_456_partial_model")
+# PPO_MODELS=("20251124_new_clipping_form_456")
 # PPO_MODELS=("year_long_training_last_model")
+
+# PPO_MODELS=("tanh_best_model_456")
+# PPO_MODELS=("huber_best_model_456")
+PPO_MODELS=("best_model_456_0005_alpha_huber")
 
 #################################
 # Run experiments
@@ -39,11 +44,11 @@ for ALGO in "${ALGOS[@]}"; do
             python launch_env.py \
                 --algo "$ALGO" \
                 --n_cores 1 \
-                --exp_name "scaled_year_20251124_experiment" \
+                --exp_name "20251126_best_huber_0005_alpha" \
                 --replacement_cost 10.5 \
                 --spread_factor 1 \
                 --load_model "$MODEL" \
-                --save_results_as "norm_${ALGO}_${MODEL}" \
+                --save_results_as "new_init_norm_${ALGO}_${MODEL}" \
                 --gamma 0.99 \
                 --weight_trading 1 \
                 --weight_degradation 1 \
@@ -66,11 +71,11 @@ for ALGO in "${ALGOS[@]}"; do
         python launch_env.py \
             --algo "$ALGO" \
             --n_cores 1 \
-            --exp_name "scaled_year_20251121_experiment" \
-            --replacement_cost 6 \
+            --exp_name "20251126_best_huber_0005_alpha" \
+            --replacement_cost 10.5 \
             --spread_factor 1 \
             --load_model "20251112_model" \
-            --save_results_as "norm_${ALGO}" \
+            --save_results_as "new_init_norm_${ALGO}" \
             --gamma 0.99 \
             --weight_trading 1 \
             --weight_degradation 1 \
