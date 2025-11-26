@@ -5,7 +5,7 @@ from .ecm_components import OCVGenerator
 from ernestogym.ernesto.energy_storage.battery_models.parameters import instantiate_variables
 # from ernestogym.ernesto.cycler import Cycler_Kewell_scheduler
 # from ernestogym.ernesto.cycler import Cycler_dummy
-from ernestogym.ernesto.cycler import Cycler_Kewell_stop_at_zero
+from ernestogym.ernesto.cycler import Cycler_Kewell_stop_at_zero_old
 import time
 import signal
 
@@ -36,7 +36,7 @@ class Phydriven(ElectricalModel):
 
 
         # Build the cycler object
-        self._cycler = Cycler_Kewell_stop_at_zero.Cycler(ip = '192.168.1.191', port=502)
+        self._cycler = Cycler_Kewell_stop_at_zero_old.Cycler(ip = '192.168.1.191', port=502)
         ''' TO DO: Creare settings per impostazioni ciclatore'''
         self._init_components = instantiate_variables(components_settings)
         self.r0 = Resistor(name='R0', resistance=self._init_components['r0'])
@@ -200,7 +200,7 @@ class Phydriven(ElectricalModel):
 
         return v, i_load
 
-    def step_power_driven(self, p_load, dt,  V_min = 3., V_max = 4.15, I_max = 20.):
+    def step_power_driven(self, p_load, dt,  dt_previous_iter, V_min = 3., V_max = 4.15, I_max = 20.):
         """
         CP mode: to simplify the power driven case, we pose I = P / V(t-1), having a little shift in computed data
         """
@@ -209,19 +209,21 @@ class Phydriven(ElectricalModel):
             # self._cyler.set_P_setpoint(P_set=p_load, I_max, V_min, V_max, update_interval=1.0)
             # return self.step_current_driven(i_load=p_load / self._v_load_series[-1], dt=dt, k=k, p_load=p_load)
             '''Remove hardcode update interval'''
-            self._cycler.start_follow_P(P_set=p_load, I_max = I_max, V_min = V_min, V_max = V_max, update_interval = 0.1)
-            time.sleep(dt)
-            # time.sleep(5)
+            self._cycler.start_follow_P(P_set=p_load, I_max = I_max, V_min = V_min, V_max = V_max, duration=60, update_interval = 0.1)
+            # time.sleep(dt-0.02)
             v = self._cycler.read_V_meas()
             i = self._cycler.read_I_meas()
+            i_set = self._cycler.get_I_setpoint()
+            time.sleep(dt-(dt_previous_iter-dt))
+            # time.sleep(5)
             p_imposed = self._cycler.read_P_meas() 
             self.update_v_load(value=v)
             self.update_i_load(value=i)
             self.update_power(value=p_imposed)
-            return v,i
+            return v, i, i_set
         else:
             '''TO DO'''
-            return self._cycler.start_follow_P(P_set=p_load, I_max=20, V_min=18.2, V_max=31, update_interval = 1)
+            return self._cycler.start_follow_P(P_set=p_load, I_max=20, V_min=3.0, V_max=3.0, update_interval = 1)
 
     def compute_generated_heat(self, k=-1):
         """

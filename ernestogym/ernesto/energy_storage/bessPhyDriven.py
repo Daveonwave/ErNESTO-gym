@@ -67,6 +67,7 @@ class BatteryEnergyStorageSystemPhyDriven:
         self.observation_v = []
         self.observation_i = []
         self.observation_soc = []
+        self.observation_i_set = []
 
         # Instantiate models
         self._build_models()
@@ -185,7 +186,7 @@ class BatteryEnergyStorageSystemPhyDriven:
                                      soh=init_info['soh'])
             model.init_model(**init_info)
 
-    def step(self, load: float, dt: float, k: int, t_amb: float = None):
+    def step(self, load: float, dt: float, k: int, t_amb: float = None, dt_previous_iter = 0):
         """
 
         Args:
@@ -193,9 +194,9 @@ class BatteryEnergyStorageSystemPhyDriven:
             dt ():
             k ():
         """
-        v, i, soc = self._step_electrical(load=load, dt=dt)
+        v, i, i_set, soc = self._step_electrical(load=load, dt=dt, dt_previous_iter = dt_previous_iter)
         self.soc_series.append(soc)
-        self._update_collections(v,i,soc)
+        self._update_collections(v,i,i_set,soc)
         
         # Thermal model step if present
         if self._thermal_model is not None:
@@ -221,7 +222,7 @@ class BatteryEnergyStorageSystemPhyDriven:
         # if self._reset_soc_every is not None and k % self._reset_soc_every == 0:
         #     self.soc_series[-1] = self._soc_model.reset_soc(v=v, v_max=self.v_max, v_min=self.v_min)
 
-    def _step_electrical(self, load: float, dt: float):
+    def _step_electrical(self, load: float, dt: float, dt_previous_iter):
         """
         Perform a step of the electrical model of the battery.
 
@@ -242,7 +243,7 @@ class BatteryEnergyStorageSystemPhyDriven:
             _, i = self._electrical_model.step_voltage_driven(v_load=load, dt=dt, k=-1)
             v = load
         elif self._load_var == 'power':
-            v, i = self._electrical_model.step_power_driven(p_load=load, dt=dt, V_min = self.v_min, V_max = self.v_max, I_max = self.nominal_capacity)
+            v, i, i_set = self._electrical_model.step_power_driven(p_load=load, dt=dt, dt_previous_iter = dt_previous_iter, V_min = self.v_min, V_max = self.v_max, I_max = self.nominal_capacity)
         else:
             raise Exception("The provided battery simulation mode {} doesn't exist or is just not implemented!"
                             "Choose among the provided ones: Voltage, Current or Power.".format(self._load_var))
@@ -254,7 +255,7 @@ class BatteryEnergyStorageSystemPhyDriven:
         
         self._soc_model.c_max = self._c_max
         soc = self._soc_model.compute_soc(soc_=self.soc_series[-1], i=i, dt=dt)
-        return v, i, soc
+        return v, i, i_set, soc
         
     def _step_thermal(self, i: float, t_amb: float, dt: float):
         """
@@ -333,10 +334,13 @@ class BatteryEnergyStorageSystemPhyDriven:
 
         return {'operations': final_dict, 'aging': deg_dict}
     
-    def _update_collections(self, v,i,soc):
+    def _update_collections(self, v,i, i_set, soc):
         self.observation_v.append(v)
         self.observation_i.append(i)
         self.observation_soc.append(soc)
+        self.observation_i_set.append(i_set)
+
+
 
     def get_observations(self) -> dict[str, list]:
         """
@@ -345,6 +349,7 @@ class BatteryEnergyStorageSystemPhyDriven:
         return {
             "v": self.observation_v,
             "i": self.observation_i,
+            "i_set": self.observation_i_set,
             "soc": self.observation_soc,
             "soh": self.soh_series,
         }

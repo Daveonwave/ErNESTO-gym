@@ -250,19 +250,29 @@ def eval_ppo_phydriven(env_params, args, test_profile, model_file=""):
     while not done:
         ''' Scelta dell'azione'''
         action, _states = model.predict(obs)
+        print(f"New RL step: Action = {action}")
         last_info = None
 
         '''Applicazione dell'azione per un tempo dt_RL'''
-        # end_time = time.time() + dt_RL
-        end_time = time.time() + 30
+        end_time = time.time() + dt_RL
+        start_it_time = None
+        end_it_time = None
+        # end_time = time.time() + 30
         while time.time() < end_time:
-            # start_it_time = time.time()
+            if end_it_time is not None:
+                dt_prev = end_it_time - start_it_time
+                vec_env.env_method("set_dt_previous_iter", dt_prev)
+            else:
+                vec_env.env_method("set_dt_previous_iter", dt_cycle)
+            start_it_time = time.time()
             obs, rewards, dones, info = vec_env.step(action)
             last_info = info[0]       # always updated to the most recent one
             if dones[0]:
                 done = True
                 break
             pbar.update(1)
+            end_it_time = time.time()
+
 
         
         output_info["demand"].append(last_info['demand'])

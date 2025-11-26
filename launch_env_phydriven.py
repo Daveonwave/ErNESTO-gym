@@ -138,6 +138,7 @@ if __name__ == '__main__':
         test_profiles = [str(i) for i in range(370, 398)]
 
         # pick the profile you want, e.g. the first one
-        test = test_profiles[1]
+        test = test_profiles[4]
+        print(f"launched test profile # = {test}")
 
         eval_func(params, args, test, args['load_model'])

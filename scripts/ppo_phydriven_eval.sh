@@ -1,17 +1,17 @@
 python launch_env.py \
     --algo ppo \
     --n_envs 1 \
-    --exp_name "PPO_experiment" \
+    --exp_name "PPO_experiment_20251124" \
     --spread_factor 1 \
-    --save_results_as "ppo_rse" \
+    --save_results_as "ppo_rse_20251124" \
     --gamma 0.99 \
     --n_episodes 1 \
     --weight_trading 1 \
     --weight_degradation 1 \
-    --weight_clipping 0.1 \
+    --weight_clipping 1 \
     --train \
     --log_rate 5 \
-    --world_settings ernestogym/envs/single_agent/ijcnn_deg_train_cell.yaml \
+    --world_settings ernestogym/envs/single_agent/ijcnn_deg_train_cell_scaling.yaml \
     --electrical_model ernestogym/ernesto/data/battery/models/electrical/thevenin_cell.yaml \
     --thermal_model ernestogym/ernesto/data/battery/models/thermal/r2c_thermal_cell.yaml\
     --aging_model ernestogym/ernesto/data/battery/models/aging/bolun_cell.yaml

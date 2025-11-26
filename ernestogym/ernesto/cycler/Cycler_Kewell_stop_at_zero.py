@@ -399,11 +399,11 @@ class Cycler:
             print(f"I_set = {self.I_set:.8f} A)\t")
             print(f"I_read = {self.I_read:.8f} A\t")
             print(f"Power = ({P_set:.3f} W)\n")
-            filename = 'Test_controllore'
-            with open(filename, 'a', newline='') as file:
-                writer = csv.writer(file)
-                riga=[self.I_set, self.I_read ,P_set]
-                writer.writerow(riga)
+            # filename = 'Test_controllore'
+            # with open(filename, 'a', newline='') as file:
+            #     writer = csv.writer(file)
+            #     riga=[self.I_set, self.I_read ,P_set]
+            #     writer.writerow(riga)
 
             
 
@@ -435,11 +435,11 @@ class Cycler:
 
         """Set the setpoint and the other params"""
 
-        filename = 'Test_controllore'
-        with open(filename, 'a', newline='') as file:
-            writer = csv.writer(file)
-            riga = ['Iset' ,'Imeas' ,'Pset']
-            writer.writerow(riga)
+        # filename = 'Test_controllore'
+        # with open(filename, 'a', newline='') as file:
+        #     writer = csv.writer(file)
+        #     riga = ['Iset' ,'Imeas' ,'Pset']
+        #     writer.writerow(riga)
 
         with self._lock:
             self._P_set = P_set

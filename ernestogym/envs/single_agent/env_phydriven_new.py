@@ -64,6 +64,7 @@ class MicroGridEnvPhyDriven(Env):
         self._env_step = settings['step_model']
         self.termination = settings['termination']
         self.termination['max_iterations'] = len(self.generation) - 1 if self.termination['max_iterations'] is None else self.termination['max_iterations']
+        self.dt_previous_iter = self._env_step
 
         # Reward coefficients
         self._trading_coeff = settings['reward']['trading_coeff'] if 'trading_coeff' in settings['reward'] else 0
@@ -152,15 +153,16 @@ class MicroGridEnvPhyDriven(Env):
                     obs['soc'] = self._battery.soc_series[-1]
 
                 case 'demand':
-                    idx = self.demand.get_idx_from_times(time=self.timeframe - self._env_step)
+                    idx = self.demand.get_idx_from_times(time=self.timeframe - self._env_step*30)
                     _, _, obs['demand'] = self.demand[idx]
 
                 case 'soh':
                     obs['soh'] = self._battery.soh_series[-1]
 
                 case 'generation':
-                    idx = self.generation.get_idx_from_times(time=self.timeframe - self._env_step)
+                    idx = self.generation.get_idx_from_times(time=self.timeframe - self._env_step*30)
                     _, _, obs['generation'] = self.generation[idx]
+                    print(idx)
 
                 case 'market':
                     idx = self.market.get_idx_from_times(time=self.timeframe)
@@ -340,12 +342,13 @@ class MicroGridEnvPhyDriven(Env):
         """
         # Retrieve the actual amount of demand, generation and market
         obs, actual_state = self._get_obs(), self._get_actual_state()
-        self.timeframe += self._env_step*120
+        self.timeframe += self._env_step*30
         # print(action, obs)
         
 
         # Compute the fraction of energy to store/use and the fraction to sell/buy
         margin = actual_state['generation'] - actual_state['demand']
+        print(margin)
 
         last_v = self._battery.get_v()
         i_max, i_min = self._battery.get_feasible_current(last_soc=self._battery.soc_series[-1], dt=self._env_step)
@@ -363,11 +366,12 @@ class MicroGridEnvPhyDriven(Env):
         # Step of the battery model and update of internal state
         # for dtpiccolo:
 
-        self._battery.step(load=to_load, dt=self._env_step, k=self.iterations, t_amb=t_amb)
+        self._battery.step(load=to_load, dt=self._env_step, k=self.iterations, t_amb=t_amb,  dt_previous_iter = self.dt_previous_iter)
         #     get_i()
 
         self._battery.t_series.append(self.elapsed_time)
-        self.elapsed_time += self._env_step*120
+        self.elapsed_time += self._env_step*30
+        print(self.elapsed_time)
         self.iterations += 1
                                 
         # Termination condition
@@ -391,7 +395,9 @@ class MicroGridEnvPhyDriven(Env):
                           soh_limit=self.termination['min_soh'])
         
         # Clipping penalty from unfeasible actions
-        r_clipping = -abs(margin * action[0] - to_load)
+        # r_clipping = -abs(margin * action[0] - to_load)
+        clip = margin * action[0] - to_load
+        r_clipping = -(0.1*clip**2)
 
         self.pure_rewards = {'r_trad': r_trading, 'r_deg': r_deg, 'r_clip': r_clipping}
         self._normalize_rewards(rewards=list(self.pure_rewards.values()))
@@ -475,4 +481,13 @@ class MicroGridEnvPhyDriven(Env):
             self.norm_rewards['r_deg'] = rewards[1]
             self.norm_rewards['r_clip'] = rewards[2]
 
+    def set_dt_previous_iter(self, dt):
+        self.dt_previous_iter = dt
+
+    def huber_penalty(self,c,k=0.1, alpha = 0.05):
+        abs_c = abs(c)
+        if abs_c <= k:
+            return -alpha * 0.5 *abs_c * abs_c
+        else:
+            return -alpha * (k * (abs_c - 0.5*k))
 
