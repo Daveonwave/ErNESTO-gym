@@ -20,3 +20,6 @@ paper/
 
 examples/single_agent/result_simulation_notebook/*.json
 examples/single_agent/result_simulation_notebook/old/*.json
+ernestogym/ernesto/data/*.csv
+examples/single_agent/models/*.zip
+Miniconda3-latest-Linux-x86_64.sh
