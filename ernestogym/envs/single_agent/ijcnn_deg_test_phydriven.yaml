@@ -47,8 +47,8 @@ observations:
 #   degradation: True
 #   fading: False
 
-step: 120 # in seconds
-step_model: 5 # in seconds
+step: 3600 # in seconds
+step_model: 120 # in seconds
 random_battery_init: False # battery state initialization: if True it is randomized between declared bounds
 random_data_init: False # timeseries starting point: if True the timeseries starting point is randomly sampled
 seed: 12123 # to sample user's demand profile (also initial data and initial battery state if enabled)

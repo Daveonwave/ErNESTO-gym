@@ -209,7 +209,7 @@ class Phydriven(ElectricalModel):
             # self._cyler.set_P_setpoint(P_set=p_load, I_max, V_min, V_max, update_interval=1.0)
             # return self.step_current_driven(i_load=p_load / self._v_load_series[-1], dt=dt, k=k, p_load=p_load)
             '''Remove hardcode update interval'''
-            self._cycler.start_follow_P(P_set=p_load, I_max = I_max, V_min = V_min, V_max = V_max, duration=60, update_interval = 0.1)
+            self._cycler.start_follow_P(P_set=p_load, I_max = I_max, V_min = V_min, V_max = V_max, duration=60*5, update_interval = 1)
             # time.sleep(dt-0.02)
             v = self._cycler.read_V_meas()
             i = self._cycler.read_I_meas()

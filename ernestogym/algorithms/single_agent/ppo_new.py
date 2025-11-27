@@ -213,6 +213,7 @@ def eval_ppo_phydriven(env_params, args, test_profile, model_file=""):
     env = MicroGridEnvPhyDriven(settings=env_params)
         
     output_info = {
+        "timestamp": [],
         "demand": [],
         "generation": [],
         "ask": [],
@@ -274,12 +275,13 @@ def eval_ppo_phydriven(env_params, args, test_profile, model_file=""):
             end_it_time = time.time()
 
 
-        
+        output_info["timestamp"].append(last_info["timestamp"])
         output_info["demand"].append(last_info['demand'])
         output_info["generation"].append(last_info['generation'])
         output_info["ask"].append(last_info['ask'])
         output_info["bid"].append(last_info['bid'])
         output_info["power_setpoint"].append(last_info['power_setpoint'])
+
 
         cycler_keys = ['pure_reward_list', 'weighted_reward_list','norm_reward_list', 'battery_observations']
         if last_info is not None: 

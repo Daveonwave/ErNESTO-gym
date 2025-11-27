@@ -153,14 +153,14 @@ class MicroGridEnvPhyDriven(Env):
                     obs['soc'] = self._battery.soc_series[-1]
 
                 case 'demand':
-                    idx = self.demand.get_idx_from_times(time=self.timeframe - self._env_step*30)
+                    idx = self.demand.get_idx_from_times(time=self.timeframe - self._env_step)
                     _, _, obs['demand'] = self.demand[idx]
 
                 case 'soh':
                     obs['soh'] = self._battery.soh_series[-1]
 
                 case 'generation':
-                    idx = self.generation.get_idx_from_times(time=self.timeframe - self._env_step*30)
+                    idx = self.generation.get_idx_from_times(time=self.timeframe - self._env_step)
                     _, _, obs['generation'] = self.generation[idx]
                     print(idx)
 
@@ -207,10 +207,10 @@ class MicroGridEnvPhyDriven(Env):
         if self.generation is not None:
             idx = self.generation.get_idx_from_times(time=self.timeframe)
             # idx_g = idx
-            _, _, actual_state['generation'] = self.generation[idx]
+            timestamp, _, actual_state['generation'] = self.generation[idx]
             # actual_state['generation'] = actual_state['generation']*10
         # print(idx_d,idx_g)
-        return actual_state
+        return actual_state, timestamp
         
     def get_info(self) -> dict[str, Any]:
         """
@@ -341,8 +341,9 @@ class MicroGridEnvPhyDriven(Env):
             tuple: A tuple containing the new state, reward, termination flag, truncation flag, and info dictionary.
         """
         # Retrieve the actual amount of demand, generation and market
-        obs, actual_state = self._get_obs(), self._get_actual_state()
-        self.timeframe += self._env_step*30
+        obs = self._get_obs()
+        actual_state, timestamp = self._get_actual_state()
+        self.timeframe += self._env_step
         # print(action, obs)
         
 
@@ -370,7 +371,7 @@ class MicroGridEnvPhyDriven(Env):
         #     get_i()
 
         self._battery.t_series.append(self.elapsed_time)
-        self.elapsed_time += self._env_step*30
+        self.elapsed_time += self._env_step
         print(self.elapsed_time)
         self.iterations += 1
                                 
@@ -397,7 +398,8 @@ class MicroGridEnvPhyDriven(Env):
         # Clipping penalty from unfeasible actions
         # r_clipping = -abs(margin * action[0] - to_load)
         clip = margin * action[0] - to_load
-        r_clipping = -(0.1*clip**2)
+        # r_clipping = -(0.1*clip**2)
+        r_clipping = self.huber_penalty(c = clip)
 
         self.pure_rewards = {'r_trad': r_trading, 'r_deg': r_deg, 'r_clip': r_clipping}
         self._normalize_rewards(rewards=list(self.pure_rewards.values()))
@@ -433,6 +435,7 @@ class MicroGridEnvPhyDriven(Env):
             info['generation'] = obs ['generation']
             info['ask'] = obs ['ask']
             info['bid'] = obs ['bid']
+            info['timestamp'] = timestamp
             # for k, v in obs.items():
             #     # if the key is new, initialize a list
             #     if k not in info:

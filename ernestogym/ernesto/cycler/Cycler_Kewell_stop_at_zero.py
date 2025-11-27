@@ -317,10 +317,10 @@ class Cycler:
             raise ValueError('Error in V reading, operation stopped')
         else:
             I_computed = P_set / V_read
-            I_set = np.clip(I_computed,-I_max, I_max,)
+            self.I_set = np.clip(I_computed,-I_max, I_max,)
             if I_computed < -I_max or I_computed > I_max:
-                warnings.warn(f"I_computed = {I_computed:.3f} A was clipped to I_set = {I_set:.3f} A")
-        self.set_I_setpoint(I_set)
+                warnings.warn(f"I_computed = {I_computed:.3f} A was clipped to I_set = {self.I_set:.3f} A")
+        self.set_I_setpoint(self.I_set)
     
     def reading_for_N(self, N):
         n = 0

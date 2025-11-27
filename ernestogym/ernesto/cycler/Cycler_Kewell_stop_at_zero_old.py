@@ -34,6 +34,7 @@ class Cycler:
         self._update_interval = 1.0
         self.V_read = None
         self.I_read = None
+        self.I_set = 0
 
         '''Set CC mode'''
         self.set_mode(1)
@@ -95,7 +96,7 @@ class Cycler:
         result = self.client.write_registers(start_register, payload)
         
         if not result.isError():
-            print(f"✅ Float scritti con successo nei registri a partire da {start_register}: {new_values}")
+            # print(f"✅ Float scritti con successo nei registri a partire da {start_register}: {new_values}")
             
             # self.disconnect()
             #print("🔌 Connessione chiusa.")
@@ -304,10 +305,10 @@ class Cycler:
             raise ValueError('Error in V reading, operation stopped')
         else:
             I_computed = P_set / V_read
-            I_set = np.clip(I_computed,-I_max, I_max,)
+            self.I_set = np.clip(I_computed,-I_max, I_max,)
             if I_computed < -I_max or I_computed > I_max:
-                warnings.warn(f"I_computed = {I_computed:.3f} A was clipped to I_set = {I_set:.3f} A")
-        self.set_I_setpoint(I_set)
+                warnings.warn(f"I_computed = {I_computed:.3f} A was clipped to I_set = {self.I_set:.3f} A")
+        self.set_I_setpoint(self.I_set)
     
     def reading_for_N(self, N):
         n = 0
@@ -345,17 +346,17 @@ class Cycler:
                 return
 
             I_computed = P_set / self.V_read
-            I_set = np.clip(I_computed, -I_max, I_max)
+            self.I_set = np.clip(I_computed, -I_max, I_max)
 
-            if I_computed != I_set:
-                warnings.warn(f"I_computed={I_computed:.3f} A clipped to {I_set:.3f} A")
+            if I_computed != self.I_set:
+                warnings.warn(f"I_computed={I_computed:.3f} A clipped to {self.I_set:.3f} A")
 
-            self.set_I_setpoint(I_set)
+            self.set_I_setpoint(self.I_set)
             # self.start_operation()
             self.I_read = self.read_I_meas()
 
             
-            print(f"I_set = {I_set:.8f} A)\n")
+            print(f"I_set = {self.I_set:.8f} A)\n")
             print(f"I_read = {self.I_read:.8f} A\n")
             print(f"Power = ({P_set:.3f} W)\n\n")
 
@@ -414,6 +415,8 @@ class Cycler:
         # Case 2: no job running yet
         if P_set == 0:
             self.stop_operation()
+            self.exit_communications()
+            self.I_set = 0
             print(f'Power  = {P_set} -> scheduler not running')
             return
 
@@ -451,9 +454,15 @@ class Cycler:
         print("[Scheduler] Power control stopped.")
         self.stop_operation()
         print("[Cycler] Power control stopped.")
+        self.exit_communications()
+        self.I_set = 0
 
         # Recreate scheduler for next start
         self._scheduler = BackgroundScheduler()
+
+    def get_I_setpoint(self):
+        with self._lock:
+            return self.I_set
 
     
             
