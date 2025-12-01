@@ -213,7 +213,7 @@ class BatteryEnergyStorageSystem:
 
         # if self._save_collections:
         #     self._update_collections(v,i,soc)
-        return v, soc, v_rc
+        return v, soc, v_rc,i
 
     def step(self, load: float, dt_RL: float, dt_DT: float, k: int, n_iter_el: int, t_amb: float = None):
         """
@@ -227,8 +227,11 @@ class BatteryEnergyStorageSystem:
         soc = self.soc_series[-1]
         v_rc_old = None
         for _ in range(n_iter_el-1):
-            v, soc, v_rc_old = self.repeat_el_step(v_old=v, soc_old=soc, p_load=load, dt=dt_DT, v_rc_old=v_rc_old)
+            v, soc, v_rc_old,i = self.repeat_el_step(v_old=v, soc_old=soc, p_load=load, dt=dt_DT, v_rc_old=v_rc_old)
             self._electrical_model.load_battery_state(temp=t_amb, soc=soc, soh=self.soh_series[-1])
+            if self._save_collections:
+                self._update_collections(v,i,soc)
+
 
         # TODO: QUI HO MODIFICATO PERCHE' BISOGNA PASSARE ULTIMO CALCOLATO, NON QUELLO DEL PRECEDENTE dt_RL
         self.soc_series.append(soc)

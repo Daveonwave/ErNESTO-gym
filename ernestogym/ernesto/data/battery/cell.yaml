@@ -82,7 +82,7 @@ battery:
         power: 0.
         temperature: 293.15
         temp_ambient: 293.15
-        soc: 0.75
+        soc: 0.7085
         soh: 1.
 
     save_collections: True 
