@@ -23,3 +23,11 @@ examples/single_agent/result_simulation_notebook/old/*.json
 ernestogym/ernesto/data/*.csv
 examples/single_agent/models/*.zip
 Miniconda3-latest-Linux-x86_64.sh
+*:Zone.Identifier
+*:sec.endpointdlp
+ernestogym/ernesto/data/generation/*.csv
+ernestogym/ernesto/data/market/*.csv
+ernestogym/ernesto/data/temp_amb/*.csv
+ernestogym/ernesto/data/generation/*.csv
+ernestogym/ernesto/data/market/*.csv
+ernestogym/ernesto/data/temp_amb/*.csv
