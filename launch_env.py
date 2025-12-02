@@ -124,7 +124,7 @@ if __name__ == '__main__':
         def _init():
             env_params = deepcopy(params)
             env_params["seed"] = int(base_seed) + int(rank)
-            return gym.make("ernestogym/micro_grid-v1", settings=env_params)
+            return gym.make("ernestogym/micro_grid-v2", settings=env_params)
         return _init
  
     if args['train']:  

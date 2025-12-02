@@ -436,33 +436,37 @@ class MicroGridEnv(Env):
         
         state = np.array(list(self._get_obs().values()), dtype=np.float32)
         info = {}
+        '''Old info
+        # if self.iseval:
+        #     # self.cumulated_reward += reward
+        #     # self.cumulated_reward_list.append(self.cumulated_reward)
+        #     self.power_list.append(to_load)
+        #     self.demand_list.append(actual_state['demand'])
+        #     self.generation_list.append(actual_state['generation'])
+        #     self.price_ask_list.append(obs['ask'])
+        #     self.price_bid_list.append(obs['bid'])
+        #     for reward_type in ["pure", "norm", "weighted"]:
+        #         reward_dict = getattr(self, f"{reward_type}_rewards")
+        #         reward_list_dict = getattr(self, f"{reward_type}_reward_list")
+        #         for k, v in reward_dict.items():
+        #             reward_list_dict[k].append(v)
 
-        if self.iseval:
-            # self.cumulated_reward += reward
-            # self.cumulated_reward_list.append(self.cumulated_reward)
-            self.power_list.append(to_load)
-            self.demand_list.append(actual_state['demand'])
-            self.generation_list.append(actual_state['generation'])
-            self.price_ask_list.append(obs['ask'])
-            self.price_bid_list.append(obs['bid'])
-            for reward_type in ["pure", "norm", "weighted"]:
-                reward_dict = getattr(self, f"{reward_type}_rewards")
-                reward_list_dict = getattr(self, f"{reward_type}_reward_list")
-                for k, v in reward_dict.items():
-                    reward_list_dict[k].append(v)
+        #     if truncated or terminated:
+        #         info = self.get_info()
+        #         # idx = self.demand.get_idx_from_times(time=self.timeframe)
+        #         # print(self.demand.profile, idx)
+        '''
 
-            if truncated or terminated:
-                info = self.get_info()
-                # idx = self.demand.get_idx_from_times(time=self.timeframe)
-                # print(self.demand.profile, idx)
-        
+        # ---- Add info for logging ----
+        info["pure_rewards"] = self.pure_rewards
+        info["norm_rewards"] = self.norm_rewards
+        info["weighted_rewards"] = self.weighted_rewards
 
-        info["requested_power"] = margin * action[0]
-        info["clipped_power"] = to_load
-        info["margin"] = margin
-        info["action"] = action[0]
-        info["clipped"] = clipped
-
+        info["requested_power"] = float(margin * action[0])
+        info["clipped_power"]   = float(to_load)
+        info["margin"]          = float(margin)
+        info["action"]          = float(action[0])
+        info["clipped"]         = float(clipped)
 
         # if truncated or terminated:
         #     for key, values in self.norm_reward_list.items():

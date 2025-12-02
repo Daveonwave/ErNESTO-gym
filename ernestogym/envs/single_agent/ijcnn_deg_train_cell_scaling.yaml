@@ -53,7 +53,7 @@ termination:
   min_soh: 0.6
 
 reward:
-  trading_coeff: 15
+  trading_coeff: 150
   degradation_coeff: 500
   clip_action_coeff: 1
 
