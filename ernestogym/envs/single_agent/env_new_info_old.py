@@ -135,9 +135,7 @@ class MicroGridEnv(Env):
 
         # Gym spaces
         self.observation_space = Box(low=np.array(lows), high=np.array(highs), dtype=np.float32)
-        # self.action_space = Box(low=0., high=1., dtype=np.float32, shape=(1,))
-        self.action_space = Box(low=-1., high=1., dtype=np.float32, shape=(1,))
-
+        self.action_space = Box(low=0., high=1., dtype=np.float32, shape=(1,))
 
     def _get_obs(self) -> dict[str, Any]:
         """
@@ -327,158 +325,160 @@ class MicroGridEnv(Env):
 
     def step(self, action: np.ndarray):
         """
-        Perform one environment step with a full charge/discharge control action.
+        Perform a single step in the environment.
 
-        The agent outputs action a ∈ [-1, 1].
-        - a > 0 → request battery charging
-        - a < 0 → request battery discharging
-        - a = 0 → no net battery request
+        This method updates the environment state based on the action taken by the agent. It computes the reward, 
+        checks termination and truncation conditions, and returns the new state, reward, and additional information.
 
-        The battery has SOC- and temperature-dependent limits given by the
-        internal physics model, so the requested power may be clipped.
+        Args:
+            action (np.ndarray): The action taken by the agent, representing the fraction of energy to store.
+
+        Returns:
+            tuple: A tuple containing the new state, reward, termination flag, truncation flag, and info dictionary.
         """
-
-        # ------------------------------------------------------------------
-        # 1. Get observations and actual demand/generation state
-        # ------------------------------------------------------------------
-        obs       = self._get_obs()
-        actual    = self._get_actual_state()
-        demand    = actual['demand']
-        generation = actual.get('generation', 0.0)
-
-        # Update time
+        # Retrieve the actual amount of demand, generation and market
+        obs, actual_state = self._get_obs(), self._get_actual_state()
         self.timeframe += self._env_step
+        # print(action, obs)
+        
 
-        # Margin = net energy available before battery action
-        margin = generation - demand
+        # Compute the fraction of energy to store/use and the fraction to sell/buy
+        margin = actual_state['generation'] - actual_state['demand']
 
-        # ------------------------------------------------------------------
-        # 2. Compute SOC-dependent battery power limits
-        # ------------------------------------------------------------------
-        last_soc = self._battery.soc_series[-1]
-        last_v   = self._battery.get_v()
+        last_v = self._battery.get_v()
+        i_max, i_min = self._battery.get_feasible_current(last_soc=self._battery.soc_series[-1], dt=self._env_step)
 
-        i_max, i_min = self._battery.get_feasible_current(
-            last_soc=last_soc,
-            dt=self._env_step
-        )
-
-        # Convert currents to power limits
-        P_max = last_v * i_max   # max charging power  (> 0)
-        P_min = last_v * i_min   # max discharging power (< 0)
-
-        # ------------------------------------------------------------------
-        # 3. Map action a ∈ [-1, 1] → requested battery power
-        # ------------------------------------------------------------------
-        a = float(action[0])
-
-        if a >= 0:
-            # Charging request, linear from 0 → P_max
-            requested_power = a * P_max
-        else:
-            # Discharging request, linear from 0 → P_min
-            requested_power = a * abs(P_min)   # a < 0 → negative power
-
-        # ------------------------------------------------------------------
-        # 4. Clip to physical battery limits
-        # ------------------------------------------------------------------
-        to_load = np.clip(requested_power, P_min, P_max)
-
-        # Clipping amount used for penalty
-        clipped_amount = requested_power - to_load
-
-        # ------------------------------------------------------------------
-        # 5. Compute grid import/export after battery action
-        # ------------------------------------------------------------------
-        # Positive → export (sell) to grid
-        # Negative → import (buy) from grid
+        # Clip the chosen action so that it won't exceed the SoC limits
+        to_load = np.clip(a=margin * action[0], a_min=last_v * i_min, a_max=last_v * i_max)
         to_trade = margin - to_load
-
-        # ------------------------------------------------------------------
-        # 6. Update battery internal state with actual power used
-        # ------------------------------------------------------------------
+        
+        # Current ambient temperature
         idx = self.temp_amb.get_idx_from_times(time=self.timeframe)
-        _, _, t_amb = self.temp_amb[idx]
+        _, _, t_amb = self.temp_amb[idx]        
+        # t_amb = 21.0+273.15
 
-        self._battery.step(
-            load=to_load,
-            dt_RL=self._env_step,
-            dt_DT=self._DT_step,
-            n_iter_el=self.n_repeat_action,
-            k=self.iterations,
-            t_amb=t_amb
-        )
 
+        # Step of the battery model and update of internal state
+        '''Qui fare for per chiamare D.T. su un dt piu piccolo e poi chiamare self._battery.get_i()'''
+        self._battery.step(load=to_load, dt_RL=self._env_step, dt_DT=self._DT_step, n_iter_el=self.n_repeat_action, k=self.iterations, t_amb=t_amb)
         self._battery.t_series.append(self.elapsed_time)
         self.elapsed_time += self._env_step
-        self.iterations  += 1
-
-        # ------------------------------------------------------------------
-        # 7. Termination conditions
-        # ------------------------------------------------------------------
+        self.iterations += 1
+                                
+        # Termination condition
         terminated = bool(self._battery.soh_series[-1] <= self.termination['min_soh'])
 
+        # Truncation conditions (due to the end of data)
         truncated = bool(
             (self.termination['max_iterations'] is not None and
-            self.iterations > self.termination['max_iterations'])
+             self.iterations > self.termination['max_iterations'])
             or self.demand.is_run_out_of_data()
             or self.generation.is_run_out_of_data()
             or self.market.is_run_out_of_data()
         )
+        # if self.iterations > self.termination['max_iterations']:
+        #     print(self.iterations > self.termination['max_iterations'])
 
-        # ------------------------------------------------------------------
-        # 8. Compute rewards (no normalization!)
-        # ------------------------------------------------------------------
-
-        # Trading reward (market import/export)
-        if to_trade >= 0:
-            # exporting → rewarded by bid price
-            price = obs['bid']
-            r_trading = to_trade * price * (self._env_step / 3600.0)
-        else:
-            # importing → cost at ask price
-            price = obs['ask']
-            r_trading = to_trade * price * (self._env_step / 3600.0)
+        # Trading reward with market and cost of degradation
+        r_trading = to_trade * obs['ask'] * self._env_step/3600 if to_trade < 0 else to_trade * obs['bid'] * self._env_step/3600
 
         # Degradation penalty
-        r_deg = -soh_cost(
-            delta_soh=abs(self._battery.soh_series[-2] - self._battery.soh_series[-1]),
-            replacement_cost=self._battery.nominal_cost,
-            soh_limit=self.termination['min_soh']
-        )
+        r_deg = -soh_cost(delta_soh=abs(self._battery.soh_series[-2] - self._battery.soh_series[-1]),
+                          replacement_cost=self._battery.nominal_cost,
+                          soh_limit=self.termination['min_soh'])
+        
+        # Clipping penalty from unfeasible actions
+        # r_clipping = -abs(margin * action[0] - to_load)
+        clipped = margin * action[0] - to_load
+        # r_clipping = -1.0 * np.tanh(0.1 * abs(clipped))
 
-        # Clipping penalty (quadratic penalty for exceeding limits)
-        lambda_clip = self._clip_action_coeff  # you may prefer a fixed small value like 1e-6
-        r_clip = -lambda_clip * (clipped_amount ** 2)
+        # r_clipping = -0.1*clipped**2
+        # r_clipping = self.huber_penalty(clipped)
+        alpha = 0.02
+        r_clipping = -alpha * (abs(clipped) / (abs(margin) + 1e-8))
 
-        # Weighted sum of raw rewards
-        reward = (
-            self._trading_coeff * r_trading +
-            self._deg_coeff      * r_deg +
-            r_clip               # already includes clip coeff above
-        )
 
-        # ------------------------------------------------------------------
-        # 9. Build next state
-        # ------------------------------------------------------------------
+        # requested = margin * action[0]
+
+        # P_min = last_v * i_min
+        # P_max = last_v * i_max
+
+        # print("V:", last_v,
+        #     "margin:", margin,
+        #     "requested_P:", margin * action[0],
+        #     "P_min:", P_min,
+        #     "P_max:", P_max,
+        #     "clipped_P:", to_load)
+
+
+
+        self.pure_rewards = {'r_trad': r_trading, 'r_deg': r_deg, 'r_clip': r_clipping}
+        self._normalize_rewards(rewards=list(self.pure_rewards.values()))
+        self.weighted_rewards = {'r_trad': self.norm_rewards['r_trad'] * self._trading_coeff,
+                                 'r_deg': self.norm_rewards['r_deg'] * self._deg_coeff,
+                                 'r_clip': self.norm_rewards['r_clip'] * self._clip_action_coeff}
+
+        # Combining reward terms
+        reward = sum(self.weighted_rewards.values())
+
+        # print("r_trad:", r_trading,
+        #     "r_deg:", r_deg,
+        #     "r_clip:", r_clipping,
+        #     "r_trad_norm:", self.norm_rewards['r_trad'] * self._trading_coeff,
+        #     "r_deg_norm:", self.norm_rewards['r_deg'] * self._deg_coeff,
+        #     "r_clip_norm:", self.norm_rewards['r_clip'] * self._clip_action_coeff)
+
+        # if self.norm_rewards['r_clip'] != 0:
+        #     print(f"R_deg={self.norm_rewards['r_deg']}\t")
+        #     print(f"R_clip={self.norm_rewards['r_clip']}\t")
+        #     print(f"R_trad={self.norm_rewards['r_trad']}\t")
+        #     time.sleep(1)
+        
         state = np.array(list(self._get_obs().values()), dtype=np.float32)
+        info = {}
+        '''Old info
+        # if self.iseval:
+        #     # self.cumulated_reward += reward
+        #     # self.cumulated_reward_list.append(self.cumulated_reward)
+        #     self.power_list.append(to_load)
+        #     self.demand_list.append(actual_state['demand'])
+        #     self.generation_list.append(actual_state['generation'])
+        #     self.price_ask_list.append(obs['ask'])
+        #     self.price_bid_list.append(obs['bid'])
+        #     for reward_type in ["pure", "norm", "weighted"]:
+        #         reward_dict = getattr(self, f"{reward_type}_rewards")
+        #         reward_list_dict = getattr(self, f"{reward_type}_reward_list")
+        #         for k, v in reward_dict.items():
+        #             reward_list_dict[k].append(v)
 
-        # ------------------------------------------------------------------
-        # 10. Logging for analysis
-        # ------------------------------------------------------------------
-        info = {
-            "requested_power": float(requested_power),
-            "actual_power":    float(to_load),
-            "clipped_amount":  float(clipped_amount),
-            "to_trade":        float(to_trade),
-            "margin":          float(margin),
-            "pure_rewards": {
-                "r_trad": r_trading,
-                "r_deg":  r_deg,
-                "r_clip": r_clip
-            }
-        }
+        #     if truncated or terminated:
+        #         info = self.get_info()
+        #         # idx = self.demand.get_idx_from_times(time=self.timeframe)
+        #         # print(self.demand.profile, idx)
+        '''
 
+        # ---- Add info for logging ----
+        info["pure_rewards"] = self.pure_rewards
+        info["norm_rewards"] = self.norm_rewards
+        info["weighted_rewards"] = self.weighted_rewards
+
+        info["requested_power"] = float(margin * action[0])
+        info["clipped_power"]   = float(to_load)
+        info["margin"]          = float(margin)
+        info["action"]          = float(action[0])
+        info["clipped"]         = float(clipped)
+
+        # if truncated or terminated:
+        #     for key, values in self.norm_reward_list.items():
+        #         plt.plot(values, label=key)
+
+        #     plt.title("Rewards per Key")
+        #     plt.xlabel("Index")
+        #     plt.ylabel("Value")
+        #     plt.legend()
+        #     plt.grid(True)
+        #     plt.show()
+        
         return state, reward, terminated, truncated, info
 
     def _normalize_rewards(self, rewards: list):

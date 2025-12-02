@@ -84,7 +84,7 @@ class RewardLoggerCallbackOLD(BaseCallback):
             self.logger.record("custom/weighted_clipping", pr.get('r_clip'))
         return True
 
-class RewardLoggerCallback(BaseCallback):
+class RewardLoggerCallbackNEW(BaseCallback):
     def __init__(self, verbose=0):
         super().__init__(verbose)
 
@@ -118,6 +118,52 @@ class RewardLoggerCallback(BaseCallback):
 
             if "clipped" in info:
                 self.logger.record("custom/clip_flag", float(info["clipped"] != 0))
+
+        return True
+
+class RewardLoggerCallback(BaseCallback):
+    def __init__(self, verbose=0):
+        super().__init__(verbose)
+
+    def _on_step(self) -> bool:
+        infos = self.locals["infos"]
+
+        for info in infos:
+            if not info:
+                continue
+
+            # -----------------------------
+            # 1. Log reward components
+            # -----------------------------
+            if "pure_rewards" in info:
+                r = info["pure_rewards"]
+                self.logger.record("custom/r_trad", r.get("r_trad"))
+                self.logger.record("custom/r_deg",  r.get("r_deg"))
+                self.logger.record("custom/r_clip", r.get("r_clip"))
+
+            # -----------------------------
+            # 2. Log agent → battery actions
+            # -----------------------------
+            if "requested_power" in info:
+                self.logger.record("custom/requested_power", float(info["requested_power"]))
+
+            if "actual_power" in info:
+                self.logger.record("custom/actual_power", float(info["actual_power"]))
+
+            if "clipped_amount" in info:
+                self.logger.record("custom/clipped_amount", float(info["clipped_amount"]))
+
+                # Optional binary clipped flag
+                self.logger.record("custom/clipped_flag", float(info["clipped_amount"] != 0))
+
+            # -----------------------------
+            # 3. Log grid interaction
+            # -----------------------------
+            if "to_trade" in info:
+                self.logger.record("custom/to_trade", float(info["to_trade"]))
+
+            if "margin" in info:
+                self.logger.record("custom/margin", float(info["margin"]))
 
         return True
 
