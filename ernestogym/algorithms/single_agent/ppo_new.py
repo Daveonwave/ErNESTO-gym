@@ -58,7 +58,7 @@ class ProfileInjectionEvalEnv(Wrapper):
         return self.env.reset(options=options, **kwargs)
 
 
-class RewardLoggerCallback(BaseCallback):
+class RewardLoggerCallbackOLD(BaseCallback):
     def __init__(self, verbose=0):
         super().__init__(verbose)
     
@@ -82,6 +82,43 @@ class RewardLoggerCallback(BaseCallback):
             self.logger.record("custom/weighted_trading", pr.get('r_trad'))
             self.logger.record("custom/weighted_degradation", pr.get('r_deg'))
             self.logger.record("custom/weighted_clipping", pr.get('r_clip'))
+        return True
+
+class RewardLoggerCallback(BaseCallback):
+    def __init__(self, verbose=0):
+        super().__init__(verbose)
+
+    def _on_step(self) -> bool:
+        infos = self.locals["infos"]
+
+        for info in infos:
+            if not info:
+                continue
+
+            # 1. Rewards
+            for prefix in ["pure_rewards", "norm_rewards", "weighted_rewards"]:
+                if prefix in info:
+                    r = info[prefix]
+                    self.logger.record(f"custom/{prefix}_trad", r.get("r_trad"))
+                    self.logger.record(f"custom/{prefix}_deg", r.get("r_deg"))
+                    self.logger.record(f"custom/{prefix}_clip", r.get("r_clip"))
+
+            # 2. Action & power logging
+            if "requested_power" in info:
+                self.logger.record("custom/requested_power", float(info["requested_power"]))
+
+            if "clipped_power" in info:
+                self.logger.record("custom/clipped_power", float(info["clipped_power"]))
+
+            if "margin" in info:
+                self.logger.record("custom/margin", float(info["margin"]))
+
+            if "action" in info:
+                self.logger.record("custom/action", float(info["action"]))
+
+            if "clipped" in info:
+                self.logger.record("custom/clip_flag", float(info["clipped"] != 0))
+
         return True
 
 

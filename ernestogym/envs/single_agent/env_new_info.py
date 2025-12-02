@@ -393,7 +393,22 @@ class MicroGridEnv(Env):
         # r_clipping = -1.0 * np.tanh(0.1 * abs(clipped))
 
         # r_clipping = -0.1*clipped**2
-        r_clipping = self.huber_penalty(clipped)
+        # r_clipping = self.huber_penalty(clipped)
+        alpha = 0.02
+        r_clipping = -alpha * (abs(clipped) / (abs(margin) + 1e-8))
+
+
+        # requested = margin * action[0]
+
+        # P_min = last_v * i_min
+        # P_max = last_v * i_max
+
+        # print("V:", last_v,
+        #     "margin:", margin,
+        #     "requested_P:", margin * action[0],
+        #     "P_min:", P_min,
+        #     "P_max:", P_max,
+        #     "clipped_P:", to_load)
 
 
 
@@ -405,6 +420,13 @@ class MicroGridEnv(Env):
 
         # Combining reward terms
         reward = sum(self.weighted_rewards.values())
+
+        # print("r_trad:", r_trading,
+        #     "r_deg:", r_deg,
+        #     "r_clip:", r_clipping,
+        #     "r_trad_norm:", self.norm_rewards['r_trad'] * self._trading_coeff,
+        #     "r_deg_norm:", self.norm_rewards['r_deg'] * self._deg_coeff,
+        #     "r_clip_norm:", self.norm_rewards['r_clip'] * self._clip_action_coeff)
 
         # if self.norm_rewards['r_clip'] != 0:
         #     print(f"R_deg={self.norm_rewards['r_deg']}\t")
@@ -434,6 +456,12 @@ class MicroGridEnv(Env):
                 # idx = self.demand.get_idx_from_times(time=self.timeframe)
                 # print(self.demand.profile, idx)
         
+
+        info["requested_power"] = margin * action[0]
+        info["clipped_power"] = to_load
+        info["margin"] = margin
+        info["action"] = action[0]
+        info["clipped"] = clipped
 
 
         # if truncated or terminated:
@@ -474,10 +502,19 @@ class MicroGridEnv(Env):
             self.norm_rewards['r_clip'] = rewards[2]
 
 
-    def huber_penalty(self, c, k=0.1, alpha=0.005):
+    def huber_penalty(self, c, k=0.1, alpha=0.05):
         abs_c = abs(c) 
         if abs_c <= k: 
             return -alpha * 0.5 * abs_c * abs_c 
         else: 
             return -alpha * (k * (abs_c - 0.5 * k))
+        
+    def huber_penalty_005(self, c, k=0.1, alpha=0.005):
+        abs_c = abs(c) 
+        if abs_c <= k: 
+            return -alpha * 0.5 * abs_c * abs_c 
+        else: 
+            return -alpha * (k * (abs_c - 0.5 * k))
+
+
 

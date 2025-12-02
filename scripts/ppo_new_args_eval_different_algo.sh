@@ -44,7 +44,7 @@ for ALGO in "${ALGOS[@]}"; do
             python launch_env.py \
                 --algo "$ALGO" \
                 --n_cores 1 \
-                --exp_name "Test_per_report" \
+                --exp_name "Test_per_new_training" \
                 --replacement_cost 10.5 \
                 --spread_factor 1 \
                 --load_model "$MODEL" \

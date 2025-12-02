@@ -49,7 +49,7 @@ random_data_init: False # timeseries starting point: if True the timeseries star
 seed: 963 # to sample user's demand profile (also initial data and initial battery state if enabled)
 
 termination:
-  max_iterations: 5
+  max_iterations: 500
   min_soh: 0.6
 
 reward:

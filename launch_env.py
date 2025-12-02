@@ -160,12 +160,12 @@ if __name__ == '__main__':
             eval_func = run_baseline
 
         test_profiles = [str(i) for i in range(370, 398)]     
-        test = test_profiles[4]
-        print(f"launched test profile # = {test}")
+        # test = test_profiles[4]
+        # print(f"launched test profile # = {test}")
 
-        eval_func(params, args, test, args['load_model'])
-        # n_cores = len(test_profiles) if args['n_cores'] >= len(test_profiles) else args['n_cores']
-        # Parallel(n_jobs=n_cores)(delayed(eval_func)(params, args, test, args['load_model']) for test in test_profiles)    
+        # eval_func(params, args, test, args['load_model'])
+        n_cores = len(test_profiles) if args['n_cores'] >= len(test_profiles) else args['n_cores']
+        Parallel(n_jobs=n_cores)(delayed(eval_func)(params, args, test, args['load_model']) for test in test_profiles)    
 
     # Profiler teardown
     # profiler.disable()
