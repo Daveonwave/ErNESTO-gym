@@ -14,9 +14,9 @@ done
 python launch_env.py \
     --algo ppo \
     --n_envs 10 \
-    --exp_name "weekly_expt_reward_rescale_lr2e4" \
+    --exp_name "yearly_expt_reward_rescale_v05" \
     --spread_factor 1 \
-    --save_results_as "ppo_rscale_lr2e4" \
+    --save_results_as "ppo_rse_v05" \
     --gamma 0.995 \
     --n_episodes 100 \
     --policy_network 64 32 \
@@ -33,9 +33,9 @@ python launch_env.py \
     --log_rate 5 \
     --eval_freq 35000 \
     --n_eval_episodes 10 \
-    --weight_trading 150 \
-    --weight_degradation 500 \
-    --weight_clipping 1 \
+    --weight_trading 30 \
+    --weight_degradation 75000 \
+    --weight_clipping 10 \
     --seed "${SEED}" \
     --world_settings ernestogym/envs/single_agent/ijcnn_deg_train_cell_scaling.yaml \
     --electrical_model ernestogym/ernesto/data/battery/models/electrical/thevenin_cell.yaml \

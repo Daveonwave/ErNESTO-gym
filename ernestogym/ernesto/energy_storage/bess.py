@@ -158,6 +158,11 @@ class BatteryEnergyStorageSystem:
         self.soh_series = []
         self.t_series = []
         self._c_max = self.nominal_capacity
+        
+        self.observation_v = []
+        self.observation_i = []
+        self.observation_soc = []
+
 
         for model in self.models:
             model.reset_model()
