@@ -85,6 +85,6 @@ battery:
         soc: 0.66
         soh: 1.
 
-    save_collections: True 
+    save_collections: False
 
       

@@ -438,7 +438,7 @@ class MicroGridEnv(Env):
         info = {}
 
 
-        '''for eval post training'''
+        '''for eval post training
         if self.iseval:
             # self.cumulated_reward += reward
             # self.cumulated_reward_list.append(self.cumulated_reward)
@@ -457,9 +457,9 @@ class MicroGridEnv(Env):
                 info = self.get_info()
                 # idx = self.demand.get_idx_from_times(time=self.timeframe)
                 # print(self.demand.profile, idx)
-        
+        '''
 
-        '''info for train
+        #info for train
         # expose rewards to callbacks (both train & eval)
         info["pure_rewards"] = self.pure_rewards.copy()
         info["norm_rewards"] = self.norm_rewards.copy()
@@ -470,7 +470,7 @@ class MicroGridEnv(Env):
         info["margin"] = margin
         info["action"] = action[0]
         info["clipped"] = clipped
-        '''
+        
 
         # if truncated or terminated:
         #     for key, values in self.norm_reward_list.items():
