@@ -14,9 +14,9 @@ done
 python launch_env.py \
     --algo ppo \
     --n_envs 10 \
-    --exp_name "yearly_expt_reward_rescale_v05" \
+    --exp_name "yearly_expt_reward_rescale_v06" \
     --spread_factor 1 \
-    --save_results_as "ppo_rse_v05" \
+    --save_results_as "ppo_rse_v06" \
     --gamma 0.995 \
     --n_episodes 100 \
     --policy_network 64 32 \
