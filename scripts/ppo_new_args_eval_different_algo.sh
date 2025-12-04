@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Default seed (if not provided)
-SEED=963
+SEED=741
 
 # Parse optional --seed argument
 while [[ "$#" -gt 0 ]]; do
@@ -17,8 +17,8 @@ done
 #################################
 
 # Algorithms to run
-# ALGOS=("ppo" "random" "only_market" "battery_first")
-ALGOS=("ppo")
+ALGOS=("ppo" "random" "only_market" "battery_first")
+# ALGOS=("ppo")
 
 
 # Models to test **for PPO only**
@@ -27,8 +27,15 @@ ALGOS=("ppo")
 # PPO_MODELS=("year_long_training_last_model")
 
 # PPO_MODELS=("tanh_best_model_456")
-PPO_MODELS=("huber_best_model_123")
+###Last
+# PPO_MODELS=("huber_best_model_123")
+###
+
 # PPO_MODELS=("best_model_456_0005_alpha_huber")
+
+PPO_MODELS=("yearly_expt_reward_rescale_v06_models"  "yearly_expt_reward_rescale_v06_best_model")
+# PPO_MODELS=("yearly_expt_reward_rescale_v06_best_model")
+
 
 #################################
 # Run experiments
@@ -44,15 +51,15 @@ for ALGO in "${ALGOS[@]}"; do
             python launch_env.py \
                 --algo "$ALGO" \
                 --n_cores 1 \
-                --exp_name "Test_per_new_training" \
+                --exp_name "20251204_Test_nuovi_pesi" \
                 --replacement_cost 10.5 \
                 --spread_factor 1 \
                 --load_model "$MODEL" \
                 --save_results_as "${ALGO}_${MODEL}" \
-                --gamma 0.99 \
-                --weight_trading 1 \
-                --weight_degradation 1 \
-                --weight_clipping 1 \
+                --gamma 0.995 \
+                --weight_trading 30 \
+                --weight_degradation 75000 \
+                --weight_clipping 10 \
                 --test \
                 --world_settings ernestogym/envs/single_agent/ijcnn_deg_test_cell_scaling.yaml \
                 --electrical_model ernestogym/ernesto/data/battery/models/electrical/thevenin_cell.yaml \
@@ -71,15 +78,15 @@ for ALGO in "${ALGOS[@]}"; do
         python launch_env.py \
             --algo "$ALGO" \
             --n_cores 1 \
-            --exp_name "Test_per_report" \
+            --exp_name "20251204_Test_nuovi_pesi" \
             --replacement_cost 10.5 \
             --spread_factor 1 \
             --load_model "20251112_model" \
             --save_results_as "new_init_norm_${ALGO}" \
-            --gamma 0.99 \
-            --weight_trading 1 \
-            --weight_degradation 1 \
-            --weight_clipping 1 \
+            --gamma 0.995 \
+            --weight_trading 30 \
+            --weight_degradation 75000 \
+            --weight_clipping 10 \
             --test \
             --world_settings ernestogym/envs/single_agent/ijcnn_deg_test_cell_scaling.yaml \
             --electrical_model ernestogym/ernesto/data/battery/models/electrical/thevenin_cell.yaml \

@@ -394,8 +394,8 @@ class MicroGridEnv(Env):
 
         # r_clipping = -0.1*clipped**2
         # r_clipping = self.huber_penalty(clipped)
-        alpha = 0.02
-        r_clipping = -alpha * (abs(clipped) / (abs(margin) + 1e-8))
+        # alpha = 0.02
+        r_clipping = - (abs(clipped) / (abs(margin) + 1e-8))
 
 
         # requested = margin * action[0]
@@ -438,7 +438,7 @@ class MicroGridEnv(Env):
         info = {}
 
 
-        '''for eval post training
+        '''for eval post training'''
         if self.iseval:
             # self.cumulated_reward += reward
             # self.cumulated_reward_list.append(self.cumulated_reward)
@@ -457,7 +457,9 @@ class MicroGridEnv(Env):
                 info = self.get_info()
                 # idx = self.demand.get_idx_from_times(time=self.timeframe)
                 # print(self.demand.profile, idx)
-        '''
+        
+
+        '''info for train
         # expose rewards to callbacks (both train & eval)
         info["pure_rewards"] = self.pure_rewards.copy()
         info["norm_rewards"] = self.norm_rewards.copy()
@@ -468,7 +470,7 @@ class MicroGridEnv(Env):
         info["margin"] = margin
         info["action"] = action[0]
         info["clipped"] = clipped
-
+        '''
 
         # if truncated or terminated:
         #     for key, values in self.norm_reward_list.items():
@@ -495,13 +497,16 @@ class MicroGridEnv(Env):
         """
         if self._use_reward_normalization:
             if self._trad_norm_term is None:
-                self._trad_norm_term = max(self.generation.max_gen * self.market.max_bid, 
-                                           self.demand.max_demand * self.market.max_ask)
-            
+                # self._trad_norm_term = max(self.generation.max_gen * self.market.max_bid, 
+                #                            self.demand.max_demand * self.market.max_ask)
+                # self._trad_norm_term = 0.0108
+                self._trad_norm_term = 1
+
             self.norm_rewards['r_trad'] = rewards[0] / self._trad_norm_term
-            self.norm_rewards['r_deg']  = rewards[1] / self._battery.nominal_cost
-            self.norm_rewards['r_clip'] = rewards[2] / max(abs(self.demand.max_demand - self.generation.min_gen), 
-                                          abs(self.generation.max_gen - self.demand.min_demand))          
+            self.norm_rewards['r_deg']  = rewards[1] 
+            # self.norm_rewards['r_clip'] = rewards[2] / max(abs(self.demand.max_demand - self.generation.min_gen), 
+            #                               abs(self.generation.max_gen - self.demand.min_demand))    
+            self.norm_rewards['r_clip'] = rewards[2]       
         else:
             self.norm_rewards['r_trad'] = rewards[0]
             self.norm_rewards['r_deg']  = rewards[1]

@@ -44,17 +44,17 @@ observations:
 
 step: 3600 # in seconds
 step_model: 120 # in seconds
-random_battery_init: False # battery state initialization: if True it is randomized between declared bounds
+random_battery_init: True # battery state initialization: if True it is randomized between declared bounds
 random_data_init: False # timeseries starting point: if True the timeseries starting point is randomly sampled
-seed: 963 # to sample user's demand profile (also initial data and initial battery state if enabled)
+seed: 741 # to sample user's demand profile (also initial data and initial battery state if enabled)
 
 termination:
-  max_iterations: 500
+  max_iterations: 8760
   min_soh: 0.6
 
 reward:
-  trading_coeff: 1
-  degradation_coeff: 1
-  clip_action_coeff: 1
+  trading_coeff: 30
+  degradation_coeff: 75000
+  clip_action_coeff: 10
 
 use_reward_normalization: True

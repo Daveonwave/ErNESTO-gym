@@ -33,9 +33,9 @@ python launch_env.py \
     --log_rate 5 \
     --eval_freq 35000 \
     --n_eval_episodes 10 \
-    --weight_trading 30 \
-    --weight_degradation 75000 \
-    --weight_clipping 10 \
+    --weight_trading 1 \
+    --weight_degradation 1 \
+    --weight_clipping 0.001 \
     --seed "${SEED}" \
     --world_settings ernestogym/envs/single_agent/ijcnn_deg_train_cell_scaling.yaml \
     --electrical_model ernestogym/ernesto/data/battery/models/electrical/thevenin_cell.yaml \
