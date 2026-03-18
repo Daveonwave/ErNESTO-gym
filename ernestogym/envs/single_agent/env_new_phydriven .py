@@ -390,7 +390,9 @@ class MicroGridEnvPhyDriven(Env):
         r_trading = to_trade * obs_pre_step['ask'] if to_trade < 0 else to_trade * obs_pre_step['bid']
 
         # Clipping penalty from unfeasible actions
-        r_clipping = -abs(margin * action[0] - to_load)
+        # r_clipping = -abs(margin * action[0] - to_load)
+        clipped = margin * action[0] - to_load
+        r_clipping = self.huber_penalty(clipped)
 
         # Operational cost penalty and degradation penalty
         r_operation, r_deg = self._optional_reward()
@@ -509,3 +511,9 @@ class MicroGridEnvPhyDriven(Env):
     def close(self):
         raise NotImplementedError("Rendering not implemented yet.")
 
+    def huber_penalty(self, c, k=0.1, alpha=0.05):
+        abs_c = abs(c) 
+        if abs_c <= k: 
+            return -alpha * 0.5 * abs_c * abs_c 
+        else: 
+            return -alpha * (k * (abs_c - 0.5 * k))

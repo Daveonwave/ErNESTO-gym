@@ -54,6 +54,8 @@ class Cycler:
         '''Set I setpoint to 0A'''
         self.set_I_setpoint(0)
 
+        self.clear_faults()
+
         # self._stop_event = threading.Event()
         # self._thread = None
         # self._lock = threading.Lock()  # To  update P_set
@@ -65,9 +67,11 @@ class Cycler:
     def connect(self):
         self.client = ModbusTcpClient(host=self.ip, port=self.port)
         self.connected = self.client.connect()
+        self.clear_faults()
         if not self.connected:
             raise ConnectionError(f"Could not connect to {self.ip}:{self.port}")
         print(f"[INFO] Connected to cycler at {self.ip}:{self.port}")
+
 
     def disconnect(self):
         if self.client:

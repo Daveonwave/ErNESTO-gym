@@ -77,14 +77,14 @@ battery:
             high: 1.
 
     init:
-        voltage: 3.831
+        voltage: 3.790
         current: 0.
         power: 0.
         temperature: 293.15
         temp_ambient: 293.15
-        soc: 0.66
+        soc: 0.64
         soh: 1.
 
-    save_collections: False
+    save_collections: True
 
       
